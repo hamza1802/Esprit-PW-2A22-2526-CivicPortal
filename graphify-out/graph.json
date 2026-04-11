@@ -4,191 +4,295 @@
   "graph": {},
   "nodes": [
     {
-      "label": "index.php",
+      "label": "Verification.php",
       "file_type": "code",
-      "source_file": "FrontOffice\\index.php",
+      "source_file": "Verification.php",
       "source_location": "L1",
-      "id": "index",
-      "community": 3
-    },
-    {
-      "label": "app.js",
-      "file_type": "code",
-      "source_file": "FrontOffice\\app.js",
-      "source_location": "L1",
-      "id": "app",
-      "community": 2
-    },
-    {
-      "label": "setupScrollAnimations()",
-      "file_type": "code",
-      "source_file": "FrontOffice\\app.js",
-      "source_location": "L9",
-      "id": "app_setupscrollanimations",
-      "community": 2
-    },
-    {
-      "label": "controller.js",
-      "file_type": "code",
-      "source_file": "FrontOffice\\controllers\\controller.js",
-      "source_location": "L1",
-      "id": "controller",
+      "id": "verification",
       "community": 4
     },
     {
-      "label": "model.js",
+      "label": "MainController.php",
       "file_type": "code",
-      "source_file": "FrontOffice\\models\\model.js",
+      "source_file": "Controller\\MainController.php",
       "source_location": "L1",
-      "id": "model",
-      "community": 5
+      "id": "maincontroller",
+      "community": 2
     },
     {
-      "label": "view.js",
+      "label": "MainController",
       "file_type": "code",
-      "source_file": "FrontOffice\\views\\view.js",
-      "source_location": "L1",
-      "id": "view",
-      "community": 6
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L9",
+      "id": "maincontroller_maincontroller",
+      "community": 2
     },
     {
-      "label": "AppController.php",
+      "label": ".showData()",
       "file_type": "code",
-      "source_file": "controllers\\AppController.php",
-      "source_location": "L1",
-      "id": "appcontroller",
-      "community": 1
-    },
-    {
-      "label": "AppController",
-      "file_type": "code",
-      "source_file": "controllers\\AppController.php",
-      "source_location": "L10",
-      "id": "appcontroller_appcontroller",
-      "community": 1
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L14",
+      "id": "maincontroller_maincontroller_showdata",
+      "community": 2
     },
     {
       "label": ".handleRequest()",
       "file_type": "code",
-      "source_file": "controllers\\AppController.php",
-      "source_location": "L11",
-      "id": "appcontroller_appcontroller_handlerequest",
-      "community": 1
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L25",
+      "id": "maincontroller_maincontroller_handlerequest",
+      "community": 2
     },
     {
       "label": "AppModel.php",
       "file_type": "code",
-      "source_file": "models\\AppModel.php",
+      "source_file": "Model\\AppModel.php",
       "source_location": "L1",
       "id": "appmodel",
-      "community": 0
+      "community": 1
     },
     {
       "label": "AppModel",
       "file_type": "code",
-      "source_file": "models\\AppModel.php",
+      "source_file": "Model\\AppModel.php",
       "source_location": "L8",
       "id": "appmodel_appmodel",
-      "community": 0
+      "community": 1
     },
     {
       "label": ".init()",
       "file_type": "code",
-      "source_file": "models\\AppModel.php",
+      "source_file": "Model\\AppModel.php",
       "source_location": "L9",
       "id": "appmodel_appmodel_init",
-      "community": 0
+      "community": 1
     },
     {
       "label": ".getRequests()",
       "file_type": "code",
-      "source_file": "models\\AppModel.php",
+      "source_file": "Model\\AppModel.php",
       "source_location": "L42",
       "id": "appmodel_appmodel_getrequests",
-      "community": 0
+      "community": 1
     },
     {
       "label": ".addRequest()",
       "file_type": "code",
-      "source_file": "models\\AppModel.php",
+      "source_file": "Model\\AppModel.php",
       "source_location": "L47",
       "id": "appmodel_appmodel_addrequest",
-      "community": 0
+      "community": 1
     },
     {
       "label": ".updateRequestStatus()",
       "file_type": "code",
-      "source_file": "models\\AppModel.php",
+      "source_file": "Model\\AppModel.php",
       "source_location": "L60",
       "id": "appmodel_appmodel_updaterequeststatus",
-      "community": 0
+      "community": 1
     },
     {
       "label": ".addComplaint()",
       "file_type": "code",
-      "source_file": "models\\AppModel.php",
+      "source_file": "Model\\AppModel.php",
       "source_location": "L71",
       "id": "appmodel_appmodel_addcomplaint",
-      "community": 0
+      "community": 1
     },
     {
       "label": ".getComplaints()",
       "file_type": "code",
-      "source_file": "models\\AppModel.php",
+      "source_file": "Model\\AppModel.php",
       "source_location": "L84",
       "id": "appmodel_appmodel_getcomplaints",
-      "community": 0
+      "community": 1
     },
     {
       "label": ".getStats()",
       "file_type": "code",
-      "source_file": "models\\AppModel.php",
+      "source_file": "Model\\AppModel.php",
       "source_location": "L89",
       "id": "appmodel_appmodel_getstats",
+      "community": 1
+    },
+    {
+      "label": "User.php",
+      "file_type": "code",
+      "source_file": "Model\\User.php",
+      "source_location": "L1",
+      "id": "user",
       "community": 0
+    },
+    {
+      "label": "User",
+      "file_type": "code",
+      "source_file": "Model\\User.php",
+      "source_location": "L7",
+      "id": "user_user",
+      "community": 0
+    },
+    {
+      "label": ".__construct()",
+      "file_type": "code",
+      "source_file": "Model\\User.php",
+      "source_location": "L13",
+      "id": "user_user_construct",
+      "community": 0
+    },
+    {
+      "label": ".getId()",
+      "file_type": "code",
+      "source_file": "Model\\User.php",
+      "source_location": "L21",
+      "id": "user_user_getid",
+      "community": 0
+    },
+    {
+      "label": ".getName()",
+      "file_type": "code",
+      "source_file": "Model\\User.php",
+      "source_location": "L22",
+      "id": "user_user_getname",
+      "community": 0
+    },
+    {
+      "label": ".getRole()",
+      "file_type": "code",
+      "source_file": "Model\\User.php",
+      "source_location": "L23",
+      "id": "user_user_getrole",
+      "community": 0
+    },
+    {
+      "label": ".getEmail()",
+      "file_type": "code",
+      "source_file": "Model\\User.php",
+      "source_location": "L24",
+      "id": "user_user_getemail",
+      "community": 0
+    },
+    {
+      "label": ".setName()",
+      "file_type": "code",
+      "source_file": "Model\\User.php",
+      "source_location": "L27",
+      "id": "user_user_setname",
+      "community": 0
+    },
+    {
+      "label": ".setRole()",
+      "file_type": "code",
+      "source_file": "Model\\User.php",
+      "source_location": "L28",
+      "id": "user_user_setrole",
+      "community": 0
+    },
+    {
+      "label": ".setEmail()",
+      "file_type": "code",
+      "source_file": "Model\\User.php",
+      "source_location": "L29",
+      "id": "user_user_setemail",
+      "community": 0
+    },
+    {
+      "label": ".toArray()",
+      "file_type": "code",
+      "source_file": "Model\\User.php",
+      "source_location": "L31",
+      "id": "user_user_toarray",
+      "community": 0
+    },
+    {
+      "label": "app.js",
+      "file_type": "code",
+      "source_file": "View\\FrontOffice\\app.js",
+      "source_location": "L1",
+      "id": "app",
+      "community": 3
+    },
+    {
+      "label": "setupScrollAnimations()",
+      "file_type": "code",
+      "source_file": "View\\FrontOffice\\app.js",
+      "source_location": "L9",
+      "id": "app_setupscrollanimations",
+      "community": 3
+    },
+    {
+      "label": "controller.js",
+      "file_type": "code",
+      "source_file": "View\\FrontOffice\\controller.js",
+      "source_location": "L1",
+      "id": "controller",
+      "community": 5
+    },
+    {
+      "label": "index.php",
+      "file_type": "code",
+      "source_file": "View\\FrontOffice\\index.php",
+      "source_location": "L1",
+      "id": "index",
+      "community": 6
+    },
+    {
+      "label": "model.js",
+      "file_type": "code",
+      "source_file": "View\\FrontOffice\\model.js",
+      "source_location": "L1",
+      "id": "model",
+      "community": 7
+    },
+    {
+      "label": "view.js",
+      "file_type": "code",
+      "source_file": "View\\FrontOffice\\view.js",
+      "source_location": "L1",
+      "id": "view",
+      "community": 8
     }
   ],
   "links": [
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "FrontOffice\\app.js",
+      "source_file": "Controller\\MainController.php",
       "source_location": "L9",
       "weight": 1.0,
-      "_src": "app",
-      "_tgt": "app_setupscrollanimations",
-      "source": "app",
-      "target": "app_setupscrollanimations",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "controllers\\AppController.php",
-      "source_location": "L10",
-      "weight": 1.0,
-      "_src": "appcontroller",
-      "_tgt": "appcontroller_appcontroller",
-      "source": "appcontroller",
-      "target": "appcontroller_appcontroller",
+      "_src": "maincontroller",
+      "_tgt": "maincontroller_maincontroller",
+      "source": "maincontroller",
+      "target": "maincontroller_maincontroller",
       "confidence_score": 1.0
     },
     {
       "relation": "method",
       "confidence": "EXTRACTED",
-      "source_file": "controllers\\AppController.php",
-      "source_location": "L11",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L14",
       "weight": 1.0,
-      "_src": "appcontroller_appcontroller",
-      "_tgt": "appcontroller_appcontroller_handlerequest",
-      "source": "appcontroller_appcontroller",
-      "target": "appcontroller_appcontroller_handlerequest",
+      "_src": "maincontroller_maincontroller",
+      "_tgt": "maincontroller_maincontroller_showdata",
+      "source": "maincontroller_maincontroller",
+      "target": "maincontroller_maincontroller_showdata",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L25",
+      "weight": 1.0,
+      "_src": "maincontroller_maincontroller",
+      "_tgt": "maincontroller_maincontroller_handlerequest",
+      "source": "maincontroller_maincontroller",
+      "target": "maincontroller_maincontroller_handlerequest",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "models\\AppModel.php",
+      "source_file": "Model\\AppModel.php",
       "source_location": "L8",
       "weight": 1.0,
       "_src": "appmodel",
@@ -200,7 +304,7 @@
     {
       "relation": "method",
       "confidence": "EXTRACTED",
-      "source_file": "models\\AppModel.php",
+      "source_file": "Model\\AppModel.php",
       "source_location": "L9",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
@@ -212,7 +316,7 @@
     {
       "relation": "method",
       "confidence": "EXTRACTED",
-      "source_file": "models\\AppModel.php",
+      "source_file": "Model\\AppModel.php",
       "source_location": "L42",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
@@ -224,7 +328,7 @@
     {
       "relation": "method",
       "confidence": "EXTRACTED",
-      "source_file": "models\\AppModel.php",
+      "source_file": "Model\\AppModel.php",
       "source_location": "L47",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
@@ -236,7 +340,7 @@
     {
       "relation": "method",
       "confidence": "EXTRACTED",
-      "source_file": "models\\AppModel.php",
+      "source_file": "Model\\AppModel.php",
       "source_location": "L60",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
@@ -248,7 +352,7 @@
     {
       "relation": "method",
       "confidence": "EXTRACTED",
-      "source_file": "models\\AppModel.php",
+      "source_file": "Model\\AppModel.php",
       "source_location": "L71",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
@@ -260,7 +364,7 @@
     {
       "relation": "method",
       "confidence": "EXTRACTED",
-      "source_file": "models\\AppModel.php",
+      "source_file": "Model\\AppModel.php",
       "source_location": "L84",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
@@ -272,13 +376,145 @@
     {
       "relation": "method",
       "confidence": "EXTRACTED",
-      "source_file": "models\\AppModel.php",
+      "source_file": "Model\\AppModel.php",
       "source_location": "L89",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
       "_tgt": "appmodel_appmodel_getstats",
       "source": "appmodel_appmodel",
       "target": "appmodel_appmodel_getstats",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\User.php",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_src": "user",
+      "_tgt": "user_user",
+      "source": "user",
+      "target": "user_user",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\User.php",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_src": "user_user",
+      "_tgt": "user_user_construct",
+      "source": "user_user",
+      "target": "user_user_construct",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\User.php",
+      "source_location": "L21",
+      "weight": 1.0,
+      "_src": "user_user",
+      "_tgt": "user_user_getid",
+      "source": "user_user",
+      "target": "user_user_getid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\User.php",
+      "source_location": "L22",
+      "weight": 1.0,
+      "_src": "user_user",
+      "_tgt": "user_user_getname",
+      "source": "user_user",
+      "target": "user_user_getname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\User.php",
+      "source_location": "L23",
+      "weight": 1.0,
+      "_src": "user_user",
+      "_tgt": "user_user_getrole",
+      "source": "user_user",
+      "target": "user_user_getrole",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\User.php",
+      "source_location": "L24",
+      "weight": 1.0,
+      "_src": "user_user",
+      "_tgt": "user_user_getemail",
+      "source": "user_user",
+      "target": "user_user_getemail",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\User.php",
+      "source_location": "L27",
+      "weight": 1.0,
+      "_src": "user_user",
+      "_tgt": "user_user_setname",
+      "source": "user_user",
+      "target": "user_user_setname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\User.php",
+      "source_location": "L28",
+      "weight": 1.0,
+      "_src": "user_user",
+      "_tgt": "user_user_setrole",
+      "source": "user_user",
+      "target": "user_user_setrole",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\User.php",
+      "source_location": "L29",
+      "weight": 1.0,
+      "_src": "user_user",
+      "_tgt": "user_user_setemail",
+      "source": "user_user",
+      "target": "user_user_setemail",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\User.php",
+      "source_location": "L31",
+      "weight": 1.0,
+      "_src": "user_user",
+      "_tgt": "user_user_toarray",
+      "source": "user_user",
+      "target": "user_user_toarray",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "View\\FrontOffice\\app.js",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_src": "app",
+      "_tgt": "app_setupscrollanimations",
+      "source": "app",
+      "target": "app_setupscrollanimations",
       "confidence_score": 1.0
     }
   ],

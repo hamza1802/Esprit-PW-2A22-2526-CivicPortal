@@ -3,8 +3,8 @@
  * FrontOffice Event Handler
  */
 
-import model from '../models/model.js';
-import view from '../views/view.js';
+import model from './model.js';
+import view from './view.js';
 
 const controller = {
     async init() {
