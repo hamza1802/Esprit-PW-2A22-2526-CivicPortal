@@ -3,7 +3,7 @@
  * FrontOffice/index.php
  * Main entry point for CivicPortal Citizen Portal
  */
-require_once '../models/AppModel.php';
+require_once '../../Model/AppModel.php';
 AppModel::init();
 ?>
 <!DOCTYPE html>

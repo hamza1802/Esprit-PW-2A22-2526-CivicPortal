@@ -1,81 +1,40 @@
-
 🏛️ CivicPortal
 Modernizing Public Governance through Digital Accessibility
 
-Bridging the gap between citizens and municipal offices by digitizing administrative workflows, eliminating physical bottlenecks, and enhancing transparency for all stakeholders.
+Bridging the gap between citizens and municipal offices by digitizing administrative workflows.
 
-📑 Table of Contents
-About the Project
+## 🏗️ System Architecture (Based on ARCHITECTURE.md)
 
-Key Features
+This project follows a strict Model-View-Controller (MVC) architecture designed for academic and professional clarity.
 
-System Architecture
+### 1. Model (Data Layer) - `/Model/`
+Contains the "Blueprints" and data management logic.
+* **`User.php`**: Blueprint for User objects with private attributes and getters/setters.
+* **`ServiceRequest.php`**: Blueprint for Service Request objects.
+* **`AppModel.php`**: Handlers for session-based data persistence.
 
-Tech Stack
+### 2. View (Interface Layer) - `/View/`
+Contains everything the user interacts with.
+* **`FrontOffice/`**: Public-facing pages for Citizens (Submit requests, browse programs).
+* **`BackOffice/`**: Admin/Management pages for Workers and Admins (Dashboard, Stats).
+* **`assets/`**: Shared CSS, JavaScript validation, and media assets.
 
-Getting Started
+### 3. Controller (Logic Layer) - `/Controller/`
+The "Brain" of the operation.
+* **`MainController.php`**: Processes data and bridges the Model and the View. Includes methods like `showData()`.
 
-Contributors
+### 4. Execution Logic - `Verification.php`
+The centralized entry point for all form submissions and API calls. 
+* It captures `$_POST` data, initializes Model objects, and passes them to the Controller for processing.
 
-Acknowledgments
+---
 
-📖 About the Project
-CivicPortal is a centralized hub designed to digitize public services. Developed as part of the Introduction to Information Systems Design (ICSI) module, this platform allows citizens to submit requests, book appointments, and provide feedback through a unified interface. Simultaneously, it provides a simulated environment for government workers and administrators to validate requests and track system performance.
-+1
-
-✨ Key Features
-👤 User Management
-Role-Based Access: Tailored frontend interfaces for Citizens, Workers, and Admins.
-
-
-Simulated Authentication: Front-end validation for registration and login workflows (S'inscrire, S'authentifier).
-
-📄 Service Requests
-
-Digital Document Workflows: Interfaces for citizens to add, modify, or delete requests.
-
-
-Validation Engine: Dashboard views for government workers to review and validate documents.
-
-Status Tracking: Visual feedback for citizens on the progress of their submitted files.
-
-📅 Appointments
-
-Smart Scheduling: UI for citizens to book and manage reservations for specific services.
-
-
-Digital Receipts: Simulated confirmation mechanisms upon successful booking.
-
-📢 Complaints & Feedback
-
-Service Evaluation: Interactive 1–5 star rating components.
-
-Direct Reporting: Forms for citizens to report grievances to supervisors.
-
-📊 Admin Dashboard
-
-Performance Analytics: Visual data representations of system statistics.
-
-
-System Oversight: High-level supervision tools to monitor overall efficiency.
-
-🏗️ System Architecture
-The system is built on a rigorous software engineering foundation using a **Full-Stack MVC (Model-View-Controller)** pattern:
-
-- **Frontend MVC**: Split into `/FrontOffice` and `/BackOffice` acting as independent Single Page Applications. Handled natively via their own `model.js`, `view.js`, and `controller.js`.
-- **Backend API**: Powered by **PHP** (`api/index.php`, `AppModel.php`, `AppController.php`) for data persistence.
-- **State Persistence**: Uses **PHP Sessions** (`$_SESSION`) to maintain data securely across both offices.
-
-🛠️ Tech Stack
-- **Frontend**: HTML5, CSS3 (Editorial Grid System), Vanilla JavaScript (ES6 Modules).
+## 🛠️ Tech Stack
+- **Frontend**: Vanilla JavaScript (ES6 Modules), HTML5, CSS3.
 - **Backend**: PHP (Session-based MVC).
-- **Communication**: Asynchronous Fetch API for JS-to-PHP bridge.
-👥 Contributors
-This project was built collaboratively by:
+- **Architecture**: Separated Front/Back Office for enhanced security and scalability.
 
-💻 Hamza * 💻 Ilyes * 💻 Hedi * 💻 Amine * 💻 Amen Allah ---
-
-🎓 Acknowledgments
-Heartfelt thanks to the UP GL-BD team  for their comprehensive tutorials.
-
-Thank you to the ICSI Faculty at Esprit  for the pedagogical framework and case studies that guided our UML modeling and architectural design.
+## 🚀 Getting Started
+1. Deploy to a PHP-enabled server (e.g., XAMPP).
+2. Navigate to `View/FrontOffice/` for the Citizen experience.
+3. Navigate to `View/BackOffice/` for the Staff experience.

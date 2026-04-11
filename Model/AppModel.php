@@ -2,8 +2,12 @@
 /**
  * AppModel.php
  * Session-based data management for CivicPortal
- * Mimics a database for the Esprit/IPSSI academic demo
+ * Mimics a database for the Esprit/IPSSI academic demo.
+ * Uses Blueprints (User.php, ServiceRequest.php) for state structure.
  */
+
+require_once __DIR__ . '/User.php';
+require_once __DIR__ . '/ServiceRequest.php';
 
 class AppModel {
     public static function init() {
@@ -13,10 +17,11 @@ class AppModel {
 
         // Initialize default data if session is empty
         if (!isset($_SESSION['initialized'])) {
+            // Using Blueprint (User entity) to define initial state
             $_SESSION['users'] = [
-                ['id' => 1, 'name' => 'John Citizen', 'role' => 'citizen', 'email' => 'john@example.com'],
-                ['id' => 2, 'name' => 'Alice Worker', 'role' => 'worker', 'email' => 'alice@cityhall.gov'],
-                ['id' => 3, 'name' => 'Admin User', 'role' => 'admin', 'email' => 'admin@cityhall.gov']
+                (new User(1, 'John Citizen', 'citizen', 'john@example.com'))->toArray(),
+                (new User(2, 'Alice Worker', 'worker', 'alice@cityhall.gov'))->toArray(),
+                (new User(3, 'Admin User', 'admin', 'admin@cityhall.gov'))->toArray()
             ];
 
             $_SESSION['programs'] = [
@@ -25,9 +30,10 @@ class AppModel {
                 ['id' => 103, 'title' => 'Community Gardening', 'category' => 'Environment', 'description' => 'Join our local group in the North Park garden.', 'image' => 'gardening.jpg']
             ];
 
+            // Using Blueprint (ServiceRequest entity) to define initial state
             $_SESSION['requests'] = [
-                ['id' => 501, 'type' => 'Birth Certificate', 'citizenId' => 1, 'status' => 'pending', 'date' => '2026-03-15'],
-                ['id' => 502, 'type' => 'ID Card Renewal', 'citizenId' => 1, 'status' => 'validated', 'date' => '2026-03-10']
+                (new ServiceRequest(501, 'Birth Certificate', 1, 'pending', '2026-03-15'))->toArray(),
+                (new ServiceRequest(502, 'ID Card Renewal', 1, 'validated', '2026-03-10'))->toArray()
             ];
 
             $_SESSION['enrollments'] = [
@@ -46,22 +52,23 @@ class AppModel {
 
     public static function addRequest($type, $citizenId) {
         self::init();
-        $newRequest = [
-            'id' => time(),
-            'type' => $type,
-            'citizenId' => $citizenId,
-            'status' => 'pending',
-            'date' => date('Y-m-d')
-        ];
-        $_SESSION['requests'][] = $newRequest;
-        return $newRequest;
+        // Create an object from your Model as a blueprint before saving
+        $requestObj = new ServiceRequest(time(), $type, $citizenId, 'pending', date('Y-m-d'));
+        $data = $requestObj->toArray();
+        
+        $_SESSION['requests'][] = $data;
+        return $data;
     }
 
     public static function updateRequestStatus($requestId, $status) {
         self::init();
         foreach ($_SESSION['requests'] as &$request) {
             if ($request['id'] == $requestId) {
-                $request['status'] = $status;
+                // Demonstrate using setter on object logic
+                $requestObj = new ServiceRequest($request['id'], $request['type'], $request['userId'] ?? $request['citizenId'] ?? 0, $request['status'], $request['date']);
+                $requestObj->setStatus($status);
+                
+                $request['status'] = $requestObj->getStatus();
                 return true;
             }
         }

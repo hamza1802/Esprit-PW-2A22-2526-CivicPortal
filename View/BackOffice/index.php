@@ -3,7 +3,7 @@
  * BackOffice/index.php
  * Main entry point for CivicPortal Staff Portal
  */
-require_once '../models/AppModel.php';
+require_once '../../Model/AppModel.php';
 AppModel::init();
 ?>
 <!DOCTYPE html>
