@@ -60,22 +60,16 @@ Performance Analytics: Visual data representations of system statistics.
 System Oversight: High-level supervision tools to monitor overall efficiency.
 
 🏗️ System Architecture
-The system is built on a rigorous software engineering foundation using the Unified Modeling Language (UML):
+The system is built on a rigorous software engineering foundation using a **Full-Stack MVC (Model-View-Controller)** pattern:
 
-
-Functional Analysis: Driven by Use Case Diagrams to map out actor interactions and system services.
-+2
-
-
-Dynamic Modeling: Sequence diagrams used to plan the chronological flow of messages and real-time logic.
-+1
-
-
-Static Modeling: Analysis Class Diagrams defining the structural data entities (e.g., Users, Requests) and their relationships.
-+1
+- **Frontend MVC**: Split into `/FrontOffice` and `/BackOffice` acting as independent Single Page Applications. Handled natively via their own `model.js`, `view.js`, and `controller.js`.
+- **Backend API**: Powered by **PHP** (`api/index.php`, `AppModel.php`, `AppController.php`) for data persistence.
+- **State Persistence**: Uses **PHP Sessions** (`$_SESSION`) to maintain data securely across both offices.
 
 🛠️ Tech Stack
-This project is built purely with standard web technologies, focusing on clean code, DOM manipulation, and responsive design without the overhead of heavy frameworks.
+- **Frontend**: HTML5, CSS3 (Editorial Grid System), Vanilla JavaScript (ES6 Modules).
+- **Backend**: PHP (Session-based MVC).
+- **Communication**: Asynchronous Fetch API for JS-to-PHP bridge.
 👥 Contributors
 This project was built collaboratively by:
 

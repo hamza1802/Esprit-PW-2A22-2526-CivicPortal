@@ -1,0 +1,286 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "index.php",
+      "file_type": "code",
+      "source_file": "FrontOffice\\index.php",
+      "source_location": "L1",
+      "id": "index",
+      "community": 3
+    },
+    {
+      "label": "app.js",
+      "file_type": "code",
+      "source_file": "FrontOffice\\app.js",
+      "source_location": "L1",
+      "id": "app",
+      "community": 2
+    },
+    {
+      "label": "setupScrollAnimations()",
+      "file_type": "code",
+      "source_file": "FrontOffice\\app.js",
+      "source_location": "L9",
+      "id": "app_setupscrollanimations",
+      "community": 2
+    },
+    {
+      "label": "controller.js",
+      "file_type": "code",
+      "source_file": "FrontOffice\\controllers\\controller.js",
+      "source_location": "L1",
+      "id": "controller",
+      "community": 4
+    },
+    {
+      "label": "model.js",
+      "file_type": "code",
+      "source_file": "FrontOffice\\models\\model.js",
+      "source_location": "L1",
+      "id": "model",
+      "community": 5
+    },
+    {
+      "label": "view.js",
+      "file_type": "code",
+      "source_file": "FrontOffice\\views\\view.js",
+      "source_location": "L1",
+      "id": "view",
+      "community": 6
+    },
+    {
+      "label": "AppController.php",
+      "file_type": "code",
+      "source_file": "controllers\\AppController.php",
+      "source_location": "L1",
+      "id": "appcontroller",
+      "community": 1
+    },
+    {
+      "label": "AppController",
+      "file_type": "code",
+      "source_file": "controllers\\AppController.php",
+      "source_location": "L10",
+      "id": "appcontroller_appcontroller",
+      "community": 1
+    },
+    {
+      "label": ".handleRequest()",
+      "file_type": "code",
+      "source_file": "controllers\\AppController.php",
+      "source_location": "L11",
+      "id": "appcontroller_appcontroller_handlerequest",
+      "community": 1
+    },
+    {
+      "label": "AppModel.php",
+      "file_type": "code",
+      "source_file": "models\\AppModel.php",
+      "source_location": "L1",
+      "id": "appmodel",
+      "community": 0
+    },
+    {
+      "label": "AppModel",
+      "file_type": "code",
+      "source_file": "models\\AppModel.php",
+      "source_location": "L8",
+      "id": "appmodel_appmodel",
+      "community": 0
+    },
+    {
+      "label": ".init()",
+      "file_type": "code",
+      "source_file": "models\\AppModel.php",
+      "source_location": "L9",
+      "id": "appmodel_appmodel_init",
+      "community": 0
+    },
+    {
+      "label": ".getRequests()",
+      "file_type": "code",
+      "source_file": "models\\AppModel.php",
+      "source_location": "L42",
+      "id": "appmodel_appmodel_getrequests",
+      "community": 0
+    },
+    {
+      "label": ".addRequest()",
+      "file_type": "code",
+      "source_file": "models\\AppModel.php",
+      "source_location": "L47",
+      "id": "appmodel_appmodel_addrequest",
+      "community": 0
+    },
+    {
+      "label": ".updateRequestStatus()",
+      "file_type": "code",
+      "source_file": "models\\AppModel.php",
+      "source_location": "L60",
+      "id": "appmodel_appmodel_updaterequeststatus",
+      "community": 0
+    },
+    {
+      "label": ".addComplaint()",
+      "file_type": "code",
+      "source_file": "models\\AppModel.php",
+      "source_location": "L71",
+      "id": "appmodel_appmodel_addcomplaint",
+      "community": 0
+    },
+    {
+      "label": ".getComplaints()",
+      "file_type": "code",
+      "source_file": "models\\AppModel.php",
+      "source_location": "L84",
+      "id": "appmodel_appmodel_getcomplaints",
+      "community": 0
+    },
+    {
+      "label": ".getStats()",
+      "file_type": "code",
+      "source_file": "models\\AppModel.php",
+      "source_location": "L89",
+      "id": "appmodel_appmodel_getstats",
+      "community": 0
+    }
+  ],
+  "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "FrontOffice\\app.js",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_src": "app",
+      "_tgt": "app_setupscrollanimations",
+      "source": "app",
+      "target": "app_setupscrollanimations",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "controllers\\AppController.php",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_src": "appcontroller",
+      "_tgt": "appcontroller_appcontroller",
+      "source": "appcontroller",
+      "target": "appcontroller_appcontroller",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "controllers\\AppController.php",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_src": "appcontroller_appcontroller",
+      "_tgt": "appcontroller_appcontroller_handlerequest",
+      "source": "appcontroller_appcontroller",
+      "target": "appcontroller_appcontroller_handlerequest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "models\\AppModel.php",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_src": "appmodel",
+      "_tgt": "appmodel_appmodel",
+      "source": "appmodel",
+      "target": "appmodel_appmodel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "models\\AppModel.php",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_init",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_init",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "models\\AppModel.php",
+      "source_location": "L42",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_getrequests",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_getrequests",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "models\\AppModel.php",
+      "source_location": "L47",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_addrequest",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_addrequest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "models\\AppModel.php",
+      "source_location": "L60",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_updaterequeststatus",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_updaterequeststatus",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "models\\AppModel.php",
+      "source_location": "L71",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_addcomplaint",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_addcomplaint",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "models\\AppModel.php",
+      "source_location": "L84",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_getcomplaints",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_getcomplaints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "models\\AppModel.php",
+      "source_location": "L89",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_getstats",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_getstats",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": []
+}
