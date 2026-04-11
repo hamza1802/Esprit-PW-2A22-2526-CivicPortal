@@ -37,6 +37,16 @@ const controller = {
                 this.handleProfileUpdate(new FormData(e.target));
             } else if (e.target.id === 'complaint-form') {
                 await this.handleComplaintSubmission(new FormData(e.target));
+            } else if (e.target.id === 'sort-transport-form') {
+                const type = e.target.dataset.type;
+                const formData = new FormData(e.target);
+                const sort = formData.get('sort');
+                const order = formData.get('order');
+                window.location.hash = `#transport_list?type=${type}&sort=${sort}&order=${order}`;
+            } else if (e.target.classList.contains('book-transport-form')) {
+                const idTrajet = e.target.dataset.id;
+                const currentUser = model.getCurrentUser();
+                await this.handleTicketBooking(idTrajet, currentUser.name, currentUser.id);
             }
         });
     },
@@ -61,8 +71,22 @@ const controller = {
             case '#complaints':
                 view.renderComplaintForm();
                 break;
+            case '#transport':
+                view.renderTransport();
+                break;
             default:
-                view.renderHome(user);
+                if (hash.startsWith('#transport_list')) {
+                    const urlParams = new URLSearchParams(hash.split('?')[1]);
+                    const type = urlParams.get('type') || 'Bus';
+                    const sortBy = urlParams.get('sort') || 'departure';
+                    const order = urlParams.get('order') || 'ASC';
+                    
+                    // Fetch from backend API
+                    const trajets = await model.getTrajetsByTypeAndSort(type, sortBy, order);
+                    view.renderTransportList(type, trajets, sortBy, order);
+                } else {
+                    view.renderHome(user);
+                }
                 break;
         }
     },
@@ -99,6 +123,16 @@ const controller = {
         await model.addComplaint(subject, body, user.id);
         view.renderToast('Grievance logged in PHP session.');
         window.location.hash = '#home';
+    },
+
+    async handleTicketBooking(idTrajet, citizenName, idUser) {
+        const result = await model.bookTicket(idTrajet, citizenName, idUser);
+        if (result && result.success) {
+            view.renderToast('Ticket successfully booked!');
+            this.handleRouting(); // Refresh the list to reflect occupancy
+        } else {
+            view.renderToast(result && result.error ? result.error : 'Failed to book ticket', 'danger');
+        }
     }
 };
 

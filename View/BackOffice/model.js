@@ -5,7 +5,6 @@
  */
 
 const model = {
-    // Current state mirror
     state: {
         currentUser: null,
         users: [
@@ -14,7 +13,6 @@ const model = {
         ],
         serviceRequests: [],
         complaints: [],
-        // Placeholder stats properties
         enrollmentsCount: 0,
         programsCount: 3, 
     },
@@ -31,6 +29,22 @@ const model = {
             return result.data;
         } catch (error) {
             console.error("API Error:", error);
+            return null;
+        }
+    },
+
+    async transportApiCall(action, data = {}) {
+        try {
+            const response = await fetch('../../api_transport.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, ...data })
+            });
+            const result = await response.json();
+            if (!result.success) throw new Error(result.error);
+            return result.data;
+        } catch (error) {
+            console.error("Transport API Error:", error);
             return null;
         }
     },
@@ -67,6 +81,11 @@ const model = {
         return this.state.complaints;
     },
 
+    async getTickets() {
+        const tickets = await this.apiCall('get_tickets');
+        return tickets || [];
+    },
+
     updateUser(data) {
         if(this.state.currentUser){
             this.state.currentUser.name = data.name;
@@ -77,12 +96,130 @@ const model = {
     async getStats() {
         const stats = await this.apiCall('get_stats');
         return stats || {
-            usersCount: 3, // Total simulation
+            usersCount: 3,
             programsCount: this.state.programsCount,
             requestsCount: this.state.serviceRequests.length,
             enrollmentsCount: this.state.enrollmentsCount,
             complaintsCount: this.state.complaints.length
         };
+    },
+
+    // ============================================
+    // TRANSPORT MODULE API CALLS
+    // ============================================
+
+    async getTransports() {
+        try {
+            const response = await fetch('../../api_transport.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'list_transports' })
+            });
+            const result = await response.json();
+            return result.success ? result.data : [];
+        } catch (e) { console.error(e); return []; }
+    },
+
+    async addTransport(data) {
+        try {
+            const response = await fetch('../../api_transport.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'add_transport', ...data })
+            });
+            return await response.json();
+        } catch (e) { console.error(e); return { success: false }; }
+    },
+
+    async deleteTransport(idTransport) {
+        try {
+            const response = await fetch('../../api_transport.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'delete_transport', idTransport })
+            });
+            return await response.json();
+        } catch (e) { console.error(e); return { success: false }; }
+    },
+
+    async updateTransport(data) {
+        try {
+            const response = await fetch('../../api_transport.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'update_transport', ...data })
+            });
+            return await response.json();
+        } catch (e) { console.error(e); return { success: false }; }
+    },
+
+    async getTransport(idTransport) {
+        try {
+            const response = await fetch('../../api_transport.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'get_transport', idTransport })
+            });
+            const result = await response.json();
+            return result.success ? result.data : null;
+        } catch (e) { console.error(e); return null; }
+    },
+
+    async getTrajets() {
+        try {
+            const response = await fetch('../../api_transport.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'list_all_trajets' })
+            });
+            const result = await response.json();
+            return result.success ? result.data : [];
+        } catch (e) { console.error(e); return []; }
+    },
+
+    async addTrajet(data) {
+        try {
+            const response = await fetch('../../api_transport.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'add_trajet', ...data })
+            });
+            return await response.json();
+        } catch (e) { console.error(e); return { success: false }; }
+    },
+
+    async deleteTrajet(idTrajet) {
+        try {
+            const response = await fetch('../../api_transport.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'delete_trajet', idTrajet })
+            });
+            return await response.json();
+        } catch (e) { console.error(e); return { success: false }; }
+    },
+
+    async getAllTickets() {
+        try {
+            const response = await fetch('../../api_transport.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'list_tickets' })
+            });
+            const result = await response.json();
+            return result.success ? result.data : [];
+        } catch (e) { console.error(e); return []; }
+    },
+
+    async cancelTicket(idTicket) {
+        try {
+            const response = await fetch('../../api_transport.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'cancel_ticket', idTicket })
+            });
+            return await response.json();
+        } catch (e) { console.error(e); return { success: false }; }
     }
 };
 

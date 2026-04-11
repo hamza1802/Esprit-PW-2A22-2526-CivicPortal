@@ -88,6 +88,36 @@ const model = {
 
     deleteUser() {
         this.state.currentUser = null;
+    },
+
+    async getTrajetsByTypeAndSort(type, sortBy, order) {
+        try {
+            const response = await fetch('../../api_transport.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'list_trajets', type, sortBy, order })
+            });
+            const result = await response.json();
+            if (!result.success) throw new Error(result.error);
+            return result.data;
+        } catch (error) {
+            console.error("API Error:", error);
+            return [];
+        }
+    },
+
+    async bookTicket(idTrajet, citizenName, idUser) {
+        try {
+            const response = await fetch('../../api_transport.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'book_ticket', idTrajet, citizenName, idUser })
+            });
+            return await response.json();
+        } catch (error) {
+            console.error("API Error:", error);
+            return { success: false, error: 'Network error booking ticket.' };
+        }
     }
 };
 

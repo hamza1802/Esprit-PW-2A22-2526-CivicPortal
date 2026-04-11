@@ -17,3 +17,4 @@
 
 ## 4. Execution Logic
 * **`Verification.php`**: The entry point for forms. It captures `$_POST` data, creates an object from your Model, and passes it to the Controller.
+

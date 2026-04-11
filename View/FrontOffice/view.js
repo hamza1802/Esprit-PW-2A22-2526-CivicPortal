@@ -36,9 +36,11 @@ const view = {
                 <li><a href="#programs">programs</a></li>
                 <li><a href="#request-service">service requests</a></li>
                 <li><a href="#complaints">grievances</a></li>
+                <li><a href="#transport">transport</a></li>
                 <li><a href="#profile">profile</a></li>
             </ul>
             <div class="user-controls">
+                <a href="../BackOffice/index.php" class="btn btn-small" style="text-decoration:none; border-color: var(--primary-navy);">BackOffice</a>
                 <div class="user-role-badge">Citizen</div>
             </div>
         `;
@@ -186,6 +188,116 @@ const view = {
                         </div>
                         <button type="submit" class="btn btn-primary" style="width:100%;">SUBMIT GRIEVANCE</button>
                     </form>
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    },
+
+    renderTransport() {
+        this.app.innerHTML = `
+            <section class="page-container">
+                <h2 class="reveal active">Municipal Transport</h2>
+                <p style="margin-bottom: 2rem; max-width: 800px; font-weight: 500; font-size: 1.2rem;">
+                    Select your preferred mode of transportation to book tickets securely.
+                </p>
+
+                <div class="editorial-grid">
+                    <div class="editorial-card reveal active">
+                        <h3 style="display:flex; align-items:center; gap:10px;"><span style="font-size: 2.5rem;">✈️</span> Plane</h3>
+                        <p>Book domestic or international flights from our central hubs.</p>
+                        <a href="#transport_list?type=Plane" class="btn btn-primary" style="align-self: flex-start; margin-top: auto;">View Flights</a>
+                    </div>
+                    <div class="editorial-card editorial-highlight reveal active">
+                        <h3 style="display:flex; align-items:center; gap:10px;"><span style="font-size: 2.5rem;">🚌</span> Bus</h3>
+                        <p>Affordable inner-city and inter-city bus routes.</p>
+                        <a href="#transport_list?type=Bus" class="btn btn-primary" style="align-self: flex-start; margin-top: auto;">View Bus Routes</a>
+                    </div>
+                    <div class="editorial-card reveal active">
+                        <h3 style="display:flex; align-items:center; gap:10px;"><span style="font-size: 2.5rem;">🚆</span> Train</h3>
+                        <p>Fast, reliable train networks.</p>
+                        <a href="#transport_list?type=Train" class="btn btn-primary" style="align-self: flex-start; margin-top: auto;">View Train Routes</a>
+                    </div>
+                    <div class="editorial-card reveal active">
+                        <h3 style="display:flex; align-items:center; gap:10px;"><span style="font-size: 2.5rem;">🚇</span> Metro</h3>
+                        <p>Rapid underground metro transit.</p>
+                        <a href="#transport_list?type=Metro" class="btn btn-primary" style="align-self: flex-start; margin-top: auto;">View Metro Routes</a>
+                    </div>
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    },
+
+    renderTransportList(type, trajets, sortBy = 'departure', order = 'ASC') {
+        const routeCards = trajets.length === 0 ? 
+            `<div class="editorial-card" style="grid-column: 1 / -1; text-align: center; border-right:none;">
+                <h3>No Routes Found</h3>
+                <p>We couldn't find any active routes for ${type}.</p>
+                <a href="#transport" class="btn">Back to Categories</a>
+            </div>` : 
+            trajets.map(trajet => {
+                const isFull = trajet.capacity > 0 && trajet.sold >= trajet.capacity;
+                const remaining = trajet.capacity - trajet.sold;
+                const pct = trajet.capacity > 0 ? Math.round((trajet.sold / trajet.capacity) * 100) : 0;
+                
+                return `
+                <div class="editorial-card reveal active" style="justify-content: space-between;">
+                    <div>
+                        <span class="category-badge">${trajet.transportName}</span>
+                        <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem; overflow-wrap: break-word;">
+                            ${trajet.departure} → ${trajet.destination}
+                        </h3>
+                        <p style="margin-bottom: 0.5rem; font-weight: 700; color: var(--accent-blue);">
+                            ${parseFloat(trajet.price).toFixed(3)} TND
+                        </p>
+                        <div style="font-size: 0.9rem; margin-bottom: 1.5rem; font-weight: 600;">
+                            📅 ${new Date(trajet.departureTime).toLocaleString()}<br><br>
+                            🎟️ ${isFull ? '<span style="color:var(--danger)">Sold Out</span>' : `${remaining} seats left (${trajet.sold}/${trajet.capacity})`}
+                            <div class="progress-track" style="margin-top: 8px;">
+                                <div class="progress-fill" style="width: ${pct}%; ${pct > 80 ? 'background:var(--danger);' : ''}"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: auto;">
+                        ${!isFull ? `
+                            <form class="book-transport-form" data-id="${trajet.idTrajet}">
+                                <div style="display:flex; flex-direction:column; gap:10px;">
+                                    <button type="submit" class="btn btn-primary" style="width: 100%;">Book Ticket Automatically</button>
+                                </div>
+                            </form>
+                        ` : `
+                            <button disabled class="btn btn-danger" style="width: 100%; opacity: 0.7; cursor: not-allowed; border: none;">Sold Out</button>
+                        `}
+                    </div>
+                </div>`;
+            }).join('');
+
+        this.app.innerHTML = `
+            <section class="page-container">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; border-bottom: var(--border-main); padding-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+                    <h2 class="reveal active" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0; display: flex; align-items: center; gap: 10px;">
+                        <a href="#transport" style="text-decoration: none; color: var(--secondary-grey);" title="Back">←</a>
+                        Routes: ${type}
+                    </h2>
+                    
+                    <form id="sort-transport-form" style="display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap;" data-type="${type}">
+                        <select name="sort" class="form-control" style="padding: 0.8rem; border: var(--border-main); background: transparent; font-weight: bold; font-family: inherit; color: var(--primary-navy);">
+                            <option value="departure" ${sortBy === 'departure' ? 'selected' : ''}>Sort by Departure</option>
+                            <option value="destination" ${sortBy === 'destination' ? 'selected' : ''}>Sort by Destination</option>
+                            <option value="price" ${sortBy === 'price' ? 'selected' : ''}>Sort by Price</option>
+                        </select>
+            
+                        <select name="order" class="form-control" style="padding: 0.8rem; border: var(--border-main); background: transparent; font-weight: bold; font-family: inherit; color: var(--primary-navy);">
+                            <option value="ASC" ${order === 'ASC' ? 'selected' : ''}>A-Z (Asc)</option>
+                            <option value="DESC" ${order === 'DESC' ? 'selected' : ''}>Z-A (Desc)</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary" style="padding: 0.8rem 1.5rem;">Sort</button>
+                    </form>
+                </div>
+
+                <div class="editorial-grid">
+                    ${routeCards}
                 </div>
             </section>
         `;

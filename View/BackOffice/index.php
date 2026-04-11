@@ -14,10 +14,6 @@ AppModel::init();
     <title>CivicPortal | Staff Portal</title>
     <meta name="description" content="Administrative and Worker functionalities for CivicPortal.">
     <link rel="stylesheet" href="../assets/css/style.css">
-    <style>
-        /* Quick override for staff portal header styling if needed */
-        .nav-brand { color: var(--primary-red); }
-    </style>
 </head>
 <body>
 
@@ -39,7 +35,7 @@ AppModel::init();
 
     <!-- Role Switcher (For Staff Demonstration Purposes) -->
     <div class="role-switcher-container">
-        <label for="demo-role-switcher">Switch Staff Role:</label>
+        <label for="demo-role-switcher">Switch admin Role:</label>
         <select id="demo-role-switcher">
             <option value="worker" selected>Worker (Staff)</option>
             <option value="admin">Admin</option>

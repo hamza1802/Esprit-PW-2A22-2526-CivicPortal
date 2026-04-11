@@ -16,6 +16,7 @@
     --white: #FFFFFF;
     --success: #27AE60;
     --danger: #E74C3C;
+    --staff-accent: #C0392B;  /* BackOffice staff accent — distinguished crimson */
     
     /* Editorial Constants */
     --border-main: 1px solid var(--primary-navy);
@@ -132,6 +133,22 @@ nav {
     text-transform: uppercase;
     letter-spacing: 1px;
     border: var(--border-main);
+}
+
+/* BackOffice Staff modifiers — same design language, distinct identity */
+.nav-brand--staff {
+    color: var(--white);
+}
+
+.user-role-badge--staff {
+    background: var(--staff-accent);
+    border-color: var(--staff-accent);
+    color: var(--white);
+}
+
+/* Staff portal: thin red underline on the nav to signal authority */
+nav.nav--staff {
+    border-bottom: 3px solid var(--staff-accent);
 }
 
 /* ==========================================================================
