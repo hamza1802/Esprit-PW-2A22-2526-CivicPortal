@@ -649,3 +649,334 @@ nav {
     .search-btn { padding: 1.5rem; }
     .form-card { border-left: none; border-right: none; padding: 2rem 1rem; }
 }
+
+/* ==========================================================================
+   Facebook-Style Profile Page
+   ========================================================================== */
+
+.profile-fb-page {
+    background: #f0f2f5;
+    min-height: 100vh;
+    padding-bottom: 4rem;
+}
+
+/* Cover Photo */
+.profile-fb-cover {
+    width: 100%;
+    height: 320px;
+    background: var(--primary-navy);
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-fb-cover-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #1D2A44 0%, #3A86FF 50%, #1D2A44 100%);
+    background-size: 200% 200%;
+    animation: coverShift 8s ease-in-out infinite;
+}
+
+@keyframes coverShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Header Row: Avatar + Name */
+.profile-fb-header-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 1.5rem;
+    padding: 0 5% 1.5rem;
+    margin-top: -60px;
+    position: relative;
+    z-index: 10;
+    background: #f0f2f5;
+    padding-top: 0;
+    padding-bottom: 1.5rem;
+}
+
+/* Small Circular Avatar */
+.profile-fb-avatar-wrap {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    border: 4px solid #f0f2f5;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    flex-shrink: 0;
+    background: var(--primary-navy);
+    margin-top: -65px;
+}
+
+.profile-fb-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.profile-fb-namebox {
+    padding-bottom: 0.5rem;
+}
+
+.profile-fb-name {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--primary-navy);
+    letter-spacing: -0.03em;
+    margin: 0;
+    line-height: 1.1;
+}
+
+.profile-fb-role {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 0.3rem;
+}
+
+/* Two-column content grid */
+.profile-fb-content {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 1.5rem;
+    padding: 0 5%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.profile-edit-mode {
+    grid-template-columns: 1fr;
+}
+
+/* Sidebar intro card */
+.profile-fb-sidebar {}
+
+.profile-fb-intro-card {
+    background: #ffffff;
+    border: 1px solid #dddfe2;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+/* Info rows inside intro card */
+.profile-info-row {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.6rem 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--primary-navy);
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.profile-info-row:last-child {
+    border-bottom: none;
+}
+
+.profile-info-icon {
+    font-size: 1rem;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+/* Main about card */
+.profile-fb-main {}
+
+.profile-fb-about-card {
+    background: #ffffff;
+    border: 1px solid #dddfe2;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+/* Responsive: Stack on mobile */
+@media (max-width: 900px) {
+    .profile-fb-content {
+        grid-template-columns: 1fr;
+    }
+    .profile-fb-cover {
+        height: 200px;
+    }
+    .profile-fb-header-row {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .profile-fb-avatar-wrap {
+        width: 100px;
+        height: 100px;
+        margin-top: -50px;
+    }
+}
+
+/* ==========================================================================
+   Clean Profile Page (pf-* classes) — Small avatar, big visible details
+   ========================================================================== */
+
+.pf-page {
+    background: var(--bg-neutral);
+    min-height: 100vh;
+    padding-bottom: 5rem;
+}
+
+/* Cover */
+.pf-cover {
+    width: 100%;
+    height: 260px;
+    position: relative;
+    overflow: hidden;
+}
+
+.pf-cover-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #1D2A44 0%, #3A86FF 60%, #1D2A44 100%);
+    background-size: 200% 200%;
+    animation: coverShift 8s ease-in-out infinite;
+}
+
+/* Header: avatar + name centered */
+.pf-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    padding: 1.5rem 5% 1.8rem;
+    background: var(--bg-neutral);
+    position: relative;
+    border-bottom: 2px solid #e0d9cc;
+    text-align: center;
+}
+
+/* Circular avatar overlapping cover */
+.pf-avatar-wrap {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid var(--bg-neutral);
+    overflow: hidden;
+    flex-shrink: 0;
+    margin-top: -55px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.22);
+    background: var(--primary-navy);
+}
+
+.pf-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.pf-header-info {
+    padding-bottom: 0.4rem;
+}
+
+.pf-name {
+    font-size: 1.7rem;
+    font-weight: 900;
+    color: var(--primary-navy);
+    letter-spacing: -0.03em;
+    margin: 0 0 0.3rem;
+    line-height: 1.1;
+}
+
+.pf-role-badge {
+    display: inline-block;
+    background: var(--primary-navy);
+    color: var(--bg-neutral);
+    padding: 0.25rem 0.9rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 3px;
+}
+
+/* Main content area */
+.pf-content {
+    padding: 2rem 5%;
+    max-width: 900px;
+    margin: 0 auto;
+    background: var(--bg-neutral);
+}
+
+.pf-edit-form-wrap {
+    background: #fff;
+    border: 1px solid #dddfe2;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+
+/* Detail cards — big and visible */
+.pf-details-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.pf-detail-card {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background: #ffffff;
+    border: 1px solid #dddfe2;
+    border-radius: 10px;
+    padding: 1.4rem 1.8rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.pf-detail-card:hover {
+    box-shadow: 0 6px 20px rgba(29,42,68,0.12);
+    transform: translateY(-2px);
+}
+
+.pf-detail-icon {
+    font-size: 1.6rem;
+    width: 40px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.pf-detail-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1;
+}
+
+.pf-detail-label {
+    font-size: 0.72rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+}
+
+.pf-detail-value {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--primary-navy);
+    word-break: break-word;
+}
+
+@media (max-width: 600px) {
+    .pf-cover { height: 160px; }
+    .pf-header { flex-direction: column; align-items: center; text-align: center; }
+    .pf-avatar-wrap { margin-top: -45px; }
+    .pf-content { padding: 1rem 4%; }
+    .pf-detail-card { padding: 1rem 1.2rem; }
+}
+

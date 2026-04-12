@@ -29,19 +29,26 @@ const view = {
         const nav = document.querySelector('nav');
         const backofficeBtn = (role === 'admin' || role === 'agent') ? `<a href="index.php?page=back_users_list" class="nav-btn nav-btn-outlined">BACKOFFICE</a>` : '';
         const links = `
-            <ul class="nav-links">
+            <a href="#home" class="nav-brand" style="text-decoration:none; text-transform:uppercase; color:#1a1a1a; font-weight:900; font-size:1.5rem;">CIVICPORTAL</a>
+            <ul class="nav-links" style="display:flex; list-style:none; margin:0; padding:0; gap:1.5rem; align-items: center;">
                 <li><a href="#home">home</a></li>
                 <li><a href="#programs">programs</a></li>
                 <li><a href="#service-requests">service requests</a></li>
                 <li><a href="#grievances">grievances</a></li>
                 <li><a href="#transport">transport</a></li>
                 <li><a href="#profile">profile</a></li>
+                <li><a href="index.php?action=logout" style="color: #ffcccc;">logout</a></li>
             </ul>
-            <div class="nav-actions">
+            <div class="nav-actions" style="display:flex; gap:1rem; align-items:center;">
                 ${backofficeBtn}
-                <button class="nav-btn nav-btn-filled" data-action="logout-btn">CITIZEN</button>
+                <span class="nav-btn nav-btn-filled" style="cursor: default; opacity: 0.9; padding:0.4rem 1rem; border-radius:4px; font-weight:bold; font-size:0.9rem; letter-spacing:1px; color:#fff; border:1px solid transparent;">${role.toUpperCase()}</span>
             </div>
         `;
+        nav.style.display = 'flex';
+        nav.style.alignItems = 'center';
+        nav.style.justifyContent = 'space-between';
+        nav.style.paddingLeft = '2rem';
+        nav.style.paddingRight = '2rem';
         nav.innerHTML = links;
     },
 
@@ -158,85 +165,110 @@ const view = {
     },
 
     renderProfile(user, editMode = false) {
-        const avatarSrc = user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=3A86FF&color=ffffff&size=256`;
-        const profileFields = `
-            ${user.bio ? `<p><strong>Bio:</strong> ${user.bio}</p>` : ''}
-            ${user.phoneNumber ? `<p><strong>Phone:</strong> ${user.phoneNumber}</p>` : ''}
-            ${user.dateOfBirth ? `<p><strong>Date of Birth:</strong> ${user.dateOfBirth}</p>` : ''}
-        `;
+        const avatarSrc = user.avatar
+            ? user.avatar
+            : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=1D2A44&color=ffffff&size=200&bold=true`;
 
-        const profileSummary = editMode ? '' : `
-            <div class="profile-summary reveal">
-                <h3>Information</h3>
-                <p><strong>Email:</strong> ${user.email}</p>
-                ${profileFields}
+        const roleLabel = (user.role || 'citizen').charAt(0).toUpperCase() + (user.role || 'citizen').slice(1);
+
+        const detailRows = [
+            { icon: '✉', label: 'Email', value: user.email || '—' },
+            { icon: '📞', label: 'Phone', value: user.phoneNumber || '—' },
+            { icon: '🎂', label: 'Date of Birth', value: user.dateOfBirth || '—' },
+            { icon: '🏷', label: 'Role', value: roleLabel },
+        ];
+
+        const detailCards = detailRows.map(d => `
+            <div class="pf-detail-card">
+                <span class="pf-detail-icon">${d.icon}</span>
+                <div class="pf-detail-body">
+                    <span class="pf-detail-label">${d.label}</span>
+                    <span class="pf-detail-value">${d.value}</span>
+                </div>
+            </div>
+        `).join('');
+
+        const profileSummary = `
+            <div class="pf-details-grid">
+                ${detailCards}
+            </div>
+            <div style="margin-top:2rem; text-align:right;">
+                <button class="btn btn-primary" data-action="toggle-profile-edit" style="padding:0.8rem 2.5rem;">Edit Profile</button>
             </div>
         `;
 
         const editForm = `
-            <div class="form-card reveal">
-                <h3>Edit Profile</h3>
-                <form id="profile-form">
-                    <div class="form-group">
-                        <label for="profile-name">Full Name</label>
-                        <input type="text" id="profile-name" name="name" value="${user.name}" required pattern="[A-Za-zÀ-ÿ '\-]+" title="Name cannot contain numbers.">
+            <div class="pf-edit-form-wrap">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
+                    <h3 style="font-size:1.4rem; font-weight:900; text-transform:uppercase; letter-spacing:-0.5px; color:#1D2A44;">Edit Profile</h3>
+                    <button type="button" class="btn" style="font-size:0.75rem; padding:0.4rem 1.2rem;" data-action="toggle-profile-edit">Cancel</button>
+                </div>
+                <form id="profile-form" action="index.php" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="update_profile">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+                        <div class="form-group" style="margin-bottom:1rem;">
+                            <label for="profile-name" style="font-size:0.78rem;">Full Name</label>
+                            <input type="text" id="profile-name" name="name" value="${user.name}" required pattern="[A-Za-zÀ-ÿ '\\-]+" style="padding:0.8rem 1rem; font-size:1rem;">
+                        </div>
+                        <div class="form-group" style="margin-bottom:1rem;">
+                            <label for="profile-email" style="font-size:0.78rem;">Email Address</label>
+                            <input type="email" id="profile-email" name="email" value="${user.email}" required style="padding:0.8rem 1rem; font-size:1rem;">
+                        </div>
+                        <div class="form-group" style="margin-bottom:1rem;">
+                            <label for="profile-phone" style="font-size:0.78rem;">Phone Number</label>
+                            <input type="text" id="profile-phone" name="phone_number" value="${user.phoneNumber || ''}" placeholder="+1 234 567 890" style="padding:0.8rem 1rem; font-size:1rem;">
+                        </div>
+                        <div class="form-group" style="margin-bottom:1rem;">
+                            <label for="profile-dob" style="font-size:0.78rem;">Date of Birth</label>
+                            <input type="date" id="profile-dob" name="date_of_birth" value="${user.dateOfBirth || ''}" style="padding:0.8rem 1rem; font-size:1rem;">
+                        </div>
+                        <div class="form-group" style="margin-bottom:1rem; grid-column:1/-1;">
+                            <label for="profile-bio" style="font-size:0.78rem;">Biography</label>
+                            <textarea id="profile-bio" name="bio" rows="3" placeholder="Write something about yourself..." style="padding:0.8rem 1rem; font-size:1rem; resize:vertical;">${user.bio || ''}</textarea>
+                        </div>
+                        <div class="form-group" style="margin-bottom:1rem; grid-column:1/-1;">
+                            <label for="profile-avatar" style="font-size:0.78rem;">Profile Photo</label>
+                            <input type="file" id="profile-avatar" name="avatar" accept="image/*" style="padding:0.6rem 1rem; font-size:1rem;">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="profile-email">Email</label>
-                        <input type="email" id="profile-email" name="email" value="${user.email}" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="profile-bio">Biography</label>
-                        <textarea id="profile-bio" name="bio" rows="4" placeholder="Add a biography...">${user.bio || ''}</textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="profile-phone">Phone</label>
-                        <input type="text" id="profile-phone" name="phoneNumber" value="${user.phoneNumber || ''}">
-                    </div>
-                    <div class="form-group">
-                        <label for="profile-dob">Date of Birth</label>
-                        <input type="date" id="profile-dob" name="dateOfBirth" value="${user.dateOfBirth || ''}">
-                    </div>
-                    <div class="form-group">
-                        <label for="profile-avatar">Profile Photo</label>
-                        <input type="file" id="profile-avatar" name="avatar" accept="image/*">
-                    </div>
-                    <div class="form-group" style="display:flex; gap:1rem; flex-wrap:wrap;">
-                        <button type="submit" class="btn btn-primary">Save</button>
-                        <button type="button" class="btn btn-secondary" data-action="toggle-profile-edit">Cancel</button>
-                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%; padding:1rem; font-size:1.1rem; margin-top:1rem;">Save Changes</button>
                 </form>
             </div>
         `;
 
+        const bioText = user.bio ? `<p style="font-size:1.1rem; color:#1D2A44; font-weight:700; margin-top:0.5rem; max-width:600px; line-height:1.5;">${user.bio}</p>` : '';
+
         this.app.innerHTML = `
-            <section class="page-container profile-page">
-                <div class="profile-banner reveal"></div>
-                <div class="profile-card reveal">
-                    <div class="profile-sidebar">
-                        <img class="profile-avatar" src="${avatarSrc}" alt="${user.name}">
-                        <h2>${user.name}</h2>
-                        <p class="profile-role">${user.role.charAt(0).toUpperCase() + user.role.slice(1)}</p>
-                        <div class="profile-stats">
-                            <div>
-                                <strong>Programs</strong>
-                                <span>${user.programs || 4}</span>
-                            </div>
-                            <div>
-                                <strong>Requests</strong>
-                                <span>${user.requests || 2}</span>
-                            </div>
-                        </div>
-                        <button class="btn btn-primary" data-action="toggle-profile-edit">${editMode ? 'Close' : 'Edit Profile'}</button>
-                    </div>
-                    <div class="profile-main">
-                        ${editMode ? editForm : profileSummary}
-                    </div>
+            <section class="pf-page">
+
+                <!-- Cover -->
+                <div class="pf-cover">
+                    <div class="pf-cover-gradient"></div>
                 </div>
+
+                <!-- Profile Header -->
+                <div class="pf-header">
+                    <div class="pf-avatar-wrap">
+                        <img src="${avatarSrc}" alt="${user.name}" class="pf-avatar">
+                    </div>
+                    <div class="pf-header-info">
+                        <h2 class="pf-name">${user.name}</h2>
+                        <span class="pf-role-badge">${roleLabel}</span>
+                    </div>
+                    ${bioText}
+                </div>
+
+                <!-- Content -->
+                <div class="pf-content">
+                    ${editMode ? editForm : profileSummary}
+                </div>
+
             </section>
         `;
         this.triggerObserver();
     },
+
+
 
     renderProgramCatalog(programs = [], enrollments = []) {
         const programItems = (programs || []).map(program => {

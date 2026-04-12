@@ -40,8 +40,8 @@ if ($friendSearch !== '') {
     }));
 }
 
-$protectedRoutes = ['front_profile', 'back_users_list'];
-if (in_array($page, $protectedRoutes, true) && empty($_SESSION['user_id'])) {
+$protectedRoutes = ['front_home', 'front_profile', 'back_users_list'];
+if (in_array($page, $protectedRoutes, true) && (empty($_SESSION['user_id']) || $currentUser === null)) {
     header('Location: index.php?page=front_login');
     exit;
 }
@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header('Location: index.php?page=front_register');
                 exit;
             }
-            $_SESSION['success'] = 'Inscription réussie. Vous pouvez maintenant vous connecter.';
+            $_SESSION['success'] = 'Registration successful. You can now log in.';
             header('Location: index.php?page=front_login');
             exit;
 
@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if (!empty($_FILES['avatar']['tmp_name']) && is_uploaded_file($_FILES['avatar']['tmp_name'])) {
-                $uploadDir = __DIR__ . '/assets/images/avatars';
+                $uploadDir = __DIR__ . '/View/assets/images';
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0755, true);
                 }
@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $fileName = 'avatar_' . $_SESSION['user_id'] . '_' . time() . '.' . pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION);
                 $destination = $uploadDir . '/' . $fileName;
                 if (move_uploaded_file($_FILES['avatar']['tmp_name'], $destination)) {
-                    $_SESSION['user_avatar'] = 'assets/images/avatars/' . $fileName;
+                    $_SESSION['user_avatar'] = 'View/assets/images/' . $fileName;
                 }
             }
 
@@ -114,14 +114,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         case 'add_friend':
             AppModel::addFriend($_POST['name'] ?? '', $_POST['email'] ?? '', $_POST['role'] ?? 'citizen');
-            $_SESSION['success'] = 'Ami ajouté avec succès.';
+            $_SESSION['success'] = 'Friend added successfully.';
             header('Location: index.php?page=front_profile');
             exit;
 
         case 'remove_friend':
             $friendId = isset($_POST['friend_id']) ? (int)$_POST['friend_id'] : 0;
             if (AppModel::removeFriend($friendId)) {
-                $_SESSION['success'] = 'Ami supprimé avec succès.';
+                $_SESSION['success'] = 'Friend removed successfully.';
             }
             header('Location: index.php?page=front_profile');
             exit;
@@ -181,6 +181,10 @@ switch ($page) {
         header('Location: View/FrontOffice/index.php#profile');
         exit;
     case 'front_home':
+        if ($currentUser === null) {
+            header('Location: index.php?page=front_login');
+            exit;
+        }
         $currentUserArray = [
             'id' => $currentUser->getId(),
             'name' => $currentUser->getName(),

@@ -8,12 +8,27 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+require_once __DIR__ . '/../../Model/Profile.php';
+
+$currentProfile = null;
+if (!empty($_SESSION['user_id'])) {
+    $currentProfile = Profile::findByUserId((int)$_SESSION['user_id']);
+}
+
 $currentUser = [
-    'id' => $_SESSION['user_id'],
-    'name' => $_SESSION['user_name'] ?? 'Utilisateur',
+    'name' => $_SESSION['user_name'] ?? 'User',
     'email' => $_SESSION['user_email'] ?? '',
-    'role' => $_SESSION['user_role'] ?? 'citizen'
+    'role' => $_SESSION['user_role'] ?? 'citizen',
+    'bio' => $currentProfile ? $currentProfile->getBio() : '',
+    'phoneNumber' => $currentProfile ? $currentProfile->getPhoneNumber() : '',
+    'dateOfBirth' => $currentProfile ? $currentProfile->getDateOfBirth() : '',
+    'avatar' => $currentProfile ? $currentProfile->getAvatarUrl() : ''
 ];
+
+$successMsg = $_SESSION['success'] ?? '';
+$errorsMsg = $_SESSION['errors'] ?? [];
+unset($_SESSION['success'], $_SESSION['errors']);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -45,6 +60,10 @@ $currentUser = [
 
     <script>
         window.SERVER_USER = <?= json_encode($currentUser, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+        window.SERVER_MESSAGES = {
+            success: <?= json_encode($successMsg) ?>,
+            errors: <?= json_encode($errorsMsg) ?>
+        };
     </script>
 
     <!-- Scripts -->

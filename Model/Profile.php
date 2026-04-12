@@ -70,15 +70,19 @@ class Profile {
 
     public static function update(int $userId, array $data): bool {
         $pdo = Database::getInstance();
-        $query = 'UPDATE profile SET first_name = :first_name, last_name = :last_name, bio = :bio, avatar_url = :avatar_url, phone_number = :phone_number, date_of_birth = :date_of_birth WHERE user_id = :user_id';
+        $query = 'UPDATE profile SET first_name = :first_name, bio = :bio, avatar_url = :avatar_url, phone_number = :phone_number, date_of_birth = :date_of_birth WHERE user_id = :user_id';
         $stmt = $pdo->prepare($query);
+        $dateOfBirth = trim($data['date_of_birth'] ?? '');
+        if (empty($dateOfBirth)) {
+            $dateOfBirth = null;
+        }
+
         return $stmt->execute([
             'first_name' => trim($data['first_name'] ?? ''),
-            'last_name' => trim($data['last_name'] ?? ''),
             'bio' => trim($data['bio'] ?? ''),
             'avatar_url' => trim($data['avatar_url'] ?? ''),
             'phone_number' => trim($data['phone_number'] ?? ''),
-            'date_of_birth' => trim($data['date_of_birth'] ?? ''),
+            'date_of_birth' => $dateOfBirth,
             'user_id' => $userId,
         ]);
     }

@@ -20,7 +20,7 @@ class UserController {
 
         $user = User::authenticate($input['email'], $input['password']);
         if ($user === null) {
-            return ['errors' => ['email' => 'Email ou mot de passe invalide.']];
+            return ['errors' => ['email' => 'Invalid email or password.']];
         }
 
         $_SESSION['user_id'] = $user->getId();
@@ -29,7 +29,7 @@ class UserController {
         $_SESSION['user_role'] = $user->getRole();
         Profile::createIfMissing($user->getId());
 
-        return ['success' => 'Connexion réussie.', 'user' => $user];
+        return ['success' => 'Login successful.', 'user' => $user];
     }
 
     public static function logout(): void {
@@ -44,13 +44,13 @@ class UserController {
 
         $user = User::create($input);
         Profile::createIfMissing($user->getId());
-        return ['success' => 'Inscription réussie.', 'user' => $user];
+        return ['success' => 'Registration successful.', 'user' => $user];
     }
 
     public static function updateProfile(int $id, array $input): array {
         $user = User::findById($id);
         if ($user === null) {
-            return ['errors' => ['general' => 'Utilisateur introuvable.']];
+            return ['errors' => ['general' => 'User not found.']];
         }
 
         if (!isset($input['role']) || trim($input['role']) === '') {
@@ -59,10 +59,10 @@ class UserController {
 
         $errors = User::validate($input, false, $id);
         if (!empty($input['first_name']) && preg_match('/\d/', $input['first_name'])) {
-            $errors['first_name'] = 'Le prénom ne doit pas contenir de chiffres.';
+            $errors['first_name'] = 'First name must not contain numbers.';
         }
         if (!empty($input['last_name']) && preg_match('/\d/', $input['last_name'])) {
-            $errors['last_name'] = 'Le nom ne doit pas contenir de chiffres.';
+            $errors['last_name'] = 'Last name must not contain numbers.';
         }
         if (!empty($errors)) {
             return ['errors' => $errors];
@@ -70,7 +70,7 @@ class UserController {
 
         $updated = User::update($id, $input);
         if (!$updated) {
-            return ['errors' => ['general' => 'Impossible de mettre à jour le profil.']];
+            return ['errors' => ['general' => 'Unable to update profile.']];
         }
 
         $profile = Profile::createIfMissing($id);
@@ -91,7 +91,7 @@ class UserController {
             }
         }
 
-        return ['success' => 'Profil mis à jour avec succès.'];
+        return ['success' => 'Profile updated successfully.'];
     }
 
     public static function createUser(array $input): array {
@@ -102,14 +102,14 @@ class UserController {
 
         $user = User::create($input);
         Profile::createIfMissing($user->getId());
-        return ['success' => 'Utilisateur ajouté avec succès.', 'user' => $user];
+        return ['success' => 'User added successfully.', 'user' => $user];
     }
 
     public static function deleteUser(int $id): array {
         if (!User::delete($id)) {
-            return ['errors' => ['general' => 'Suppression impossible.']];
+            return ['errors' => ['general' => 'Deletion failed.']];
         }
 
-        return ['success' => 'Utilisateur supprimé avec succès.'];
+        return ['success' => 'User deleted successfully.'];
     }
 }

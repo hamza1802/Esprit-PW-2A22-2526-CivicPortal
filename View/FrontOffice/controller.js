@@ -14,6 +14,16 @@ const controller = {
         this.setupEventListeners();
         this.handleRouting();
         view.renderNavBar(model.getCurrentUser().role);
+        
+        if (window.SERVER_MESSAGES) {
+            if (window.SERVER_MESSAGES.success) {
+                view.renderToast(window.SERVER_MESSAGES.success);
+            }
+            if (window.SERVER_MESSAGES.errors && Object.keys(window.SERVER_MESSAGES.errors).length > 0) {
+                const errorStr = Object.values(window.SERVER_MESSAGES.errors).join('\n');
+                alert("Errors:\n" + errorStr);
+            }
+        }
     },
 
     setupEventListeners() {
@@ -41,11 +51,12 @@ const controller = {
         });
 
         document.addEventListener('submit', async (e) => {
+            if (e.target.id === 'profile-form') {
+                return; // Allow native form submission
+            }
             e.preventDefault();
             if (e.target.id === 'service-request-form') {
                 await this.handleServiceRequest(new FormData(e.target));
-            } else if (e.target.id === 'profile-form') {
-                this.handleProfileUpdate(new FormData(e.target));
             } else if (e.target.id === 'complaint-form') {
                 await this.handleComplaintSubmission(new FormData(e.target));
             } else if (e.target.id === 'friend-form') {

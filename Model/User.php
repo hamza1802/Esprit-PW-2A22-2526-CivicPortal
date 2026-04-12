@@ -151,32 +151,32 @@ class User {
         $confirm = $input['confirm_password'] ?? '';
 
         if ($name === '') {
-            $errors['name'] = 'Le nom est requis.';
+            $errors['name'] = 'Name is required.';
         } elseif (mb_strlen($name) < 3) {
-            $errors['name'] = 'Le nom doit contenir au moins 3 caractères.';
+            $errors['name'] = 'Name must be at least 3 characters long.';
         } elseif (preg_match('/\d/', $name)) {
-            $errors['name'] = 'Le nom ne doit pas contenir de chiffres.';
+            $errors['name'] = 'Name must not contain numbers.';
         }
 
         if ($email === '') {
-            $errors['email'] = 'L’email est requis.';
+            $errors['email'] = 'Email is required.';
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'L’email n’est pas valide.';
+            $errors['email'] = 'Email is not valid.';
         } elseif (self::emailExists($email, $userId)) {
-            $errors['email'] = 'Cet email est déjà utilisé.';
+            $errors['email'] = 'This email is already in use.';
         }
 
         $allowedRoles = ['citizen', 'agent', 'admin'];
         if (!in_array($role, $allowedRoles, true)) {
-            $errors['role'] = 'Le rôle sélectionné est invalide.';
+            $errors['role'] = 'The selected role is invalid.';
         }
 
         if ($isNew || $password !== '') {
             if (mb_strlen($password) < 8) {
-                $errors['password'] = 'Le mot de passe doit contenir au moins 8 caractères.';
+                $errors['password'] = 'Password must be at least 8 characters long.';
             }
             if ($password !== $confirm) {
-                $errors['confirm_password'] = 'Les mots de passe ne correspondent pas.';
+                $errors['confirm_password'] = 'Passwords do not match.';
             }
         }
 
@@ -186,10 +186,10 @@ class User {
     public static function validateLogin(array $input): array {
         $errors = [];
         if (trim($input['email'] ?? '') === '') {
-            $errors['email'] = 'L’email est requis.';
+            $errors['email'] = 'Email is required.';
         }
         if (trim($input['password'] ?? '') === '') {
-            $errors['password'] = 'Le mot de passe est requis.';
+            $errors['password'] = 'Password is required.';
         }
         return $errors;
     }
