@@ -119,11 +119,13 @@ const view = {
         const tableRows = requests.map(r => `
             <tr>
                 <td><strong>#${r.id}</strong></td>
-                <td>${r.type}</td>
-                <td>${r.date}</td>
-                <td><span class="status-badge status-${r.status}">${r.status}</span></td>
+                <td>${r.title}</td>
+                <td class="request-desc-cell">${r.description || '<em style="opacity:0.5">No description</em>'}</td>
+                <td>${new Date(r.createdAt).toLocaleDateString()}</td>
+                <td><span class="status-badge status-${r.status === 'approved' ? 'approved' : r.status}">${r.status}</span></td>
                 <td>
-                    <button class="btn btn-small btn-success" data-action="validate" data-id="${r.id}" style="margin-right: 5px;">VALIDATE</button>
+                    <button class="btn btn-small" data-action="view-docs" data-id="${r.id}" style="margin-bottom: 5px;">DOCS</button>
+                    <button class="btn btn-small btn-success" data-action="validate" data-id="${r.id}" style="margin-bottom: 5px;">APPROVE</button>
                     <button class="btn btn-small btn-danger" data-action="reject" data-id="${r.id}">REJECT</button>
                 </td>
             </tr>
@@ -139,20 +141,73 @@ const view = {
                                 <tr>
                                     <th>Ref ID</th>
                                     <th>Service Type</th>
+                                    <th>Description</th>
                                     <th>Date</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${tableRows.length > 0 ? tableRows : '<tr><td colspan="5" style="text-align:center;">no data available</td></tr>'}
+                                ${tableRows.length > 0 ? tableRows : '<tr><td colspan="6" style="text-align:center;">no data available</td></tr>'}
                             </tbody>
                         </table>
                     </div>
                 </div>
             </section>
+
+            <!-- Documents Panel (hidden by default) -->
+            <div id="docs-panel" class="docs-panel" style="display:none;">
+                <section class="page-container">
+                    <div class="documents-header">
+                        <h3 id="docs-panel-title">Documents for Request</h3>
+                        <button class="btn btn-small" data-action="close-docs">CLOSE</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>File Path</th>
+                                    <th>Category</th>
+                                    <th>Upload Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="docs-panel-body">
+                                <tr><td colspan="3" style="text-align:center;">No documents.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
         `;
         this.triggerObserver();
+    },
+
+    showDocsPanel(requestId, documents) {
+        const panel = document.getElementById('docs-panel');
+        const title = document.getElementById('docs-panel-title');
+        const tbody = document.getElementById('docs-panel-body');
+
+        title.textContent = `Documents for Request #${requestId}`;
+
+        if (documents && documents.length > 0) {
+            tbody.innerHTML = documents.map(d => `
+                <tr>
+                    <td><strong>${d.filePath}</strong></td>
+                    <td><span class="category-badge">${d.type}</span></td>
+                    <td>${new Date(d.uploadedAt).toLocaleDateString()}</td>
+                </tr>
+            `).join('');
+        } else {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:2rem;">No documents attached.</td></tr>';
+        }
+
+        panel.style.display = 'block';
+        panel.scrollIntoView({ behavior: 'smooth' });
+    },
+
+    hideDocsPanel() {
+        const panel = document.getElementById('docs-panel');
+        if (panel) panel.style.display = 'none';
     },
 
     renderAdminStats(stats) {
@@ -175,6 +230,14 @@ const view = {
                     <div class="editorial-card reveal">
                         <h3>Enrollments</h3>
                         <p class="stats-number">${stats.enrollmentsCount}</p>
+                    </div>
+                    <div class="editorial-card reveal">
+                        <h3>Documents</h3>
+                        <p class="stats-number">${stats.documentsCount || 0}</p>
+                    </div>
+                    <div class="editorial-card reveal">
+                        <h3>Complaints</h3>
+                        <p class="stats-number">${stats.complaintsCount}</p>
                     </div>
                 </div>
             </section>

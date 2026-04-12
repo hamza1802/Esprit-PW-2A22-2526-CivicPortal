@@ -4,7 +4,7 @@
  * Main entry point for CivicPortal Citizen Portal
  */
 require_once '../../Model/AppModel.php';
-AppModel::init();
+AppModel::ensureDefaultUser();
 ?>
 <!DOCTYPE html>
 <html lang="en">

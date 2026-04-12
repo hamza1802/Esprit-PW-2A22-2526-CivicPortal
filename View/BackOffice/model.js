@@ -55,6 +55,12 @@ const model = {
         }
     },
 
+    // ── Document access for BackOffice ───────────────────────────
+
+    async getDocuments(requestId) {
+        return await this.apiCall('get_documents', { requestId });
+    },
+
     setCurrentUser(role) {
         this.state.currentUser = this.state.users.find(u => u.role === role);
     },
@@ -81,7 +87,8 @@ const model = {
             programsCount: this.state.programsCount,
             requestsCount: this.state.serviceRequests.length,
             enrollmentsCount: this.state.enrollmentsCount,
-            complaintsCount: this.state.complaints.length
+            complaintsCount: this.state.complaints.length,
+            documentsCount: 0
         };
     }
 };

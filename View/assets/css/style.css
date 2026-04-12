@@ -590,6 +590,346 @@ nav {
     font-weight: bold;
 }
 
+/* ==========================================================================
+   Request Cards (My Requests List)
+   ========================================================================== */
+.requests-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border-top: var(--border-main);
+}
+
+.request-card {
+    border-bottom: var(--border-main);
+    border-left: var(--border-main);
+    border-right: var(--border-main);
+    padding: 2rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: var(--transition-fast);
+    background: transparent;
+}
+
+.request-card:hover {
+    background-color: var(--white);
+}
+
+.request-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.request-card-id {
+    font-weight: 900;
+    font-size: 1.2rem;
+    color: var(--primary-navy);
+    letter-spacing: -0.5px;
+}
+
+.request-card-body h3 {
+    font-size: 1.6rem;
+    margin-bottom: 0.4rem;
+}
+
+.request-description {
+    font-size: 1rem;
+    opacity: 0.85;
+    margin-bottom: 0.5rem;
+}
+
+.request-meta {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--primary-navy);
+    opacity: 0.7;
+}
+
+.request-card-actions {
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+    padding-top: 0.5rem;
+    border-top: var(--border-light);
+}
+
+/* Status badge: approved variant */
+.status-approved { background-color: var(--success); color: var(--white); border-color: var(--success); }
+
+/* ==========================================================================
+   Request Detail View
+   ========================================================================== */
+.detail-header h2 {
+    border-bottom: none;
+    margin-bottom: 1rem;
+}
+
+.detail-grid {
+    margin-bottom: 3rem;
+}
+
+.detail-info-card {
+    border: var(--border-main);
+    padding: 2.5rem;
+    background: var(--white);
+}
+
+.detail-row {
+    display: flex;
+    flex-direction: column;
+    padding: 1.2rem 0;
+    border-bottom: var(--border-light);
+}
+
+.detail-row:last-of-type {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    color: var(--primary-navy);
+    opacity: 0.6;
+    margin-bottom: 0.4rem;
+}
+
+.detail-value {
+    font-weight: 600;
+    font-size: 1.15rem;
+    color: var(--text-dark);
+}
+
+.detail-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: var(--border-main);
+}
+
+/* ==========================================================================
+   Documents Section
+   ========================================================================== */
+.documents-section {
+    margin-top: 2rem;
+}
+
+.documents-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: var(--border-main);
+}
+
+.documents-header h3 {
+    font-size: 1.8rem;
+    font-weight: 900;
+}
+
+/* ==========================================================================
+   Modal Overlay & Card
+   ========================================================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(29, 42, 68, 0.75);
+    z-index: 4000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: modal-fade-in 0.25s ease;
+    backdrop-filter: blur(4px);
+}
+
+@keyframes modal-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.modal-card {
+    background: var(--bg-neutral);
+    border: var(--border-main);
+    padding: 2.5rem;
+    width: 90%;
+    max-width: 550px;
+    animation: modal-slide-up 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+@keyframes modal-slide-up {
+    from { transform: translateY(30px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: var(--border-main);
+}
+
+.modal-header h3 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: var(--primary-navy);
+    font-weight: 900;
+    line-height: 1;
+    transition: var(--transition-fast);
+}
+
+.modal-close:hover {
+    color: var(--danger);
+}
+
+.confirm-card {
+    text-align: center;
+    max-width: 450px;
+}
+
+.confirm-card h3 {
+    font-size: 1.8rem;
+    margin-bottom: 0;
+}
+
+/* File preview strip */
+.file-preview {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border: var(--border-main);
+    background: var(--white);
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+#file-preview-size {
+    opacity: 0.6;
+}
+
+/* ==========================================================================
+   Empty State
+   ========================================================================== */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    border: var(--border-main);
+    background: var(--white);
+}
+
+.empty-state h3 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    margin-bottom: 2rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ==========================================================================
+   Docs Panel (BackOffice Worker Dashboard)
+   ========================================================================== */
+.docs-panel {
+    border-top: 3px solid var(--primary-navy);
+    margin-top: 0;
+    animation: modal-fade-in 0.3s ease;
+}
+
+.request-desc-cell {
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ==========================================================================
+   Document Upload Fields (Request Creation Form)
+   ========================================================================== */
+.docs-section-title {
+    font-size: 1.3rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--primary-navy);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.8rem;
+    border-bottom: var(--border-light);
+}
+
+.doc-upload-group {
+    background: var(--white);
+    border: var(--border-light);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    transition: var(--transition-fast);
+}
+
+.doc-upload-group:hover {
+    border-color: var(--primary-navy);
+}
+
+.doc-upload-group label {
+    font-size: 0.95rem;
+}
+
+.doc-upload-group input[type="file"] {
+    border: none;
+    padding: 1rem 0;
+    font-size: 1rem;
+}
+
+.file-selected {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.8rem 1.2rem;
+    background: var(--bg-neutral);
+    border: var(--border-light);
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.file-selected-name {
+    color: var(--primary-navy);
+}
+
+.file-selected-size {
+    opacity: 0.5;
+    font-size: 0.85rem;
+}
+
+.docs-notice {
+    padding: 1.5rem;
+    background: var(--white);
+    border: var(--border-light);
+    margin-bottom: 1rem;
+}
+
+
 /* Responsive */
 @media (max-width: 768px) {
     .editorial-grid { border-top: none; border-left: none; }
@@ -600,4 +940,10 @@ nav {
     .search-container { flex-direction: column; }
     .search-btn { padding: 1.5rem; }
     .form-card { border-left: none; border-right: none; padding: 2rem 1rem; }
+    .request-card { padding: 1.5rem; border-left: none; border-right: none; }
+    .request-card-actions { flex-direction: column; }
+    .detail-info-card { padding: 1.5rem; }
+    .detail-actions { flex-direction: column; }
+    .documents-header { flex-direction: column; gap: 1rem; align-items: flex-start; }
+    .modal-card { padding: 1.5rem; width: 95%; }
 }

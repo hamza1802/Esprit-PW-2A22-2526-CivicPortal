@@ -14,15 +14,19 @@ const controller = {
     },
 
     setupEventListeners() {
-        document.addEventListener('click', (e) => {
+        document.addEventListener('click', async (e) => {
             const target = e.target;
             const action = target.dataset.action;
             const id = target.dataset.id;
 
             if (action === 'validate') {
-                this.handleStatusUpdate(id, 'validated');
+                await this.handleStatusUpdate(id, 'approved');
             } else if (action === 'reject') {
-                this.handleStatusUpdate(id, 'rejected');
+                await this.handleStatusUpdate(id, 'rejected');
+            } else if (action === 'view-docs') {
+                await this.handleViewDocuments(parseInt(id));
+            } else if (action === 'close-docs') {
+                view.hideDocsPanel();
             }
         });
 
@@ -96,6 +100,11 @@ const controller = {
         await model.updateRequestStatus(parseInt(requestId), status);
         view.renderToast(`Request ${status} successfully.`);
         view.renderWorkerDashboard(model.getServiceRequests());
+    },
+
+    async handleViewDocuments(requestId) {
+        const documents = await model.getDocuments(requestId);
+        view.showDocsPanel(requestId, documents || []);
     },
 
     handleProfileUpdate(formData) {
