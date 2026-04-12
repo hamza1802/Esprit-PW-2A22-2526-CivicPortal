@@ -2,27 +2,45 @@
 /**
  * Verification.php
  * Entry point for all form/API actions.
- * Captures $_POST data, creates objects from Model, and passes it to the Controller.
+ * Upgraded to handle both JSON (fetch) and Multipart (File Uploads) requests.
  */
 
 header('Content-Type: application/json');
 require_once __DIR__ . '/Controller/MainController.php';
 
 try {
-    // 1. Capture data (Captures $_POST or JSON input)
-    $input = json_decode(file_get_contents('php://input'), true);
-    $action = $_POST['action'] ?? $input['action'] ?? null;
-    $data   = $_POST['data']   ?? $input['data']   ?? [];
+    // 1. Determine Input Method
+    $action = null;
+    $data   = [];
+
+    // Check if it is a JSON request
+    $jsonInput = json_decode(file_get_contents('php://input'), true);
+    if ($jsonInput && isset($jsonInput['action'])) {
+        $action = $jsonInput['action'];
+        $data   = $jsonInput['data'] ?? [];
+    } 
+    // Otherwise, check for standard POST (Multipart or Form-urlencoded)
+    else if (isset($_POST['action'])) {
+        $action = $_POST['action'];
+        // For standard POST, data might be flattened or in a 'data' prefix
+        // We handle the 'data' key specifically if provided, else take all $_POST
+        if (isset($_POST['data']) && is_array($_POST['data'])) {
+            $data = $_POST['data'];
+        } else {
+            $data = $_POST; // Merge all post fields
+        }
+
+        // 2. Wrap Files if any
+        foreach($_FILES as $key => $file) {
+            $data[$key . '_file'] = $file;
+        }
+    }
 
     if (!$action) {
         throw new Exception("No action provided");
     }
 
-    // 2. Logic Check: Rubric requires "creates an object from your Model"
-    // Note: AppModel::addRequest and other methods already use User/ServiceRequest 
-    // blueprints as objects before saving to session.
-    
-    // 3. Pass to Controller (The Brain)
+    // 3. Pass to Controller
     $response = MainController::handleRequest($action, $data);
     
     echo json_encode(['success' => true, 'data' => $response]);

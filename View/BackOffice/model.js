@@ -14,18 +14,29 @@ const model = {
         ],
         serviceRequests: [],
         complaints: [],
-        // Placeholder stats properties
-        enrollmentsCount: 0,
-        programsCount: 3, 
+        programs: [],
+        stats: null
     },
 
     async apiCall(action, data = {}) {
         try {
-            const response = await fetch('../../Verification.php', {
+            let options = {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action, data })
-            });
+                body: null
+            };
+
+            // Handle Multipart (File uploads)
+            if (data instanceof FormData) {
+                // Browser sets boundary automatically for FormData
+                data.append('action', action);
+                options.body = data;
+            } else {
+                // Standard JSON
+                options.headers = { 'Content-Type': 'application/json' };
+                options.body = JSON.stringify({ action, data });
+            }
+
+            const response = await fetch('../../Verification.php', options);
             const result = await response.json();
             if (!result.success) throw new Error(result.error);
             return result.data;
@@ -41,6 +52,58 @@ const model = {
         
         const complaints = await this.apiCall('get_complaints');
         if (complaints) this.state.complaints = complaints;
+
+        const programs = await this.apiCall('get_programs');
+        if (programs) this.state.programs = programs;
+    },
+
+    getPrograms() {
+        return this.state.programs;
+    },
+
+    getProgram(id) {
+        return this.state.programs.find(p => p.id == id);
+    },
+
+    async saveProgram(data) {
+        const id = (data instanceof FormData) ? data.get('id') : data.id;
+        const action = id ? 'update_program' : 'add_program';
+        const result = await this.apiCall(action, data);
+        if (result) {
+            await this.sync(); // Refresh list after change
+            return true;
+        }
+        return false;
+    },
+
+    async deleteProgram(id) {
+        const result = await this.apiCall('delete_program', { id });
+        if (result) {
+            await this.sync();
+            return true;
+        }
+        return false;
+    },
+
+    async getPendingEnrollments() {
+        return await this.apiCall('get_pending_enrollments');
+    },
+
+    async getEnrollmentsByProgram(programId) {
+        return await this.apiCall('get_enrollments_by_program', { programId });
+    },
+
+    async getProgramDetail(id) {
+        return await this.apiCall('get_program_detail', { id });
+    },
+
+    async getEnrollmentCounts() {
+        return await this.apiCall('get_enrollment_counts');
+    },
+
+    async updateEnrollmentStatus(id, status) {
+        const result = await this.apiCall('update_enrollment_status', { id, status });
+        return !!result;
     },
 
     getServiceRequests() {

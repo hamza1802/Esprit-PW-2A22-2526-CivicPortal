@@ -86,7 +86,7 @@ const view = {
 
     renderProgramCatalog(programs, userEnrollments) {
         const programCards = programs.map((p) => {
-            const isEnrolled = userEnrollments.some(e => e.programId === p.id);
+            const isEnrolled = userEnrollments.some(e => e.program_id == p.id);
             return `
                 <div class="program-card reveal">
                     <div class="program-img-wrapper">
@@ -110,8 +110,19 @@ const view = {
 
         this.app.innerHTML = `
             <section class="page-container">
-                <h2 class="reveal">Programs Catalog</h2>
-                <div class="editorial-grid">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+                    <h2 class="reveal" style="margin:0;">Programs Catalog</h2>
+                    <div class="filter-controls reveal" style="display:flex; gap:1rem; flex-wrap: wrap;">
+                        <input type="text" id="prog-search" placeholder="Search by title..." style="flex-grow: 1; padding: 1rem; border: var(--border-main); background: transparent; font-family: inherit; font-size: 1.1rem; font-weight: 600; color: var(--primary-navy); outline: none;">
+                        <select id="prog-filter-cat" style="padding: 1rem 2rem 1rem 1rem; border: var(--border-main); background: transparent; font-family: inherit; font-size: 1.1rem; font-weight: 600; color: var(--primary-navy); outline: none; cursor: pointer;">
+                            <option value="">All Categories</option>
+                            <option value="Arts">Arts</option>
+                            <option value="Sports">Sports</option>
+                            <option value="Environment">Environment</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="editorial-grid" id="program-list">
                     ${programCards}
                 </div>
             </section>

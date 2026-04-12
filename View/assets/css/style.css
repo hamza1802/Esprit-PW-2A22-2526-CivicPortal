@@ -590,6 +590,206 @@ nav {
     font-weight: bold;
 }
 
+/* ==========================================================================
+   Programs Management — Premium Card Grid
+   ========================================================================== */
+.programs-mgmt-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 0;
+    border-top: var(--border-main);
+    border-left: var(--border-main);
+}
+
+.program-mgmt-card {
+    border-bottom: var(--border-main);
+    border-right: var(--border-main);
+    background: var(--bg-neutral);
+    display: flex;
+    flex-direction: column;
+    transition: var(--transition-fast);
+    position: relative;
+}
+
+.program-mgmt-card:hover {
+    background-color: var(--primary-navy);
+}
+.program-mgmt-card:hover h3,
+.program-mgmt-card:hover p,
+.program-mgmt-card:hover .category-badge {
+    color: var(--bg-neutral);
+}
+.program-mgmt-card:hover .category-badge {
+    border-color: var(--bg-neutral);
+}
+.program-mgmt-card:hover .capacity-track {
+    border-color: var(--bg-neutral);
+}
+.program-mgmt-card:hover .capacity-fill {
+    background: var(--bg-neutral);
+}
+.program-mgmt-card:hover .mini-stat {
+    border-color: rgba(240, 234, 220, 0.4);
+    color: var(--bg-neutral);
+}
+
+.program-mgmt-header {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    border-bottom: var(--border-main);
+}
+
+.program-mgmt-img {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-color: var(--primary-navy);
+    filter: grayscale(70%);
+    transition: filter 0.3s;
+}
+
+.program-mgmt-card:hover .program-mgmt-img {
+    filter: grayscale(0%);
+}
+
+.program-mgmt-body {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+/* Notification Dot — Per Program */
+.program-dot {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: var(--primary-navy);
+    color: var(--bg-neutral);
+    font-size: 0.75rem;
+    font-weight: 900;
+    min-width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-neutral);
+    z-index: 2;
+}
+
+.program-dot.has-pending {
+    background: var(--accent-blue);
+    color: var(--white);
+    animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+
+/* Nav Notification Dot */
+.nav-dot {
+    background: var(--danger);
+    color: var(--white);
+    font-size: 0.65rem;
+    font-weight: 900;
+    min-width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 6px;
+    vertical-align: super;
+    position: relative;
+    top: -2px;
+}
+
+/* Capacity Progress Bar */
+.capacity-track {
+    width: 100%;
+    height: 8px;
+    border: var(--border-main);
+    background: transparent;
+}
+
+.capacity-fill {
+    height: 100%;
+    background: var(--primary-navy);
+    transition: width 0.8s ease-in-out;
+}
+
+.capacity-fill.full {
+    background: var(--danger);
+}
+
+/* Mini Stats Pills */
+.mini-stat {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.2rem 0.6rem;
+    border: var(--border-main);
+}
+
+.mini-stat.pending { color: var(--accent-blue); border-color: var(--accent-blue); }
+.mini-stat.confirmed { color: var(--success); border-color: var(--success); }
+.mini-stat.full { color: var(--danger); border-color: var(--danger); }
+
+/* ==========================================================================
+   Program Detail — Hero Layout
+   ========================================================================== */
+.program-detail-hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: var(--border-main);
+    min-height: 400px;
+}
+
+.program-detail-img {
+    background-size: cover;
+    background-position: center;
+    background-color: var(--primary-navy);
+    min-height: 400px;
+    border-right: var(--border-main);
+}
+
+.program-detail-info {
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.detail-stat-number {
+    font-size: 2.5rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.detail-stat-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    margin-top: 4px;
+}
+
+/* Extra status badge states */
+.status-active { background-color: var(--success); color: var(--white); border-color: var(--success); }
+.status-confirmed { background-color: var(--success); color: var(--white); border-color: var(--success); }
+.status-cancelled { background-color: var(--danger); color: var(--white); border-color: var(--danger); }
+.status-waitlisted { background-color: var(--secondary-grey); color: var(--primary-navy); border-color: var(--secondary-grey); }
+.status-full { background-color: var(--danger); color: var(--white); border-color: var(--danger); }
+
 /* Responsive */
 @media (max-width: 768px) {
     .editorial-grid { border-top: none; border-left: none; }
@@ -600,4 +800,8 @@ nav {
     .search-container { flex-direction: column; }
     .search-btn { padding: 1.5rem; }
     .form-card { border-left: none; border-right: none; padding: 2rem 1rem; }
+    .programs-mgmt-grid { border-top: none; border-left: none; }
+    .program-mgmt-card { border-left: none; border-right: none; border-top: var(--border-main); }
+    .program-detail-hero { grid-template-columns: 1fr; }
+    .program-detail-img { min-height: 250px; border-right: none; border-bottom: var(--border-main); }
 }

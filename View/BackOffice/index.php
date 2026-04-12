@@ -48,6 +48,7 @@ AppModel::init();
     </div>
 
     <!-- Scripts -->
+    <script src="https://js.puter.com/v2/"></script>
     <script type="module" src="app.js"></script>
 </body>
 </html>

@@ -7,11 +7,7 @@
 const model = {
     state: {
         currentUser: { id: 1, name: 'John Citizen', role: 'citizen', email: 'john@example.com' },
-        programs: [
-            { id: 101, title: 'Summer Pottery Workshop', category: 'Arts', description: 'Learn basic pottery techniques for all ages.', image: 'pottery.jpg' },
-            { id: 102, title: 'Youth Swimming Program', category: 'Sports', description: 'Daily swimming lessons at the Municipal Pool.', image: 'swimming.jpg' },
-            { id: 103, title: 'Community Gardening', category: 'Environment', description: 'Join our local group in the North Park garden.', image: 'gardening.jpg' }
-        ],
+        programs: [],
         serviceRequests: [],
         enrollments: [],
         complaints: []
@@ -36,9 +32,12 @@ const model = {
     async sync() {
         const requests = await this.apiCall('get_requests');
         if (requests) this.state.serviceRequests = requests;
-        
-        // Front office users generally don't get all complaints, but let's sync to emulate the backend state if needed.
-        // Even better, avoid loading them if unneeded.
+
+        const programs = await this.apiCall('get_programs');
+        if (programs) this.state.programs = programs;
+
+        const enrollments = await this.apiCall('get_enrollments', { userId: this.state.currentUser.id });
+        if (enrollments) this.state.enrollments = enrollments;
     },
 
     getPrograms() {
@@ -62,11 +61,13 @@ const model = {
         }
     },
 
-    addEnrollment(userId, programId) {
-        const exists = this.state.enrollments.find(e => e.userId === userId && e.programId === programId);
-        if (!exists) {
-            this.state.enrollments.push({ userId, programId });
+    async addEnrollment(userId, programId) {
+        const result = await this.apiCall('enroll_user', { userId, programId });
+        if (result) {
+            this.state.enrollments.push({ user_id: userId, program_id: programId });
+            return true;
         }
+        return false;
     },
 
     getCurrentUser() {

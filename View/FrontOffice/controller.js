@@ -17,11 +17,24 @@ const controller = {
     setupEventListeners() {
         document.addEventListener('click', (e) => {
             const target = e.target;
-            const action = target.dataset.action;
             const id = target.dataset.id;
+            const action = target.dataset.action;
 
             if (action === 'enroll') {
-                this.handleEnrollment(id);
+                const user = model.getCurrentUser();
+                this.handleEnrollment(user.id, parseInt(id));
+            }
+        });
+
+        document.addEventListener('input', (e) => {
+            if (e.target.id === 'prog-search') {
+                this.handleCatalogFilter();
+            }
+        });
+
+        document.addEventListener('change', (e) => {
+            if (e.target.id === 'prog-filter-cat') {
+                this.handleCatalogFilter();
             }
         });
 
@@ -67,11 +80,34 @@ const controller = {
         }
     },
 
-    handleEnrollment(programId) {
+    async handleEnrollment(userId, programId) {
+        const success = await model.addEnrollment(userId, programId);
+        if (success) {
+            view.renderToast('Enrollment requested (Pending validation).');
+            await model.sync(); // Refresh programs with updated enrollment counts
+            view.renderProgramCatalog(model.getPrograms(), model.getEnrollments(userId));
+        } else {
+            view.renderToast('Enrollment failed or full.', 'error');
+        }
+    },
+
+    handleCatalogFilter() {
+        const search = document.getElementById('prog-search')?.value.toLowerCase() || '';
+        const category = document.getElementById('prog-filter-cat')?.value || '';
+        
+        const allPrograms = model.getPrograms();
+        const filtered = allPrograms.filter(p => {
+            const matchesSearch = p.title.toLowerCase().includes(search);
+            const matchesCat = category === '' || p.category === category;
+            return matchesSearch && matchesCat;
+        });
+
         const user = model.getCurrentUser();
-        model.addEnrollment(user.id, parseInt(programId));
-        view.renderToast('Enrolled in program!');
-        view.renderProgramCatalog(model.getPrograms(), model.getEnrollments(user.id));
+        view.renderProgramCatalog(filtered, model.getEnrollments(user.id));
+        
+        // Preserve values
+        if(document.getElementById('prog-search')) document.getElementById('prog-search').value = search;
+        if(document.getElementById('prog-filter-cat')) document.getElementById('prog-filter-cat').value = category;
     },
 
     async handleServiceRequest(formData) {
