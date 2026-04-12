@@ -18,7 +18,7 @@ const view = {
         toast.className = `toast toast-${type}`;
         toast.innerText = message;
         container.appendChild(toast);
-        
+
         setTimeout(() => {
             toast.style.opacity = '0';
             setTimeout(() => toast.remove(), 400);
@@ -55,7 +55,7 @@ const view = {
         `;
 
         if (user.role === 'worker') {
-             content += `
+            content += `
             <section class="page-container">
                 <h2 class="reveal">Operations Console</h2>
                 <div class="editorial-grid">
@@ -68,7 +68,7 @@ const view = {
             </section>
             `;
         } else if (user.role === 'admin') {
-             content += `
+            content += `
             <section class="page-container">
                 <h2 class="reveal">Administrative Overview</h2>
                 <div class="editorial-grid">

@@ -44,6 +44,7 @@ class UserController {
 
         $user = User::create($input);
         Profile::createIfMissing($user->getId());
+        Profile::update($user->getId(), ['first_name' => $input['name']]);
         return ['success' => 'Registration successful.', 'user' => $user];
     }
 
@@ -75,7 +76,7 @@ class UserController {
 
         $profile = Profile::createIfMissing($id);
         $profileData = [
-            'first_name' => $input['first_name'] ?? $profile->getFirstName(),
+            'first_name' => $input['name'] ?? $input['first_name'] ?? $profile->getFirstName(),
             'last_name' => $input['last_name'] ?? $profile->getLastName(),
             'bio' => $input['bio'] ?? $profile->getBio(),
             'avatar_url' => $input['avatar_url'] ?? $profile->getAvatarUrl(),

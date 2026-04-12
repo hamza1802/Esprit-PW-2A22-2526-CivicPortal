@@ -90,6 +90,18 @@ class User {
         return (int)$stmt->fetchColumn() > 0;
     }
 
+    public static function usernameExists(string $username, ?int $excludeId = null): bool {
+        $pdo = Database::getInstance();
+        if ($excludeId !== null) {
+            $stmt = $pdo->prepare('SELECT COUNT(*) FROM users WHERE username = :username AND id != :id');
+            $stmt->execute(['username' => $username, 'id' => $excludeId]);
+        } else {
+            $stmt = $pdo->prepare('SELECT COUNT(*) FROM users WHERE username = :username');
+            $stmt->execute(['username' => $username]);
+        }
+        return (int)$stmt->fetchColumn() > 0;
+    }
+
     public static function create(array $input): User {
         $pdo = Database::getInstance();
         $stmt = $pdo->prepare('INSERT INTO users (username, email, password_hash, role) VALUES (:username, :email, :password_hash, :role)');
