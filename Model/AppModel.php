@@ -41,6 +41,12 @@ class AppModel {
             ];
 
             $_SESSION['complaints'] = [];
+            $_SESSION['friends'] = [
+                ['id' => 1, 'name' => 'Julie Martin', 'email' => 'julie.m@example.com', 'role' => 'citizen', 'status' => 'Active'],
+                ['id' => 2, 'name' => 'Olivier Dupont', 'email' => 'olivier.d@example.com', 'role' => 'agent', 'status' => 'Active'],
+                ['id' => 3, 'name' => 'Leila Haddad', 'email' => 'leila.h@example.com', 'role' => 'citizen', 'status' => 'Pending']
+            ];
+            $_SESSION['user_avatars'] = [];
             $_SESSION['initialized'] = true;
         }
     }
@@ -91,6 +97,55 @@ class AppModel {
     public static function getComplaints() {
         self::init();
         return $_SESSION['complaints'];
+    }
+
+    private static function ensureFriendsInitialized(): void {
+        if (!isset($_SESSION['friends']) || !is_array($_SESSION['friends'])) {
+            $_SESSION['friends'] = [];
+        }
+    }
+
+    public static function getFriends() {
+        self::init();
+        self::ensureFriendsInitialized();
+        return $_SESSION['friends'];
+    }
+
+    public static function addFriend($name, $email, $role) {
+        self::init();
+        self::ensureFriendsInitialized();
+        $newId = count($_SESSION['friends']) ? max(array_column($_SESSION['friends'], 'id')) + 1 : 1;
+        $_SESSION['friends'][] = [
+            'id' => $newId,
+            'name' => trim($name),
+            'email' => trim($email),
+            'role' => trim($role) ?: 'citizen',
+            'status' => 'Active'
+        ];
+        return $_SESSION['friends'][count($_SESSION['friends']) - 1];
+    }
+
+    public static function removeFriend($id) {
+        self::init();
+        self::ensureFriendsInitialized();
+        self::init();
+        foreach ($_SESSION['friends'] as $index => $friend) {
+            if ($friend['id'] == $id) {
+                array_splice($_SESSION['friends'], $index, 1);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static function getAvatarUrl(int $userId): ?string {
+        self::init();
+        return $_SESSION['user_avatars'][$userId] ?? null;
+    }
+
+    public static function setAvatarUrl(int $userId, string $url): void {
+        self::init();
+        $_SESSION['user_avatars'][$userId] = $url;
     }
 
     public static function getStats() {

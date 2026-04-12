@@ -1,0 +1,115 @@
+<?php
+
+require_once __DIR__ . '/../model/User.php';
+require_once __DIR__ . '/../model/Profile.php';
+
+class UserController {
+    public static function getAllUsers(): array {
+        return User::fetchAll();
+    }
+
+    public static function getUserById(int $id): ?User {
+        return User::findById($id);
+    }
+
+    public static function login(array $input): array {
+        $errors = User::validateLogin($input);
+        if (!empty($errors)) {
+            return ['errors' => $errors];
+        }
+
+        $user = User::authenticate($input['email'], $input['password']);
+        if ($user === null) {
+            return ['errors' => ['email' => 'Email ou mot de passe invalide.']];
+        }
+
+        $_SESSION['user_id'] = $user->getId();
+        $_SESSION['user_name'] = $user->getName();
+        $_SESSION['user_email'] = $user->getEmail();
+        $_SESSION['user_role'] = $user->getRole();
+        Profile::createIfMissing($user->getId());
+
+        return ['success' => 'Connexion réussie.', 'user' => $user];
+    }
+
+    public static function logout(): void {
+        unset($_SESSION['user_id'], $_SESSION['user_name'], $_SESSION['user_role']);
+    }
+
+    public static function register(array $input): array {
+        $errors = User::validate($input, true);
+        if (!empty($errors)) {
+            return ['errors' => $errors];
+        }
+
+        $user = User::create($input);
+        Profile::createIfMissing($user->getId());
+        return ['success' => 'Inscription réussie.', 'user' => $user];
+    }
+
+    public static function updateProfile(int $id, array $input): array {
+        $user = User::findById($id);
+        if ($user === null) {
+            return ['errors' => ['general' => 'Utilisateur introuvable.']];
+        }
+
+        if (!isset($input['role']) || trim($input['role']) === '') {
+            $input['role'] = $user->getRole();
+        }
+
+        $errors = User::validate($input, false, $id);
+        if (!empty($input['first_name']) && preg_match('/\d/', $input['first_name'])) {
+            $errors['first_name'] = 'Le prénom ne doit pas contenir de chiffres.';
+        }
+        if (!empty($input['last_name']) && preg_match('/\d/', $input['last_name'])) {
+            $errors['last_name'] = 'Le nom ne doit pas contenir de chiffres.';
+        }
+        if (!empty($errors)) {
+            return ['errors' => $errors];
+        }
+
+        $updated = User::update($id, $input);
+        if (!$updated) {
+            return ['errors' => ['general' => 'Impossible de mettre à jour le profil.']];
+        }
+
+        $profile = Profile::createIfMissing($id);
+        $profileData = [
+            'first_name' => $input['first_name'] ?? $profile->getFirstName(),
+            'last_name' => $input['last_name'] ?? $profile->getLastName(),
+            'bio' => $input['bio'] ?? $profile->getBio(),
+            'avatar_url' => $input['avatar_url'] ?? $profile->getAvatarUrl(),
+            'phone_number' => $input['phone_number'] ?? $profile->getPhoneNumber(),
+            'date_of_birth' => $input['date_of_birth'] ?? $profile->getDateOfBirth(),
+        ];
+        Profile::update($id, $profileData);
+
+        if (isset($_SESSION['user_id']) && $_SESSION['user_id'] === $id) {
+            $_SESSION['user_name'] = $input['name'];
+            if (!empty($input['email'])) {
+                $_SESSION['user_email'] = $input['email'];
+            }
+        }
+
+        return ['success' => 'Profil mis à jour avec succès.'];
+    }
+
+    public static function createUser(array $input): array {
+        $errors = User::validate($input, true);
+        if (!empty($errors)) {
+            return ['errors' => $errors];
+        }
+
+        $user = User::create($input);
+        Profile::createIfMissing($user->getId());
+        return ['success' => 'Utilisateur ajouté avec succès.', 'user' => $user];
+    }
+
+    public static function deleteUser(int $id): array {
+        if (!User::delete($id)) {
+            return ['errors' => ['general' => 'Suppression impossible.']];
+        }
+
+        return ['success' => 'Utilisateur supprimé avec succès.'];
+    }
+}

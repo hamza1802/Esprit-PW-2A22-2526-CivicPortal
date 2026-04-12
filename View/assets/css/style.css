@@ -1,3 +1,4 @@
+
 /* 
  * style.css
  * CivicPortal Editorial Design System
@@ -115,6 +116,53 @@ nav {
     text-decoration: underline;
     text-decoration-thickness: 2px;
     text-underline-offset: 4px;
+}
+
+.nav-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+}
+
+.nav-btn {
+    padding: 0.6rem 1.8rem;
+    font-size: 0.9rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    text-decoration: none;
+    display: inline-block;
+}
+
+.nav-btn-outlined {
+    border: 2px solid var(--primary-navy);
+    color: var(--primary-navy);
+    background: transparent;
+}
+
+.nav-btn-outlined:hover {
+    background: var(--primary-navy);
+    color: white;
+}
+
+.nav-btn-filled {
+    background: var(--primary-navy);
+    color: white;
+}
+
+.nav-btn-filled:hover {
+    background: #1a2d4a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .user-controls {

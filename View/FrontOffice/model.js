@@ -6,7 +6,7 @@
 
 const model = {
     state: {
-        currentUser: { id: 1, name: 'John Citizen', role: 'citizen', email: 'john@example.com' },
+        currentUser: window.SERVER_USER ?? { id: 1, name: 'John Citizen', role: 'citizen', email: 'john@example.com', avatar: null, bio: '', phoneNumber: '', dateOfBirth: '' },
         programs: [
             { id: 101, title: 'Summer Pottery Workshop', category: 'Arts', description: 'Learn basic pottery techniques for all ages.', image: 'pottery.jpg' },
             { id: 102, title: 'Youth Swimming Program', category: 'Sports', description: 'Daily swimming lessons at the Municipal Pool.', image: 'swimming.jpg' },
@@ -14,7 +14,12 @@ const model = {
         ],
         serviceRequests: [],
         enrollments: [],
-        complaints: []
+        complaints: [],
+        friends: [
+            { id: 201, name: 'Julie Martin', role: 'citizen', email: 'julie.m@example.com', status: 'Active' },
+            { id: 202, name: 'Olivier Dupont', role: 'citizen', email: 'olivier.d@example.com', status: 'Pending' },
+            { id: 203, name: 'Leila Haddad', role: 'agent', email: 'leila.h@example.com', status: 'Active' }
+        ]
     },
 
     async apiCall(action, data = {}) {
@@ -54,6 +59,25 @@ const model = {
         return this.state.enrollments.filter(e => e.userId === userId);
     },
 
+    getFriends() {
+        return this.state.friends;
+    },
+
+    addFriend(friendData) {
+        const nextId = this.state.friends.length ? Math.max(...this.state.friends.map(f => f.id)) + 1 : 1;
+        this.state.friends.push({
+            id: nextId,
+            name: friendData.name,
+            email: friendData.email,
+            role: friendData.role || 'citizen',
+            status: friendData.status || 'Active'
+        });
+    },
+
+    removeFriend(friendId) {
+        this.state.friends = this.state.friends.filter(f => f.id !== friendId);
+    },
+
     async addServiceRequest(request) {
         const response = await this.apiCall('add_request', request);
         if (response) {
@@ -73,6 +97,10 @@ const model = {
         return this.state.currentUser;
     },
 
+    setAvatar(avatarDataUrl) {
+        this.state.currentUser.avatar = avatarDataUrl;
+    },
+
     async addComplaint(subject, body, userId) {
         const response = await this.apiCall('add_complaint', { subject, body, userId });
         if (response) {
@@ -84,6 +112,9 @@ const model = {
     updateUser(data) {
         this.state.currentUser.name = data.name;
         this.state.currentUser.email = data.email;
+        this.state.currentUser.bio = data.bio || '';
+        this.state.currentUser.phoneNumber = data.phoneNumber || '';
+        this.state.currentUser.dateOfBirth = data.dateOfBirth || '';
     },
 
     deleteUser() {

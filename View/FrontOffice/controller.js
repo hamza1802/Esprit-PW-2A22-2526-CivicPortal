@@ -7,6 +7,8 @@ import model from './model.js';
 import view from './view.js';
 
 const controller = {
+    profileEditMode: false,
+
     async init() {
         await model.sync();
         this.setupEventListeners();
@@ -23,6 +25,15 @@ const controller = {
             if (action === 'enroll') {
                 this.handleEnrollment(id);
             }
+            if (action === 'remove-friend') {
+                this.handleFriendRemoval(parseInt(id, 10));
+            }
+            if (action === 'toggle-profile-edit') {
+                this.toggleProfileEdit();
+            }
+            if (action === 'logout-btn') {
+                window.location.href = 'index.php?action=logout';
+            }
         });
 
         window.addEventListener('hashchange', () => {
@@ -37,6 +48,8 @@ const controller = {
                 this.handleProfileUpdate(new FormData(e.target));
             } else if (e.target.id === 'complaint-form') {
                 await this.handleComplaintSubmission(new FormData(e.target));
+            } else if (e.target.id === 'friend-form') {
+                this.handleFriendSubmission(new FormData(e.target));
             }
         });
     },
@@ -45,18 +58,37 @@ const controller = {
         const hash = window.location.hash || '#home';
         const user = model.getCurrentUser();
 
+        if (hash !== '#profile') {
+            this.profileEditMode = false;
+        }
+
         switch (hash) {
             case '#home':
                 view.renderHome(user);
                 break;
+            case '#documents':
+                view.renderDocuments();
+                break;
+            case '#forum-posts':
+                view.renderForumPosts();
+                break;
+            case '#transport':
+                view.renderTransport();
+                break;
             case '#programs':
                 view.renderProgramCatalog(model.getPrograms(), model.getEnrollments(user.id));
                 break;
-            case '#request-service':
+            case '#service-requests':
                 view.renderServiceRequestForm();
                 break;
+            case '#grievances':
+                view.renderComplaintForm();
+                break;
             case '#profile':
-                view.renderProfile(user);
+                view.renderProfile(user, this.profileEditMode);
+                break;
+            case '#request-service':
+                view.renderServiceRequestForm();
                 break;
             case '#complaints':
                 view.renderComplaintForm();
@@ -65,6 +97,11 @@ const controller = {
                 view.renderHome(user);
                 break;
         }
+    },
+
+    toggleProfileEdit() {
+        this.profileEditMode = !this.profileEditMode;
+        view.renderProfile(model.getCurrentUser(), this.profileEditMode);
     },
 
     handleEnrollment(programId) {
@@ -82,14 +119,34 @@ const controller = {
         window.location.hash = '#home';
     },
 
-    handleProfileUpdate(formData) {
+    async handleProfileUpdate(formData) {
         const data = {
             name: formData.get('name'),
-            email: formData.get('email')
+            email: formData.get('email'),
+            bio: formData.get('bio') || '',
+            phoneNumber: formData.get('phoneNumber') || '',
+            dateOfBirth: formData.get('dateOfBirth') || ''
         };
+
+        const avatarFile = formData.get('avatar');
+        if (avatarFile && avatarFile.size > 0) {
+            const avatarDataUrl = await this.readFileAsDataURL(avatarFile);
+            model.setAvatar(avatarDataUrl);
+        }
+
         model.updateUser(data);
-        view.renderToast('Profile updated locally!');
-        window.location.hash = '#home';
+        this.profileEditMode = false;
+        view.renderToast('Profil mis à jour !');
+        view.renderProfile(model.getCurrentUser(), this.profileEditMode);
+    },
+
+    readFileAsDataURL(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(new Error('Impossible de lire le fichier.'));
+            reader.readAsDataURL(file);
+        });
     },
 
     async handleComplaintSubmission(formData) {
@@ -99,6 +156,23 @@ const controller = {
         await model.addComplaint(subject, body, user.id);
         view.renderToast('Grievance logged in PHP session.');
         window.location.hash = '#home';
+    },
+
+    handleFriendSubmission(formData) {
+        model.addFriend({
+            name: formData.get('name'),
+            email: formData.get('email'),
+            role: formData.get('role'),
+            status: 'Active'
+        });
+        view.renderToast('Ami ajouté !');
+        view.renderFriendsDashboard(model.getFriends());
+    },
+
+    handleFriendRemoval(friendId) {
+        model.removeFriend(friendId);
+        view.renderToast('Ami supprimé.');
+        view.renderFriendsDashboard(model.getFriends());
     }
 };
 

@@ -27,19 +27,19 @@ const view = {
 
     renderNavBar(role) {
         const nav = document.querySelector('nav');
+        const backofficeBtn = (role === 'admin' || role === 'agent') ? `<a href="index.php?page=back_users_list" class="nav-btn nav-btn-outlined">BACKOFFICE</a>` : '';
         const links = `
-            <div class="nav-brand">
-                CivicPortal
-            </div>
             <ul class="nav-links">
                 <li><a href="#home">home</a></li>
                 <li><a href="#programs">programs</a></li>
-                <li><a href="#request-service">service requests</a></li>
-                <li><a href="#complaints">grievances</a></li>
+                <li><a href="#service-requests">service requests</a></li>
+                <li><a href="#grievances">grievances</a></li>
+                <li><a href="#transport">transport</a></li>
                 <li><a href="#profile">profile</a></li>
             </ul>
-            <div class="user-controls">
-                <div class="user-role-badge">Citizen</div>
+            <div class="nav-actions">
+                ${backofficeBtn}
+                <button class="nav-btn nav-btn-filled" data-action="logout-btn">CITIZEN</button>
             </div>
         `;
         nav.innerHTML = links;
@@ -50,32 +50,39 @@ const view = {
             <div class="hero-container reveal">
                 <section class="hero-section">
                     <h1>CivicPortal</h1>
-                    <p>Welcome back, ${user.name}. Navigate municipal services with unmatched clarity and precision.</p>
+                    <p>Welcome, ${user.name}. Manage your services, programs, transport, grievances, and profile all in one secure dashboard.</p>
                     <div class="search-container">
-                        <input type="text" class="search-bar" placeholder="search services, programs, documents...">
+                        <input type="text" class="search-bar" placeholder="Search services, programs, transport...">
                         <button class="search-btn" onclick="alert('Search simulated!')">Search</button>
                     </div>
                 </section>
             </div>
             <section class="page-container">
-                <h2 class="reveal">Directory of Services</h2>
                 <div class="editorial-grid">
                     <div class="editorial-card editorial-highlight reveal">
-                        <h3>Document Submission</h3>
-                        <p>Submit critical civil documents securely online. Ensure civic records are updated without the need for physical visitation.</p>
-                        <a href="#request-service" class="btn btn-primary" style="align-self: flex-start; margin-top: auto;">Start Filing</a>
+                        <h3>Service Requests</h3>
+                        <p>Submit requests for permits, certificates, inspections, and municipal services.</p>
+                        <a href="#service-requests" class="btn btn-primary" style="align-self: flex-start; margin-top: auto;">Submit Request</a>
                     </div>
-                    
                     <div class="editorial-card reveal">
-                        <h3>Community Programs</h3>
-                        <p>Engage with local initiatives. Our Parks & Recreation catalog lists the latest activities sponsored by the city.</p>
-                        <a href="#programs" class="btn" style="align-self: flex-start; margin-top: auto;">View Catalog</a>
+                        <h3>Programs</h3>
+                        <p>Join local programs tailored to your community and interests.</p>
+                        <a href="#programs" class="btn" style="align-self: flex-start; margin-top: auto;">View Programs</a>
                     </div>
-
                     <div class="editorial-card reveal">
-                        <h3>Grievances & Feedback</h3>
-                        <p>Your voice matters. Submit complaints or feedback directly to the administration for review.</p>
-                        <a href="#complaints" class="btn" style="align-self: flex-start; margin-top: auto;">Submit Grievance</a>
+                        <h3>Transport</h3>
+                        <p>Check local transportation services and plan your next commute.</p>
+                        <a href="#transport" class="btn" style="align-self: flex-start; margin-top: auto;">View Transport</a>
+                    </div>
+                    <div class="editorial-card reveal">
+                        <h3>Grievances</h3>
+                        <p>Submit complaints or concerns about municipal services and issues.</p>
+                        <a href="#grievances" class="btn" style="align-self: flex-start; margin-top: auto;">Submit Grievance</a>
+                    </div>
+                    <div class="editorial-card reveal">
+                        <h3>Profile</h3>
+                        <p>Edit your profile in one click and keep all your important information.</p>
+                        <a href="#profile" class="btn" style="align-self: flex-start; margin-top: auto;">View Profile</a>
                     </div>
                 </div>
             </section>
@@ -84,35 +91,219 @@ const view = {
         this.triggerObserver();
     },
 
-    renderProgramCatalog(programs, userEnrollments) {
-        const programCards = programs.map((p) => {
-            const isEnrolled = userEnrollments.some(e => e.programId === p.id);
+    renderDocuments() {
+        this.app.innerHTML = `
+            <section class="page-container">
+                <h2 class="reveal">Documents</h2>
+                <p class="reveal">Download or review your administrative documents.</p>
+                <div class="editorial-grid">
+                    <div class="editorial-card reveal">
+                        <h3>Permits</h3>
+                        <p>Request or renew your permits online.</p>
+                        <a class="btn btn-primary" href="#">Download</a>
+                    </div>
+                    <div class="editorial-card reveal">
+                        <h3>Certificates</h3>
+                        <p>Access your residence and birth certificates.</p>
+                        <a class="btn" href="#">View</a>
+                    </div>
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    },
+
+    renderForumPosts() {
+        this.app.innerHTML = `
+            <section class="page-container">
+                <h2 class="reveal">Forum Posts</h2>
+                <p class="reveal">Share your ideas and discuss with the community.</p>
+                <div class="editorial-grid">
+                    <div class="editorial-card reveal">
+                        <h3>Local Projects</h3>
+                        <p>Discover current topics on city projects and developments.</p>
+                        <a class="btn btn-primary" href="#">View</a>
+                    </div>
+                    <div class="editorial-card reveal">
+                        <h3>Events</h3>
+                        <p>Discuss events and share your feedback.</p>
+                        <a class="btn" href="#">View</a>
+                    </div>
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    },
+
+    renderTransport() {
+        this.app.innerHTML = `
+            <section class="page-container">
+                <h2 class="reveal">Transport</h2>
+                <p class="reveal">View schedules, routes, and transportation services.</p>
+                <div class="editorial-grid">
+                    <div class="editorial-card reveal">
+                        <h3>Routes</h3>
+                        <p>Check available routes and their schedules.</p>
+                        <a class="btn btn-primary" href="#">View</a>
+                    </div>
+                    <div class="editorial-card reveal">
+                        <h3>News</h3>
+                        <p>Get the latest updates about urban transportation.</p>
+                        <a class="btn" href="#">View</a>
+                    </div>
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    },
+
+    renderProfile(user, editMode = false) {
+        const avatarSrc = user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=3A86FF&color=ffffff&size=256`;
+        const profileFields = `
+            ${user.bio ? `<p><strong>Bio:</strong> ${user.bio}</p>` : ''}
+            ${user.phoneNumber ? `<p><strong>Phone:</strong> ${user.phoneNumber}</p>` : ''}
+            ${user.dateOfBirth ? `<p><strong>Date of Birth:</strong> ${user.dateOfBirth}</p>` : ''}
+        `;
+
+        const profileSummary = editMode ? '' : `
+            <div class="profile-summary reveal">
+                <h3>Information</h3>
+                <p><strong>Email:</strong> ${user.email}</p>
+                ${profileFields}
+            </div>
+        `;
+
+        const editForm = `
+            <div class="form-card reveal">
+                <h3>Edit Profile</h3>
+                <form id="profile-form">
+                    <div class="form-group">
+                        <label for="profile-name">Full Name</label>
+                        <input type="text" id="profile-name" name="name" value="${user.name}" required pattern="[A-Za-zÀ-ÿ '\-]+" title="Name cannot contain numbers.">
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-email">Email</label>
+                        <input type="email" id="profile-email" name="email" value="${user.email}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-bio">Biography</label>
+                        <textarea id="profile-bio" name="bio" rows="4" placeholder="Add a biography...">${user.bio || ''}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-phone">Phone</label>
+                        <input type="text" id="profile-phone" name="phoneNumber" value="${user.phoneNumber || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-dob">Date of Birth</label>
+                        <input type="date" id="profile-dob" name="dateOfBirth" value="${user.dateOfBirth || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-avatar">Profile Photo</label>
+                        <input type="file" id="profile-avatar" name="avatar" accept="image/*">
+                    </div>
+                    <div class="form-group" style="display:flex; gap:1rem; flex-wrap:wrap;">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="button" class="btn btn-secondary" data-action="toggle-profile-edit">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        `;
+
+        this.app.innerHTML = `
+            <section class="page-container profile-page">
+                <div class="profile-banner reveal"></div>
+                <div class="profile-card reveal">
+                    <div class="profile-sidebar">
+                        <img class="profile-avatar" src="${avatarSrc}" alt="${user.name}">
+                        <h2>${user.name}</h2>
+                        <p class="profile-role">${user.role.charAt(0).toUpperCase() + user.role.slice(1)}</p>
+                        <div class="profile-stats">
+                            <div>
+                                <strong>Programs</strong>
+                                <span>${user.programs || 4}</span>
+                            </div>
+                            <div>
+                                <strong>Requests</strong>
+                                <span>${user.requests || 2}</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" data-action="toggle-profile-edit">${editMode ? 'Close' : 'Edit Profile'}</button>
+                    </div>
+                    <div class="profile-main">
+                        ${editMode ? editForm : profileSummary}
+                    </div>
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    },
+
+    renderProgramCatalog(programs = [], enrollments = []) {
+        const programItems = (programs || []).map(program => {
+            const isEnrolled = enrollments.includes(program.id);
             return `
-                <div class="program-card reveal">
-                    <div class="program-img-wrapper">
-                        <img src="../assets/images/${p.image || 'default.jpg'}" alt="${p.title}" class="program-img" onerror="this.src=''; this.style.backgroundColor='var(--primary-navy)';">
-                    </div>
-                    <div class="card-content">
-                        <span class="category-badge">${p.category}</span>
-                        <h3>${p.title}</h3>
-                        <p>${p.description}</p>
-                        <button class="btn ${isEnrolled ? 'btn-success' : 'btn-primary'}" 
-                                style="width: 100%"
-                                data-id="${p.id}" 
-                                data-action="enroll"
-                                ${isEnrolled ? 'disabled' : ''}>
-                            ${isEnrolled ? 'ENROLLED' : 'ENROLL'}
-                        </button>
-                    </div>
+                <div class="editorial-card reveal">
+                    <h3>${program.name || 'Program'}</h3>
+                    <p>${program.description || 'No description available'}</p>
+                    <button class="btn ${isEnrolled ? 'btn-secondary' : 'btn-primary'}" data-action="enroll" data-id="${program.id}">
+                        ${isEnrolled ? 'Enrolled' : 'Enroll Now'}
+                    </button>
                 </div>
             `;
         }).join('');
 
         this.app.innerHTML = `
             <section class="page-container">
-                <h2 class="reveal">Programs Catalog</h2>
+                <h2 class="reveal">Community Programs</h2>
+                <p class="reveal">Explore and enroll in programs available to you in your community.</p>
                 <div class="editorial-grid">
-                    ${programCards}
+                    ${programItems || '<p>No programs available at this time.</p>'}
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    },
+
+    renderFriendsDashboard(friends) {
+        const friendItems = friends.map(friend => `
+            <div class="friend-card reveal">
+                <div>
+                    <h3>${friend.name}</h3>
+                    <p>${friend.email}</p>
+                    <span class="status-badge">${friend.status}</span>
+                </div>
+                <button class="btn btn-secondary" data-action="remove-friend" data-id="${friend.id}">Remove</button>
+            </div>
+        `).join('');
+
+        this.app.innerHTML = `
+            <section class="page-container">
+                <h2 class="reveal">My Friends Dashboard</h2>
+                <p class="reveal">Manage your civic network and collaborate with contacts while staying in the same portal interface.</p>
+                <div class="friend-grid reveal">
+                    ${friendItems}
+                </div>
+                <div class="form-card reveal" style="margin-top: 2rem;">
+                    <h3>Add a Friend</h3>
+                    <form id="friend-form">
+                        <div class="form-group">
+                            <label for="name">Friend Name</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Friend Email</label>
+                            <input type="text" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="role">Role</label>
+                            <select id="role" name="role">
+                                <option value="citizen">Citizen</option>
+                                <option value="agent">Agent</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Friend</button>
+                    </form>
                 </div>
             </section>
         `;
@@ -122,47 +313,24 @@ const view = {
     renderServiceRequestForm() {
         this.app.innerHTML = `
             <section class="page-container">
-                <h2 class="reveal">File a Request</h2>
+                <h2 class="reveal">Submit a Service Request</h2>
                 <div class="form-card reveal">
                     <form id="service-request-form">
-                        <div class="form-group reveal">
-                            <label for="request-type">Service Type</label>
-                            <select id="request-type" name="type" required>
-                                <option value="Birth Certificate">Birth Certificate</option>
-                                <option value="ID Card Renewal">ID Card Renewal</option>
-                                <option value="Residence Certificate">Residence Certificate</option>
-                                <option value="Building Permit">Building Permit</option>
+                        <div class="form-group">
+                            <label for="service-type">Service Type</label>
+                            <select id="service-type" name="type" required>
+                                <option value="">-- Select a Service --</option>
+                                <option value="permit">Permit Request</option>
+                                <option value="certificate">Certificate</option>
+                                <option value="inspection">Inspection</option>
+                                <option value="other">Other</option>
                             </select>
                         </div>
-                        <div class="form-group reveal">
-                            <label for="document-upload">Upload Documents (PDF/JPG)</label>
-                            <input type="file" id="document-upload" name="file" required style="border:none; padding:1.5rem 0;">
-                        </div>
-                        <button type="submit" class="btn btn-primary reveal" style="width: 100%;">SUBMIT REQUEST</button>
-                    </form>
-                </div>
-            </section>
-        `;
-        this.triggerObserver();
-    },
-
-    renderProfile(user) {
-        this.app.innerHTML = `
-            <section class="page-container">
-                <h2 class="reveal">Account Profile</h2>
-                <div class="form-card reveal">
-                    <form id="profile-form">
                         <div class="form-group">
-                            <label for="profile-name">Full Name</label>
-                            <input type="text" id="profile-name" name="name" value="${user.name}" required>
+                            <label for="request-details">Details</label>
+                            <textarea id="request-details" name="details" rows="6" placeholder="Describe your service request..." required></textarea>
                         </div>
-                        <div class="form-group">
-                            <label for="profile-email">Email Address</label>
-                            <input type="email" id="profile-email" name="email" value="${user.email}" required>
-                        </div>
-                        <div class="form-group" style="display: flex; gap: 1rem;">
-                            <button type="submit" class="btn btn-primary">UPDATE DETAILS</button>
-                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%;">SUBMIT REQUEST</button>
                     </form>
                 </div>
             </section>

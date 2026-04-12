@@ -1,35 +1,197 @@
 <?php
 /**
  * User.php — Model/User.php
- * Blueprint entity for a CivicPortal User.
+ * Entité et accès aux données utilisateur via PDO.
  */
 
-class User {
-    private int    $id;
-    private string $name;
-    private string $role;
-    private string $email;
+require_once __DIR__ . '/../config/database.php';
 
-    public function __construct(int $id, string $name, string $role, string $email) {
-        $this->id    = $id;
-        $this->name  = $name;
-        $this->role  = $role;
+class User {
+    private int $id;
+    private string $name;
+    private string $email;
+    private string $role;
+    private ?string $passwordHash;
+    private ?string $createdAt;
+
+    public function __construct(int $id, string $name, string $email, string $role = 'citizen', ?string $passwordHash = null, ?string $createdAt = null) {
+        $this->id = $id;
+        $this->name = $name;
         $this->email = $email;
+        $this->role = $role;
+        $this->passwordHash = $passwordHash;
+        $this->createdAt = $createdAt;
     }
 
-    // --- Getters ---
-    public function getId()    { return $this->id; }
-    public function getName()  { return $this->name; }
-    public function getRole()  { return $this->role; }
-    public function getEmail() { return $this->email; }
+    public function getId(): int { return $this->id; }
+    public function getName(): string { return $this->name; }
+    public function getEmail(): string { return $this->email; }
+    public function getRole(): string { return $this->role; }
+    public function getPasswordHash(): ?string { return $this->passwordHash; }
+    public function getCreatedAt(): ?string { return $this->createdAt; }
 
-    // --- Setters ---
-    public function setName(string $name)   { $this->name  = $name; }
-    public function setRole(string $role)   { $this->role  = $role; }
-    public function setEmail(string $email) { $this->email = $email; }
+    public function setName(string $name): void { $this->name = $name; }
+    public function setEmail(string $email): void { $this->email = $email; }
+    public function setRole(string $role): void { $this->role = $role; }
 
     public function toArray(): array {
-        return ['id' => $this->id, 'name' => $this->name, 'role' => $this->role, 'email' => $this->email];
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'email' => $this->email,
+            'role' => $this->role,
+            'created_at' => $this->createdAt,
+        ];
+    }
+
+    public static function fromRow(array $row): User {
+        return new User(
+            (int)$row['id'], 
+            $row['username'] ?? $row['name'] ?? '',
+            $row['email'] ?? '',
+            $row['role'] ?? 'citizen',
+            $row['password_hash'] ?? null,
+            $row['created_at'] ?? null
+        );
+    }
+
+    public static function fetchAll(): array {
+        $pdo = Database::getInstance();
+        $stmt = $pdo->query('SELECT id, username, email, role, created_at FROM users ORDER BY id');
+        $rows = $stmt->fetchAll();
+        return array_map(fn($row) => self::fromRow($row), $rows);
+    }
+
+    public static function findById(int $id): ?User {
+        $pdo = Database::getInstance();
+        $stmt = $pdo->prepare('SELECT id, username, email, role, password_hash, created_at FROM users WHERE id = :id');
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch();
+        return $row ? self::fromRow($row) : null;
+    }
+
+    public static function findByEmail(string $email): ?User {
+        $pdo = Database::getInstance();
+        $stmt = $pdo->prepare('SELECT id, username, email, role, password_hash, created_at FROM users WHERE email = :email');
+        $stmt->execute(['email' => $email]);
+        $row = $stmt->fetch();
+        return $row ? self::fromRow($row) : null;
+    }
+
+    public static function emailExists(string $email, ?int $excludeId = null): bool {
+        $pdo = Database::getInstance();
+        if ($excludeId !== null) {
+            $stmt = $pdo->prepare('SELECT COUNT(*) FROM users WHERE email = :email AND id != :id');
+            $stmt->execute(['email' => $email, 'id' => $excludeId]);
+        } else {
+            $stmt = $pdo->prepare('SELECT COUNT(*) FROM users WHERE email = :email');
+            $stmt->execute(['email' => $email]);
+        }
+        return (int)$stmt->fetchColumn() > 0;
+    }
+
+    public static function create(array $input): User {
+        $pdo = Database::getInstance();
+        $stmt = $pdo->prepare('INSERT INTO users (username, email, password_hash, role) VALUES (:username, :email, :password_hash, :role)');
+        $passwordHash = password_hash($input['password'], PASSWORD_DEFAULT);
+        $stmt->execute([
+            'username' => trim($input['name']),
+            'email' => trim($input['email']),
+            'password_hash' => $passwordHash,
+            'role' => trim($input['role']) ?: 'citizen',
+        ]);
+
+        return self::findById((int)$pdo->lastInsertId());
+    }
+
+    public static function update(int $id, array $input): bool {
+        $pdo = Database::getInstance();
+
+        if (!empty($input['password'])) {
+            $stmt = $pdo->prepare('UPDATE users SET username = :username, email = :email, role = :role, password_hash = :password_hash WHERE id = :id');
+            return $stmt->execute([
+                'username' => trim($input['name']),
+                'email' => trim($input['email']),
+                'role' => trim($input['role']) ?: 'citizen',
+                'password_hash' => password_hash($input['password'], PASSWORD_DEFAULT),
+                'id' => $id,
+            ]);
+        }
+
+        $stmt = $pdo->prepare('UPDATE users SET username = :username, email = :email, role = :role WHERE id = :id');
+        return $stmt->execute([
+            'username' => trim($input['name']),
+            'email' => trim($input['email']),
+            'role' => trim($input['role']) ?: 'citizen',
+            'id' => $id,
+        ]);
+    }
+
+    public static function delete(int $id): bool {
+        $pdo = Database::getInstance();
+        $stmt = $pdo->prepare('DELETE FROM users WHERE id = :id');
+        return $stmt->execute(['id' => $id]);
+    }
+
+    public static function authenticate(string $email, string $password): ?User {
+        $user = self::findByEmail(trim($email));
+        if ($user === null || $user->getPasswordHash() === null) {
+            return null;
+        }
+
+        return password_verify($password, $user->getPasswordHash()) ? $user : null;
+    }
+
+    public static function validate(array $input, bool $isNew = true, ?int $userId = null): array {
+        $errors = [];
+        $name = trim($input['name'] ?? '');
+        $email = trim($input['email'] ?? '');
+        $role = trim($input['role'] ?? 'citizen');
+        $password = $input['password'] ?? '';
+        $confirm = $input['confirm_password'] ?? '';
+
+        if ($name === '') {
+            $errors['name'] = 'Le nom est requis.';
+        } elseif (mb_strlen($name) < 3) {
+            $errors['name'] = 'Le nom doit contenir au moins 3 caractères.';
+        } elseif (preg_match('/\d/', $name)) {
+            $errors['name'] = 'Le nom ne doit pas contenir de chiffres.';
+        }
+
+        if ($email === '') {
+            $errors['email'] = 'L’email est requis.';
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'L’email n’est pas valide.';
+        } elseif (self::emailExists($email, $userId)) {
+            $errors['email'] = 'Cet email est déjà utilisé.';
+        }
+
+        $allowedRoles = ['citizen', 'agent', 'admin'];
+        if (!in_array($role, $allowedRoles, true)) {
+            $errors['role'] = 'Le rôle sélectionné est invalide.';
+        }
+
+        if ($isNew || $password !== '') {
+            if (mb_strlen($password) < 8) {
+                $errors['password'] = 'Le mot de passe doit contenir au moins 8 caractères.';
+            }
+            if ($password !== $confirm) {
+                $errors['confirm_password'] = 'Les mots de passe ne correspondent pas.';
+            }
+        }
+
+        return $errors;
+    }
+
+    public static function validateLogin(array $input): array {
+        $errors = [];
+        if (trim($input['email'] ?? '') === '') {
+            $errors['email'] = 'L’email est requis.';
+        }
+        if (trim($input['password'] ?? '') === '') {
+            $errors['password'] = 'Le mot de passe est requis.';
+        }
+        return $errors;
     }
 }
-?>
+
