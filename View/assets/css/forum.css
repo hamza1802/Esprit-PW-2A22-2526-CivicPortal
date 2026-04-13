@@ -1,0 +1,596 @@
+/* 
+ * forum.css
+ * Forum-specific styles extending the CivicPortal Editorial Design System
+ */
+
+/* ==========================================================================
+   Forum Layout
+   ========================================================================== */
+.forum-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 5%;
+}
+
+.forum-header {
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: var(--border-main);
+}
+
+.forum-header h1 {
+    font-size: clamp(2rem, 5vw, 4rem);
+    margin-bottom: 0.5rem;
+}
+
+.forum-header p {
+    font-size: 1.2rem;
+    color: var(--primary-navy);
+    opacity: 0.7;
+}
+
+/* ==========================================================================
+   Filters Bar
+   ========================================================================== */
+.forum-filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 1.5rem;
+    border: var(--border-main);
+    background: var(--white);
+}
+
+.forum-filters label {
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.forum-filters select {
+    padding: 0.8rem 1.2rem;
+    border: var(--border-main);
+    background: transparent;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--primary-navy);
+    cursor: pointer;
+    min-width: 160px;
+}
+
+.forum-filters select:focus {
+    outline: none;
+    background: var(--bg-neutral);
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.forum-actions {
+    margin-left: auto;
+}
+
+/* ==========================================================================
+   Post Cards (List View)
+   ========================================================================== */
+.posts-list {
+    display: flex;
+    flex-direction: column;
+    border-top: var(--border-main);
+    border-left: var(--border-main);
+    border-right: var(--border-main);
+}
+
+.post-card {
+    padding: 2rem;
+    border-bottom: var(--border-main);
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    transition: var(--transition-fast);
+    text-decoration: none;
+    color: inherit;
+    background: transparent;
+}
+
+.post-card:hover {
+    background-color: var(--primary-navy);
+    color: var(--bg-neutral);
+}
+
+.post-card:hover .post-title,
+.post-card:hover .post-meta,
+.post-card:hover .post-excerpt {
+    color: var(--bg-neutral);
+}
+
+.post-card:hover .forum-badge {
+    border-color: var(--bg-neutral);
+    color: var(--bg-neutral);
+}
+
+.post-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.post-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--primary-navy);
+    transition: var(--transition-fast);
+    line-height: 1.2;
+}
+
+.post-badges {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.forum-badge {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: var(--border-main);
+    background: transparent;
+    color: var(--primary-navy);
+    transition: var(--transition-fast);
+}
+
+.badge-pinned {
+    background: var(--accent-blue);
+    color: var(--white);
+    border-color: var(--accent-blue);
+}
+
+.badge-closed {
+    background: var(--secondary-grey);
+    color: var(--primary-navy);
+    border-color: var(--secondary-grey);
+}
+
+.badge-open {
+    background: var(--success);
+    color: var(--white);
+    border-color: var(--success);
+}
+
+.badge-infrastructure {
+    border-color: #E67E22;
+    color: #E67E22;
+}
+
+.badge-health {
+    border-color: #27AE60;
+    color: #27AE60;
+}
+
+.badge-education {
+    border-color: #8E44AD;
+    color: #8E44AD;
+}
+
+.post-card:hover .badge-infrastructure,
+.post-card:hover .badge-health,
+.post-card:hover .badge-education {
+    color: var(--bg-neutral);
+    border-color: var(--bg-neutral);
+    background: transparent;
+}
+
+.post-excerpt {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-dark);
+    transition: var(--transition-fast);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.post-meta {
+    font-size: 0.85rem;
+    color: var(--primary-navy);
+    opacity: 0.6;
+    font-weight: 600;
+    transition: var(--transition-fast);
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.post-card:hover .post-meta {
+    opacity: 1;
+}
+
+/* ==========================================================================
+   Single Post View
+   ========================================================================== */
+.single-post {
+    border: var(--border-main);
+    padding: 3rem;
+    margin-bottom: 3rem;
+    background: var(--white);
+}
+
+.single-post .post-title {
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    margin-bottom: 1rem;
+}
+
+.single-post .post-meta {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: var(--border-light);
+}
+
+.single-post .post-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+    color: var(--text-dark);
+}
+
+.post-action-bar {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: var(--border-light);
+}
+
+/* ==========================================================================
+   Comments Section
+   ========================================================================== */
+.comments-section {
+    margin-top: 2rem;
+}
+
+.comments-section h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+}
+
+.comments-list {
+    border: var(--border-main);
+    border-bottom: none;
+}
+
+.comment-item {
+    padding: 1.5rem 2rem;
+    border-bottom: var(--border-main);
+    transition: var(--transition-fast);
+}
+
+.comment-item:hover {
+    background: rgba(29, 42, 68, 0.03);
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.comment-author {
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: var(--primary-navy);
+}
+
+.comment-date {
+    font-size: 0.8rem;
+    color: var(--primary-navy);
+    opacity: 0.5;
+    font-weight: 600;
+}
+
+.comment-content {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-dark);
+}
+
+.comment-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+}
+
+/* Comment Form */
+.comment-form {
+    margin-top: 2rem;
+    border: var(--border-main);
+    padding: 2rem;
+    background: var(--bg-neutral);
+}
+
+.comment-form h3 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.comment-form textarea {
+    width: 100%;
+    padding: 1.2rem;
+    border: var(--border-main);
+    background: transparent;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--primary-navy);
+    resize: vertical;
+    min-height: 100px;
+}
+
+.comment-form textarea:focus {
+    outline: none;
+    background: var(--white);
+}
+
+.comment-form .btn {
+    margin-top: 1rem;
+}
+
+/* ==========================================================================
+   Forum Form (Create/Edit Post)
+   ========================================================================== */
+.forum-form-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* ==========================================================================
+   Alerts / Error Messages
+   ========================================================================== */
+.alert {
+    padding: 1.2rem 1.5rem;
+    border: var(--border-main);
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.alert-danger {
+    border-color: var(--danger);
+    color: var(--danger);
+    background: rgba(231, 76, 60, 0.05);
+}
+
+.alert-success {
+    border-color: var(--success);
+    color: var(--success);
+    background: rgba(39, 174, 96, 0.05);
+}
+
+/* ==========================================================================
+   Empty State
+   ========================================================================== */
+.empty-state {
+    text-align: center;
+    padding: 5rem 2rem;
+    border: var(--border-main);
+    border-style: dashed;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    opacity: 0.6;
+    margin-bottom: 2rem;
+}
+
+/* ==========================================================================
+   Admin Dashboard Specific
+   ========================================================================== */
+.admin-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0;
+    border-top: var(--border-main);
+    border-left: var(--border-main);
+    margin-bottom: 3rem;
+}
+
+.stat-card {
+    padding: 2rem;
+    border-bottom: var(--border-main);
+    border-right: var(--border-main);
+    text-align: center;
+    transition: var(--transition-fast);
+}
+
+.stat-card:hover {
+    background: var(--primary-navy);
+    color: var(--bg-neutral);
+}
+
+.stat-card:hover .stat-number,
+.stat-card:hover .stat-label {
+    color: var(--bg-neutral);
+}
+
+.stat-number {
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--primary-navy);
+    transition: var(--transition-fast);
+}
+
+.stat-label {
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    margin-top: 0.5rem;
+    color: var(--primary-navy);
+    opacity: 0.6;
+    transition: var(--transition-fast);
+}
+
+.admin-section {
+    margin-bottom: 3rem;
+}
+
+.admin-section h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Admin table action buttons */
+.table-actions {
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+}
+
+.table-actions .btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+}
+
+/* Tabs for admin dashboard */
+.admin-tabs {
+    display: flex;
+    border: var(--border-main);
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.admin-tab {
+    flex: 1;
+    padding: 1.2rem;
+    text-align: center;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    border: none;
+    border-right: var(--border-main);
+    background: transparent;
+    color: var(--primary-navy);
+    font-family: inherit;
+}
+
+.admin-tab:last-child {
+    border-right: none;
+}
+
+.admin-tab:hover {
+    background: var(--secondary-grey);
+}
+
+.admin-tab.active {
+    background: var(--primary-navy);
+    color: var(--bg-neutral);
+}
+
+.tab-content {
+    display: none;
+    border: var(--border-main);
+    border-top: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* ==========================================================================
+   Back Link
+   ========================================================================== */
+.back-link {
+    display: inline-block;
+    margin-bottom: 2rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    color: var(--primary-navy);
+    text-decoration: none;
+    transition: var(--transition-fast);
+    letter-spacing: 0.5px;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+}
+
+.back-link::before {
+    content: '← ';
+}
+
+/* ==========================================================================
+   Responsive Overrides
+   ========================================================================== */
+@media (max-width: 768px) {
+    .forum-container {
+        padding: 2rem 4%;
+    }
+    
+    .forum-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .forum-actions {
+        margin-left: 0;
+    }
+    
+    .single-post {
+        padding: 2rem 1.5rem;
+        border-left: none;
+        border-right: none;
+    }
+    
+    .posts-list {
+        border-left: none;
+        border-right: none;
+    }
+    
+    .post-card {
+        padding: 1.5rem;
+    }
+    
+    .post-card-header {
+        flex-direction: column;
+    }
+    
+    .admin-stats {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .admin-tabs {
+        flex-direction: column;
+    }
+    
+    .admin-tab {
+        border-right: none;
+        border-bottom: var(--border-main);
+    }
+}
