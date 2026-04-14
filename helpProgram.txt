@@ -1,0 +1,101 @@
+================================================================================
+                           CIVICPORTAL PROJECT DOCUMENTATION
+================================================================================
+Generated: 2026-04-14
+Subject: Thorough File & System Explanation
+Architecture: PHP Model-View-Controller (MVC) + Client-Side JS Modules
+
+1. OVERALL ARCHITECTURE
+--------------------------------------------------------------------------------
+CivicPortal is a high-end civic management system built with a PHP backend and a 
+dynamic, event-driven JavaScript frontend. It separates concerns into three layers:
+- MODEL: Handles MySQL interactions and business logic (PHP Classes).
+- VIEW: Handles HTML rendering and CSS styling.
+- CONTROLLER: Routes requests and bridges logic between UI and Data.
+
+2. CORE BACKEND FILES (Model & Controller)
+--------------------------------------------------------------------------------
+Location: /Controller and /Model
+
+- Controller/MainController.php:
+  The central processor. It uses a Static Method 'handleRequest' to switch 
+  between actions like 'add_program', 'enroll_user', etc. It is the only file 
+  the Frontend directly talks to via fetch/AJAX.
+
+- Model/Database.php:
+  A Singleton PDO wrapper. It ensures only one database connection exists 
+  during a request and handles automatic DB creation ('civicportal').
+
+- Model/AppModel.php:
+  The "Master Model". Contains the actual SQL queries. 
+  Key methods include:
+  * getPrograms(): Fetches programs with enrollment counts.
+  * addProgram(): Handles data validation and image uploads.
+  * enrollUser(): Implements logic to check capacity before confirmation.
+  * getStats(): Aggregates dashboard data for counts (Users, Programs, etc).
+
+- Model/civicportal.sql:
+  The source of truth for the database. Tables include:
+  * users: Stores citizen and admin accounts.
+  * program: Parks & Rec programs (Gardening, Swimming, etc).
+  * enrollment: Links users to programs with status (pending/confirmed).
+  * requests: Service requests for city maintenance.
+  * forum_posts/comments: Community discussion data.
+
+3. FRONTEND MODULES (View Layer)
+--------------------------------------------------------------------------------
+Location: /View/BackOffice and /View/FrontOffice
+
+The project uses a "Client-Side MVC" pattern for the UI to avoid full page reloads.
+
+- BackOffice/index.php:
+  The primary dashboard template. Loaded with 'reveal' classes for animations.
+
+- BackOffice/app.js:
+  The entry point. Initializes the 'IntersectionObserver' for smooth scroll 
+  animations and boots up the Main Controller.
+
+- BackOffice/model.js:
+  A Javascript object that mirrors the server state. It stores the local 
+  list of programs and requests so the UI can update instantly without 
+  re-fetching everything.
+
+- BackOffice/view.js:
+  The DOM Specialist. Contains all 'document.querySelector' logic. It takes 
+  raw data and transforms it into HTML cards, status badges, and toast 
+  notifications.
+
+- BackOffice/controller.js:
+  Coordinates the flow. When 'view.js' reports a click, 'controller.js' 
+  calls the server, waits for the response, updates 'model.js', and finally 
+  tells 'view.js' what to re-render.
+
+4. DESIGN & ASSETS
+--------------------------------------------------------------------------------
+- View/assets/css/style.css:
+  A premium CSS design system. It utilizes:
+  * CSS Variables for high-end color palettes.
+  * Glassmorphism effects (.glass class).
+  * Sophisticated grid layouts for the Program Catalog.
+  * Responsive utility classes for mobile compatibility.
+
+- View/assets/images/:
+  Stores uploaded program images. Filenames are prefixed with 'prog_' and 
+  contain a timestamp to prevent duplicate name conflicts.
+
+5. MISCELLANEOUS
+--------------------------------------------------------------------------------
+- scratch/debug_api.php:
+  A development tool to quickly test the MainController outputs in isolation.
+
+- graphify-out/:
+  Internal analysis files used by the AI assistant to track code complexity 
+  and connections between modules.
+
+================================================================================
+                           SYSTEM FLOW SUMMARY
+================================================================================
+[Browser Click] -> [controller.js] -> [MainController.php] -> [AppModel.php]
+                                                                    |
+[view.js Updates] <- [controller.js] <- [JSON Response] <- [Database (PDO)]
+================================================================================

@@ -118,6 +118,7 @@ class AppModel {
     }
 
     public static function addProgram($data, $imageFile = null) {
+        self::validateProgramData($data);
         $db = self::getDb();
         $imageName = self::handleFileUpload($imageFile);
         
@@ -135,6 +136,7 @@ class AppModel {
     }
 
     public static function updateProgram($id, $data, $imageFile = null) {
+        self::validateProgramData($data);
         $db = self::getDb();
         $imageName = self::handleFileUpload($imageFile);
         
@@ -158,6 +160,38 @@ class AppModel {
 
         $stmt = $db->prepare($sql);
         return $stmt->execute($params);
+    }
+
+    /**
+     * validateProgramData() - Server-side validation and sanitization logic.
+     */
+    private static function validateProgramData(&$data) {
+        $data['title']       = trim($data['title'] ?? '');
+        $data['description'] = trim($data['description'] ?? '');
+        $data['category']    = trim($data['category'] ?? '');
+        $data['location']    = trim($data['location'] ?? '');
+        $data['capacity']    = (isset($data['capacity']) && is_numeric($data['capacity'])) ? (int)$data['capacity'] : 0;
+
+        if (empty($data['title']) || strlen($data['title']) < 5) {
+            throw new Exception("Title must be at least 5 characters.");
+        }
+        if (empty($data['description']) || strlen($data['description']) < 20) {
+            throw new Exception("Description must be at least 20 characters.");
+        }
+        if (empty($data['category'])) {
+            throw new Exception("Category is required.");
+        }
+        if ($data['capacity'] <= 0) {
+            throw new Exception("Capacity must be a positive number.");
+        }
+        if (empty($data['location']) || strlen($data['location']) < 3) {
+            throw new Exception("Location must be at least 3 characters.");
+        }
+        
+        // Basic HTML sanitization for fields that are displayed
+        $data['title']       = htmlspecialchars($data['title'], ENT_QUOTES, 'UTF-8');
+        $data['description'] = htmlspecialchars($data['description'], ENT_QUOTES, 'UTF-8');
+        $data['location']    = htmlspecialchars($data['location'], ENT_QUOTES, 'UTF-8');
     }
 
     private static function handleFileUpload($file) {

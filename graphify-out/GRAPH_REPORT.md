@@ -1,16 +1,16 @@
-# Graph Report - .  (2026-04-12)
+# Graph Report - .  (2026-04-14)
 
 ## Corpus Check
-- 21 files · ~150,834 words
+- 21 files · ~153,899 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 74 nodes · 58 edges · 16 communities detected
+- 75 nodes · 59 edges · 16 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## God Nodes (most connected - your core abstractions)
-1. `AppModel` - 19 edges
+1. `AppModel` - 20 edges
 2. `Program` - 11 edges
 3. `User` - 10 edges
 4. `ServiceRequest` - 9 edges

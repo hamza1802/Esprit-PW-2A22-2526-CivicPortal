@@ -404,16 +404,16 @@ const view = {
             <section class="page-container">
                 <h2 class="reveal">${isEdit ? 'Edit Program' : 'New Community Program'}</h2>
                 <div class="form-card reveal">
-                    <form id="program-form">
+                    <form id="program-form" novalidate>
                         ${isEdit ? `<input type="hidden" name="id" value="${program.id}">` : ''}
                         <div class="form-group">
                             <label for="prog-title">Program Title</label>
-                            <input type="text" id="prog-title" name="title" value="${isEdit ? program.title : ''}" required>
+                            <input type="text" id="prog-title" name="title" value="${isEdit ? program.title : ''}">
                         </div>
                         <div class="form-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                             <div class="form-group">
                                 <label for="prog-category">Category</label>
-                                <select id="prog-category" name="category" required>
+                                <select id="prog-category" name="category">
                                     <option value="Arts" ${isEdit && program.category === 'Arts' ? 'selected' : ''}>Arts</option>
                                     <option value="Sports" ${isEdit && program.category === 'Sports' ? 'selected' : ''}>Sports</option>
                                     <option value="Environment" ${isEdit && program.category === 'Environment' ? 'selected' : ''}>Environment</option>
@@ -422,16 +422,16 @@ const view = {
                             </div>
                             <div class="form-group">
                                 <label for="prog-capacity">Capacity</label>
-                                <input type="number" id="prog-capacity" name="capacity" value="${isEdit ? program.capacity : '20'}" required>
+                                <input type="number" id="prog-capacity" name="capacity" value="${isEdit ? program.capacity : '20'}">
                             </div>
                         </div>
                         <div class="form-group">
                             <label for="prog-location">Location</label>
-                            <input type="text" id="prog-location" name="location" value="${isEdit ? program.location : ''}" required>
+                            <input type="text" id="prog-location" name="location" value="${isEdit ? program.location : ''}">
                         </div>
                         <div class="form-group">
                             <label for="prog-desc">Description</label>
-                            <textarea id="prog-desc" name="description" rows="4" required>${isEdit ? program.description : ''}</textarea>
+                            <textarea id="prog-desc" name="description" rows="4">${isEdit ? program.description : ''}</textarea>
                         </div>
                         <div class="form-group">
                             <label for="prog-image">Program Image (Visual Identity)</label>

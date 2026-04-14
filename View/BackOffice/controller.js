@@ -210,6 +210,34 @@ const controller = {
     },
 
     async handleProgramSave(formData) {
+        // --- Input Control / Validation ---
+        const title = formData.get('title')?.trim();
+        const description = formData.get('description')?.trim();
+        const capacity = parseInt(formData.get('capacity'));
+        const location = formData.get('location')?.trim();
+        const category = formData.get('category');
+
+        if (!title || title.length < 5) {
+            view.renderToast('Title must be at least 5 characters.', 'error');
+            return;
+        }
+        if (!description || description.length < 20) {
+            view.renderToast('Description must be at least 20 characters.', 'error');
+            return;
+        }
+        if (isNaN(capacity) || capacity <= 0) {
+            view.renderToast('Capacity must be a positive number.', 'error');
+            return;
+        }
+        if (!location || location.length < 3) {
+            view.renderToast('Location must be at least 3 characters.', 'error');
+            return;
+        }
+        if (!category) {
+            view.renderToast('Please select a category.', 'error');
+            return;
+        }
+
         const success = await model.saveProgram(formData);
         if (success) {
             view.renderToast(formData.get('id') ? 'Program updated!' : 'New program created!');
