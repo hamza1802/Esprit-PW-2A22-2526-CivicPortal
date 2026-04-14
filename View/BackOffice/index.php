@@ -5,45 +5,36 @@
  */
 require_once '../../Model/AppModel.php';
 AppModel::init();
+require_once 'header.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CivicPortal | Staff Portal</title>
-    <meta name="description" content="Administrative and Worker functionalities for CivicPortal.">
-    <link rel="stylesheet" href="../assets/css/style.css">
-</head>
-<body>
 
-    <!-- Header & Navigation -->
-    <nav>
-        <!-- Injected via view.js -->
-    </nav>
-
-    <!-- Main Content Area -->
-    <main id="app">
-        <!-- Dynamic content injected here -->
-        <div style="padding: 100px; text-align: center;">
-            <p>Loading CivicPortal Back Office...</p>
-        </div>
-    </main>
-
-    <!-- Toast Notifications Container -->
-    <div id="toast-container" class="toast-container"></div>
-
-    <!-- Role Switcher (For Staff Demonstration Purposes) -->
-    <div class="role-switcher-container">
-        <label for="demo-role-switcher">Switch admin Role:</label>
-        <select id="demo-role-switcher">
-            <option value="worker" selected>Worker (Staff)</option>
-            <option value="admin">Admin</option>
-        </select>
-        <small style="display: block; margin-top: 5px; opacity: 0.8; font-size: 0.6rem;">*Staff MVC Testing Mode</small>
+<main id="app">
+    <div class="hero-container">
+        <section class="hero-section">
+            <h1>Staff Portal</h1>
+            <p>Welcome back, Admin. Manage transport fleet, routes, and tickets.</p>
+        </section>
     </div>
-
-    <!-- Scripts -->
-    <script type="module" src="app.js"></script>
+    <section class="page-container">
+        <h2>Transport Management</h2>
+        <div class="editorial-grid">
+            <div class="editorial-card editorial-highlight">
+                <h3>🚐 Fleet</h3>
+                <p>View and manage the municipality's physical vehicles — planes, buses, trains, and metros.</p>
+                <a href="showTransport.php" class="btn btn-primary" style="align-self: flex-start; margin-top: auto;">Manage Fleet</a>
+            </div>
+            <div class="editorial-card">
+                <h3>🗺️ Routes</h3>
+                <p>Schedule trips by assigning vehicles to routes with departure times and pricing.</p>
+                <a href="showTrajet.php" class="btn" style="align-self: flex-start; margin-top: auto;">Manage Routes</a>
+            </div>
+            <div class="editorial-card">
+                <h3>🎟️ Tickets</h3>
+                <p>Review all transport tickets booked by citizens. Cancel invalid bookings.</p>
+                <a href="showTicket.php" class="btn" style="align-self: flex-start; margin-top: auto;">View Tickets</a>
+            </div>
+        </div>
+    </section>
+</main>
 </body>
 </html>
