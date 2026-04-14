@@ -88,14 +88,14 @@ const view = {
             <section class="page-container">
                 <h2 class="reveal">Staff Profile</h2>
                 <div class="form-card reveal">
-                    <form id="profile-form">
+                    <form id="profile-form" novalidate>
                         <div class="form-group">
                             <label for="profile-name">Full Name</label>
-                            <input type="text" id="profile-name" name="name" value="${user.name}" required>
+                            <input type="text" id="profile-name" name="name" value="${user.name}">
                         </div>
                         <div class="form-group">
                             <label for="profile-email">Email Address</label>
-                            <input type="email" id="profile-email" name="email" value="${user.email}" required>
+                            <input type="text" id="profile-email" name="email" value="${user.email}">
                         </div>
                         <div class="form-group" style="display: flex; gap: 1rem;">
                             <button type="submit" class="btn btn-primary">UPDATE DETAILS</button>

@@ -48,7 +48,7 @@
             </div>
 
             <?php if ($isEditMode): ?>
-                <form method="post" action="index.php?page=front_profile" enctype="multipart/form-data">
+                <form method="post" action="index.php?page=front_profile" enctype="multipart/form-data" novalidate>
                     <input type="hidden" name="action" value="update_profile">
 
                     <div class="form-group">
@@ -109,7 +109,7 @@
             <div style="margin-top: 1rem; padding: 1rem; border: 1px solid #d5d9e0; border-radius: 16px; background: #fafafa;">
                 <h2>Gestion des amis</h2>
 
-                <form method="get" action="index.php?page=front_profile" style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem;">
+                <form method="get" action="index.php?page=front_profile" style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem;" novalidate>
                     <input type="text" name="friend_search" placeholder="Rechercher un ami" value="<?= htmlspecialchars($_GET['friend_search'] ?? '') ?>" style="flex:1; min-width:220px;">
                     <button class="button" type="submit">Rechercher</button>
                 </form>
@@ -131,15 +131,15 @@
                     <p>Aucun ami pour le moment.</p>
                 <?php endif; ?>
 
-                <form method="post" action="index.php?page=front_profile">
+                <form method="post" action="index.php?page=front_profile" novalidate>
                     <input type="hidden" name="action" value="add_friend">
                     <div class="form-group">
                         <label for="friend-name">Nom de l'ami</label>
-                        <input id="friend-name" name="name" type="text" required>
+                        <input id="friend-name" name="name" type="text">
                     </div>
                     <div class="form-group">
                         <label for="friend-email">Email de l'ami</label>
-                        <input id="friend-email" name="email" type="email" required>
+                        <input id="friend-email" name="email" type="text">
                     </div>
                     <div class="form-group">
                         <label for="friend-role">Rôle</label>

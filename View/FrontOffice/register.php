@@ -201,7 +201,7 @@ if (session_status() === PHP_SESSION_NONE) {
             <p>Enter your details</p>
         </div>
 
-        <form method="post" action="index.php?page=front_register" class="form-grid">
+        <form method="post" action="index.php?page=front_register" class="form-grid" novalidate>
             <input type="hidden" name="action" value="register">
 
             <?php if (!empty($errors)): ?>

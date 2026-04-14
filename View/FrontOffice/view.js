@@ -203,16 +203,16 @@ const view = {
                     <h3 style="font-size:1.4rem; font-weight:900; text-transform:uppercase; letter-spacing:-0.5px; color:#1D2A44;">Edit Profile</h3>
                     <button type="button" class="btn" style="font-size:0.75rem; padding:0.4rem 1.2rem;" data-action="toggle-profile-edit">Cancel</button>
                 </div>
-                <form id="profile-form" action="index.php" method="POST" enctype="multipart/form-data">
+                <form id="profile-form" action="index.php" method="POST" enctype="multipart/form-data" novalidate>
                     <input type="hidden" name="action" value="update_profile">
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
                         <div class="form-group" style="margin-bottom:1rem;">
                             <label for="profile-name" style="font-size:0.78rem;">Full Name</label>
-                            <input type="text" id="profile-name" name="name" value="${user.name}" required pattern="[A-Za-zÀ-ÿ '\\-]+" style="padding:0.8rem 1rem; font-size:1rem;">
+                            <input type="text" id="profile-name" name="name" value="${user.name}" style="padding:0.8rem 1rem; font-size:1rem;">
                         </div>
                         <div class="form-group" style="margin-bottom:1rem;">
                             <label for="profile-email" style="font-size:0.78rem;">Email Address</label>
-                            <input type="email" id="profile-email" name="email" value="${user.email}" required style="padding:0.8rem 1rem; font-size:1rem;">
+                            <input type="text" id="profile-email" name="email" value="${user.email}" style="padding:0.8rem 1rem; font-size:1rem;">
                         </div>
                         <div class="form-group" style="margin-bottom:1rem;">
                             <label for="profile-phone" style="font-size:0.78rem;">Phone Number</label>
@@ -220,7 +220,7 @@ const view = {
                         </div>
                         <div class="form-group" style="margin-bottom:1rem;">
                             <label for="profile-dob" style="font-size:0.78rem;">Date of Birth</label>
-                            <input type="date" id="profile-dob" name="date_of_birth" value="${user.dateOfBirth || ''}" style="padding:0.8rem 1rem; font-size:1rem;">
+                            <input type="text" id="profile-dob" name="date_of_birth" value="${user.dateOfBirth || ''}" placeholder="YYYY-MM-DD" style="padding:0.8rem 1rem; font-size:1rem;">
                         </div>
                         <div class="form-group" style="margin-bottom:1rem; grid-column:1/-1;">
                             <label for="profile-bio" style="font-size:0.78rem;">Biography</label>
@@ -320,11 +320,11 @@ const view = {
                     <form id="friend-form">
                         <div class="form-group">
                             <label for="name">Friend Name</label>
-                            <input type="text" id="name" name="name" required>
+                            <input type="text" id="name" name="name">
                         </div>
                         <div class="form-group">
                             <label for="email">Friend Email</label>
-                            <input type="text" id="email" name="email" required>
+                            <input type="text" id="email" name="email">
                         </div>
                         <div class="form-group">
                             <label for="role">Role</label>
@@ -350,7 +350,7 @@ const view = {
                     <form id="service-request-form">
                         <div class="form-group">
                             <label for="service-type">Service Type</label>
-                            <select id="service-type" name="type" required>
+                            <select id="service-type" name="type">
                                 <option value="">-- Select a Service --</option>
                                 <option value="permit">Permit Request</option>
                                 <option value="certificate">Certificate</option>
@@ -360,7 +360,7 @@ const view = {
                         </div>
                         <div class="form-group">
                             <label for="request-details">Details</label>
-                            <textarea id="request-details" name="details" rows="6" placeholder="Describe your service request..." required></textarea>
+                            <textarea id="request-details" name="details" rows="6" placeholder="Describe your service request..."></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary" style="width:100%;">SUBMIT REQUEST</button>
                     </form>
@@ -378,11 +378,11 @@ const view = {
                     <form id="complaint-form">
                         <div class="form-group">
                             <label for="complaint-subject">Subject</label>
-                            <input type="text" id="complaint-subject" name="subject" required>
+                            <input type="text" id="complaint-subject" name="subject">
                         </div>
                         <div class="form-group">
                             <label for="complaint-body">Details</label>
-                            <textarea id="complaint-body" name="body" rows="6" required></textarea>
+                            <textarea id="complaint-body" name="body" rows="6"></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary" style="width:100%;">SUBMIT GRIEVANCE</button>
                     </form>

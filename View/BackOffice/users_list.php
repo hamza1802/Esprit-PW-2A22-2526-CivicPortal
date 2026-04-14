@@ -59,7 +59,7 @@
             <?= !empty($editingUser) ? 'Edit User Profile' : 'Register New User' ?>
         </h2>
 
-        <form method="post" action="index.php?page=back_users_list">
+        <form method="post" action="index.php?page=back_users_list" novalidate>
             <input type="hidden" name="action" value="<?= !empty($editingUser) ? 'update_user' : 'create_user' ?>">
             <?php if (!empty($editingUser)): ?>
                 <input type="hidden" name="user_id" value="<?= htmlspecialchars($editingUser->getId()) ?>">

@@ -206,7 +206,7 @@ if (session_status() === PHP_SESSION_NONE) {
             </div>
         <?php endif; ?>
 
-        <form method="post" action="index.php?page=front_login">
+        <form method="post" action="index.php?page=front_login" novalidate>
             <input type="hidden" name="action" value="login">
 
             <div class="form-group">

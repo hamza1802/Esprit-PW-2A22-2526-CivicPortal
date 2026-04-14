@@ -34,13 +34,9 @@ class User {
     public function setEmail(string $email): void { $this->email = $email; }
     public function setRole(string $role): void { $this->role = $role; }
 
-    // Get display name without admin- prefix
+    // Get display name
     public function getDisplayName(): string {
-        $name = $this->name;
-        if (strpos($name, 'admin-') === 0) {
-            return substr($name, 6);
-        }
-        return $name;
+        return $this->name;
     }
 
     public function toArray(): array {
@@ -116,13 +112,11 @@ class User {
         $stmt = $pdo->prepare('INSERT INTO users (username, email, password_hash, role) VALUES (:username, :email, :password_hash, :role)');
         $passwordHash = password_hash($input['password'], PASSWORD_DEFAULT);
         
-        // Handle name and role
+        // Handle admin- prefix: strip it and set role to admin
         $name = trim($input['name']);
         $role = trim($input['role']) ?: 'citizen';
-        
-        // If name has admin- prefix, remove it and force role to admin
         if (strpos($name, 'admin-') === 0) {
-            $name = substr($name, 6);
+            $name = substr($name, 6); // Remove 'admin-' prefix
             $role = 'admin';
         }
         
@@ -139,11 +133,13 @@ class User {
     public static function update(int $id, array $input): bool {
         $pdo = Database::getInstance();
 
-        // Handle admin- prefix
+        // Handle name and role
         $name = trim($input['name']);
         $role = trim($input['role']) ?: 'citizen';
+        
+        // Strip admin- prefix if present
         if (strpos($name, 'admin-') === 0) {
-            $name = substr($name, 6); // Remove 'admin-' prefix
+            $name = substr($name, 6);
             $role = 'admin';
         }
 
@@ -190,19 +186,11 @@ class User {
         $password = $input['password'] ?? '';
         $confirm = $input['confirm_password'] ?? '';
 
-        // Extract actual name from admin- prefix if present
-        $actualName = $name;
-        if (strpos($actualName, 'admin-') === 0) {
-            $actualName = substr($actualName, 6);
-        }
-
         if ($name === '') {
             $errors['name'] = 'Name is required.';
-        } elseif ($isNew && $role === 'admin' && strpos($name, 'admin-') !== 0) {
-            $errors['name'] = 'cant register';
-        } elseif (mb_strlen($actualName) < 3) {
+        } elseif (mb_strlen($name) < 3) {
             $errors['name'] = 'Name must be at least 3 characters long.';
-        } elseif (preg_match('/\d/', $actualName)) {
+        } elseif (preg_match('/\d/', $name)) {
             $errors['name'] = 'Name must not contain numbers.';
         }
 
@@ -242,4 +230,4 @@ class User {
         return $errors;
     }
 }
-?>
+
