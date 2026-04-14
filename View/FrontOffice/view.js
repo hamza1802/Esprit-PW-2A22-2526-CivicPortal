@@ -27,7 +27,7 @@ const view = {
 
     renderNavBar(role) {
         const nav = document.querySelector('nav');
-        const backofficeBtn = (role === 'admin' || role === 'agent') ? `<a href="index.php?page=back_users_list" class="nav-btn nav-btn-outlined">BACKOFFICE</a>` : '';
+        const backofficeBtn = (role === 'admin') ? `<a href="index.php?page=back_users_list" class="nav-btn nav-btn-outlined">BACKOFFICE</a>` : '';
         const links = `
             <a href="#home" class="nav-brand" style="text-decoration:none; text-transform:uppercase; color:#1a1a1a; font-weight:900; font-size:1.5rem;">CIVICPORTAL</a>
             <ul class="nav-links" style="display:flex; list-style:none; margin:0; padding:0; gap:1.5rem; align-items: center;">

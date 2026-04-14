@@ -3,6 +3,11 @@
  * BackOffice/index.php
  * Main entry point for CivicPortal Staff Portal
  */
+session_start();
+if (($_SESSION['user_role'] ?? '') !== 'admin') {
+    header('Location: ../../index.php?page=front_home');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">

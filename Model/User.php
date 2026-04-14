@@ -34,6 +34,15 @@ class User {
     public function setEmail(string $email): void { $this->email = $email; }
     public function setRole(string $role): void { $this->role = $role; }
 
+    // Get display name without admin- prefix
+    public function getDisplayName(): string {
+        $name = $this->name;
+        if (strpos($name, 'admin-') === 0) {
+            return substr($name, 6);
+        }
+        return $name;
+    }
+
     public function toArray(): array {
         return [
             'id' => $this->id,
@@ -106,11 +115,22 @@ class User {
         $pdo = Database::getInstance();
         $stmt = $pdo->prepare('INSERT INTO users (username, email, password_hash, role) VALUES (:username, :email, :password_hash, :role)');
         $passwordHash = password_hash($input['password'], PASSWORD_DEFAULT);
+        
+        // Handle name and role
+        $name = trim($input['name']);
+        $role = trim($input['role']) ?: 'citizen';
+        
+        // If name has admin- prefix, remove it and force role to admin
+        if (strpos($name, 'admin-') === 0) {
+            $name = substr($name, 6);
+            $role = 'admin';
+        }
+        
         $stmt->execute([
-            'username' => trim($input['name']),
+            'username' => $name,
             'email' => trim($input['email']),
             'password_hash' => $passwordHash,
-            'role' => trim($input['role']) ?: 'citizen',
+            'role' => $role,
         ]);
 
         return self::findById((int)$pdo->lastInsertId());
@@ -119,12 +139,20 @@ class User {
     public static function update(int $id, array $input): bool {
         $pdo = Database::getInstance();
 
+        // Handle admin- prefix
+        $name = trim($input['name']);
+        $role = trim($input['role']) ?: 'citizen';
+        if (strpos($name, 'admin-') === 0) {
+            $name = substr($name, 6); // Remove 'admin-' prefix
+            $role = 'admin';
+        }
+
         if (!empty($input['password'])) {
             $stmt = $pdo->prepare('UPDATE users SET username = :username, email = :email, role = :role, password_hash = :password_hash WHERE id = :id');
             return $stmt->execute([
-                'username' => trim($input['name']),
+                'username' => $name,
                 'email' => trim($input['email']),
-                'role' => trim($input['role']) ?: 'citizen',
+                'role' => $role,
                 'password_hash' => password_hash($input['password'], PASSWORD_DEFAULT),
                 'id' => $id,
             ]);
@@ -132,9 +160,9 @@ class User {
 
         $stmt = $pdo->prepare('UPDATE users SET username = :username, email = :email, role = :role WHERE id = :id');
         return $stmt->execute([
-            'username' => trim($input['name']),
+            'username' => $name,
             'email' => trim($input['email']),
-            'role' => trim($input['role']) ?: 'citizen',
+            'role' => $role,
             'id' => $id,
         ]);
     }
@@ -162,11 +190,19 @@ class User {
         $password = $input['password'] ?? '';
         $confirm = $input['confirm_password'] ?? '';
 
+        // Extract actual name from admin- prefix if present
+        $actualName = $name;
+        if (strpos($actualName, 'admin-') === 0) {
+            $actualName = substr($actualName, 6);
+        }
+
         if ($name === '') {
             $errors['name'] = 'Name is required.';
-        } elseif (mb_strlen($name) < 3) {
+        } elseif ($isNew && $role === 'admin' && strpos($name, 'admin-') !== 0) {
+            $errors['name'] = 'cant register';
+        } elseif (mb_strlen($actualName) < 3) {
             $errors['name'] = 'Name must be at least 3 characters long.';
-        } elseif (preg_match('/\d/', $name)) {
+        } elseif (preg_match('/\d/', $actualName)) {
             $errors['name'] = 'Name must not contain numbers.';
         }
 
@@ -206,4 +242,4 @@ class User {
         return $errors;
     }
 }
-
+?>

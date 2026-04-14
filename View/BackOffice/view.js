@@ -33,7 +33,6 @@ const view = {
             </div>
             <ul class="nav-links">
                 <li><a href="#home">home</a></li>
-                ${role === 'worker' ? '<li><a href="#worker-dashboard">dashboard</a></li>' : ''}
                 ${role === 'admin' ? '<li><a href="#admin-stats">statistics</a></li><li><a href="#admin-inbox">inbox</a></li>' : ''}
                 <li><a href="#profile">profile</a></li>
             </ul>
@@ -54,20 +53,7 @@ const view = {
             </div>
         `;
 
-        if (user.role === 'worker') {
-            content += `
-            <section class="page-container">
-                <h2 class="reveal">Operations Console</h2>
-                <div class="editorial-grid">
-                    <div class="editorial-card editorial-highlight reveal">
-                        <h3>Service Request Queue</h3>
-                        <p>Process pending administrative filings. Validate or reject documents submitted by the citizens of CivicPortal.</p>
-                        <a href="#worker-dashboard" class="btn btn-primary" style="align-self: flex-start; margin-top: auto;">Open Dashboard</a>
-                    </div>
-                </div>
-            </section>
-            `;
-        } else if (user.role === 'admin') {
+        if (user.role === 'admin') {
             content += `
             <section class="page-container">
                 <h2 class="reveal">Administrative Overview</h2>
@@ -83,6 +69,12 @@ const view = {
                         <a href="#admin-inbox" class="btn" style="align-self: flex-start; margin-top: auto;">Open Inbox</a>
                     </div>
                 </div>
+            </section>
+            `;
+        } else {
+            content += `
+            <section class="page-container">
+                <p class="reveal" style="text-align:center; padding: 50px;">You are logged in as ${user.role}. Admin privileges are required for full console access.</p>
             </section>
             `;
         }

@@ -23,11 +23,20 @@ $currentProfile = null;
 $currentUserAvatar = null;
 if (!empty($_SESSION['user_id'])) {
     $currentUser = UserController::getUserById((int)$_SESSION['user_id']);
+    // If user doesn't exist (was deleted), clear session and redirect to login
+    if ($currentUser === null) {
+        session_destroy();
+        header('Location: index.php?page=front_login');
+        exit;
+    }
     $currentProfile = Profile::createIfMissing((int)$_SESSION['user_id']);
-    $currentUserAvatar = $_SESSION['user_avatar'] ?? $currentProfile->getAvatarUrl();
-    if (!empty($currentProfile->getAvatarUrl())) {
-        $currentUserAvatar = $currentProfile->getAvatarUrl();
-        $_SESSION['user_avatar'] = $currentUserAvatar;
+    // Only set avatar if profile exists
+    if ($currentProfile) {
+        $currentUserAvatar = $_SESSION['user_avatar'] ?? $currentProfile->getAvatarUrl();
+        if (!empty($currentProfile->getAvatarUrl())) {
+            $currentUserAvatar = $currentProfile->getAvatarUrl();
+            $_SESSION['user_avatar'] = $currentUserAvatar;
+        }
     }
 }
 
@@ -43,6 +52,12 @@ if ($friendSearch !== '') {
 $protectedRoutes = ['front_home', 'front_profile', 'back_users_list'];
 if (in_array($page, $protectedRoutes, true) && (empty($_SESSION['user_id']) || $currentUser === null)) {
     header('Location: index.php?page=front_login');
+    exit;
+}
+
+// Backoffice access control - ONLY admin (agent and others are blocked)
+if (strpos($page, 'back_') === 0 && ($_SESSION['user_role'] ?? '') !== 'admin') {
+    header('Location: index.php?page=front_home');
     exit;
 }
 
@@ -127,40 +142,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
 
         case 'create_user':
-            $result = UserController::createUser($_POST);
-            if (!empty($result['errors'])) {
-                $_SESSION['errors'] = $result['errors'];
-                $_SESSION['old'] = $_POST;
+        case 'update_user':
+        case 'delete_user':
+            // Robust check: only admin can perform these actions
+            if (($_SESSION['user_role'] ?? '') !== 'admin') {
+                $_SESSION['errors'] = ['Unauthorized action. Admin access required.'];
+                header('Location: index.php');
+                exit;
+            }
+
+            if ($action === 'create_user') {
+                $result = UserController::createUser($_POST);
+                if (!empty($result['errors'])) {
+                    $_SESSION['errors'] = $result['errors'];
+                    $_SESSION['old'] = $_POST;
+                    header('Location: index.php?page=back_users_list');
+                    exit;
+                }
+                $_SESSION['success'] = $result['success'];
                 header('Location: index.php?page=back_users_list');
                 exit;
             }
-            $_SESSION['success'] = $result['success'];
-            header('Location: index.php?page=back_users_list');
-            exit;
 
-        case 'update_user':
-            $userId = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 0;
-            $result = UserController::updateProfile($userId, $_POST);
-            if (!empty($result['errors'])) {
-                $_SESSION['errors'] = $result['errors'];
-                $_SESSION['old'] = $_POST;
-                header('Location: index.php?page=back_users_list&edit=' . $userId);
+            if ($action === 'update_user') {
+                $userId = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 0;
+                $result = UserController::updateProfile($userId, $_POST);
+                if (!empty($result['errors'])) {
+                    $_SESSION['errors'] = $result['errors'];
+                    $_SESSION['old'] = $_POST;
+                    header('Location: index.php?page=back_users_list&edit=' . $userId);
+                    exit;
+                }
+                $_SESSION['success'] = $result['success'];
+                header('Location: index.php?page=back_users_list');
                 exit;
             }
-            $_SESSION['success'] = $result['success'];
-            header('Location: index.php?page=back_users_list');
-            exit;
 
-        case 'delete_user':
-            $userId = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 0;
-            $result = UserController::deleteUser($userId);
-            if (!empty($result['errors'])) {
-                $_SESSION['errors'] = $result['errors'];
-            } else {
-                $_SESSION['success'] = $result['success'];
+            if ($action === 'delete_user') {
+                $userId = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 0;
+                $result = UserController::deleteUser($userId);
+                if (!empty($result['errors'])) {
+                    $_SESSION['errors'] = $result['errors'];
+                } else {
+                    $_SESSION['success'] = $result['success'];
+                    if ($userId === (int)($_SESSION['user_id'] ?? 0)) {
+                        UserController::logout();
+                        header('Location: index.php?page=front_login');
+                        exit;
+                    }
+                }
+                header('Location: index.php?page=back_users_list');
+                exit;
             }
-            header('Location: index.php?page=back_users_list');
-            exit;
+            break;
     }
 }
 
@@ -187,7 +221,7 @@ switch ($page) {
         }
         $currentUserArray = [
             'id' => $currentUser->getId(),
-            'name' => $currentUser->getName(),
+            'name' => $currentUser->getDisplayName(),
             'email' => $currentUser->getEmail(),
             'role' => $currentUser->getRole()
         ];

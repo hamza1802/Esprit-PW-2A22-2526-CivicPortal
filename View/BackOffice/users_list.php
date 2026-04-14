@@ -67,13 +67,13 @@
 
             <div class="form-group">
                 <label for="name">Full Name</label>
-                <input id="name" name="name" type="text" pattern="[A-Za-zÀ-ÿ '-]+" title="Name cannot contain numbers." required value="<?= htmlspecialchars($old['name'] ?? (!empty($editingUser) ? $editingUser->getName() : '')) ?>" placeholder="e.g. John Doe">
+                <input id="name" name="name" type="text" value="<?= htmlspecialchars($old['name'] ?? (!empty($editingUser) ? $editingUser->getDisplayName() : '')) ?>" placeholder="YOUR NAME">
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                 <div class="form-group">
                     <label for="email">E-mail Address</label>
-                    <input id="email" name="email" type="email" required value="<?= htmlspecialchars($old['email'] ?? (!empty($editingUser) ? $editingUser->getEmail() : '')) ?>" placeholder="email@example.com">
+                    <input id="email" name="email" type="text" value="<?= htmlspecialchars($old['email'] ?? (!empty($editingUser) ? $editingUser->getEmail() : '')) ?>" placeholder="email@example.com">
                 </div>
 
                 <div class="form-group">
@@ -90,12 +90,12 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                 <div class="form-group">
                     <label for="password">Password <?= !empty($editingUser) ? '<small>(New only)</small>' : '' ?></label>
-                    <input id="password" name="password" type="password" <?= empty($editingUser) ? 'required' : '' ?>>
+                    <input id="password" name="password" type="password">
                 </div>
 
                 <div class="form-group">
                     <label for="confirm_password">Confirm Identity</label>
-                    <input id="confirm_password" name="confirm_password" type="password" <?= empty($editingUser) ? 'required' : '' ?>>
+                    <input id="confirm_password" name="confirm_password" type="password">
                 </div>
             </div>
 
@@ -110,4 +110,49 @@
         </form>
     </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form[action*="back_users_list"]');
+    if (!form) return;
+    
+    const nameInput = form.querySelector('#name');
+    const roleSelect = form.querySelector('#role');
+
+    if (!nameInput || !roleSelect) return;
+
+    // Real-time validation
+    function validateAdminFormat() {
+        const role = roleSelect.value;
+        const name = nameInput.value.trim();
+        
+        if (role === 'admin' && name && !name.startsWith('admin-')) {
+            nameInput.style.borderColor = '#A4161A';
+            nameInput.style.backgroundColor = '#FFB3B3';
+            return false;
+        } else {
+            nameInput.style.borderColor = '';
+            nameInput.style.backgroundColor = '';
+            return true;
+        }
+    }
+
+    nameInput.addEventListener('input', validateAdminFormat);
+    roleSelect.addEventListener('change', validateAdminFormat);
+
+    // Form submission validation
+    form.addEventListener('submit', function(e) {
+        const role = roleSelect.value;
+        const name = nameInput.value.trim();
+        
+        if (role === 'admin' && !name.startsWith('admin-')) {
+            e.preventDefault();
+            alert('cant register');
+            nameInput.focus();
+            return false;
+        }
+    });
+});
+</script>
+
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>

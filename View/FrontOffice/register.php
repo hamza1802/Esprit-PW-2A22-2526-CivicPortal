@@ -216,17 +216,17 @@ if (session_status() === PHP_SESSION_NONE) {
 
             <div class="form-group full-width">
                 <label for="name">Full Name</label>
-                <input id="name" name="name" type="text" placeholder="YOUR NAME" value="<?= htmlspecialchars($old['name'] ?? '') ?>" required pattern="[A-Za-zÀ-ÿ '\-]+">
+                <input id="name" name="name" type="text" placeholder="YOUR NAME " value="<?= htmlspecialchars($old['name'] ?? '') ?>">
             </div>
 
             <div class="form-group full-width">
                 <label for="email">Email</label>
-                <input id="email" name="email" type="email" placeholder="YOUR@EMAIL.COM" value="<?= htmlspecialchars($old['email'] ?? '') ?>" required>
+                <input id="email" name="email" type="text" placeholder="YOUR@EMAIL.COM" value="<?= htmlspecialchars($old['email'] ?? '') ?>">
             </div>
 
             <div class="form-group full-width">
                 <label for="role">Role</label>
-                <select id="role" name="role" required>
+                <select id="role" name="role">
                     <?php $roleValue = $old['role'] ?? 'citizen'; ?>
                     <option value="citizen" <?= $roleValue === 'citizen' ? 'selected' : '' ?>>Citizen</option>
                     <option value="agent" <?= $roleValue === 'agent' ? 'selected' : '' ?>>Agent</option>
@@ -236,12 +236,12 @@ if (session_status() === PHP_SESSION_NONE) {
 
             <div class="form-group">
                 <label for="password">Password</label>
-                <input id="password" name="password" type="password" placeholder="••••••••" required>
+                <input id="password" name="password" type="password" placeholder="••••••••">
             </div>
 
             <div class="form-group">
                 <label for="confirm_password">Confirm</label>
-                <input id="confirm_password" name="confirm_password" type="password" placeholder="••••••••" required>
+                <input id="confirm_password" name="confirm_password" type="password" placeholder="••••••••">
             </div>
 
             <button class="submit-btn" type="submit">Get Started</button>
@@ -252,6 +252,46 @@ if (session_status() === PHP_SESSION_NONE) {
         </form>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const nameInput = document.getElementById('name');
+    const roleSelect = document.getElementById('role');
+
+    // Real-time validation
+    function validateAdminFormat() {
+        const role = roleSelect.value;
+        const name = nameInput.value.trim();
+        
+        if (role === 'admin' && name && !name.startsWith('admin-')) {
+            nameInput.style.borderColor = '#A4161A';
+            nameInput.style.backgroundColor = '#FFB3B3';
+            return false;
+        } else {
+            nameInput.style.borderColor = '';
+            nameInput.style.backgroundColor = '';
+            return true;
+        }
+    }
+
+    nameInput.addEventListener('input', validateAdminFormat);
+    roleSelect.addEventListener('change', validateAdminFormat);
+
+    // Form submission validation
+    form.addEventListener('submit', function(e) {
+        const role = roleSelect.value;
+        const name = nameInput.value.trim();
+        
+        if (role === 'admin' && !name.startsWith('admin-')) {
+            e.preventDefault();
+            alert('⚠️cant register ');
+            nameInput.focus();
+            return false;
+        }
+    });
+});
+</script>
 
 </body>
 </html>

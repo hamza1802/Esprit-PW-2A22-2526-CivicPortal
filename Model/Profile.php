@@ -63,9 +63,21 @@ class Profile {
         return self::findByUserId($userId);
     }
 
-    public static function createIfMissing(int $userId): Profile {
+    public static function createIfMissing(int $userId): ?Profile {
         $profile = self::findByUserId($userId);
-        return $profile ?? self::create($userId);
+        if ($profile) {
+            return $profile;
+        }
+        
+        // Verify user exists before creating profile
+        $pdo = Database::getInstance();
+        $stmt = $pdo->prepare('SELECT id FROM users WHERE id = :id');
+        $stmt->execute(['id' => $userId]);
+        if (!$stmt->fetch()) {
+            return null; // User doesn't exist
+        }
+        
+        return self::create($userId);
     }
 
     public static function update(int $userId, array $data): bool {

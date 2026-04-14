@@ -211,12 +211,12 @@ if (session_status() === PHP_SESSION_NONE) {
 
             <div class="form-group">
                 <label for="email">Email</label>
-                <input id="email" name="email" type="email" placeholder="YOUR@EMAIL.COM" value="<?= htmlspecialchars($old['email'] ?? '') ?>" required>
+                <input id="email" name="email" type="text" placeholder="YOUR@EMAIL.COM" value="<?= htmlspecialchars($old['email'] ?? '') ?>">
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
-                <input id="password" name="password" type="password" placeholder="••••••••" required>
+                <input id="password" name="password" type="password" placeholder="••••••••">
             </div>
 
             <button class="submit-btn" type="submit">Sign In</button>

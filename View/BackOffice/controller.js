@@ -10,7 +10,7 @@ const controller = {
     async init() {
         await model.sync();
         this.setupEventListeners();
-        this.handleRoleChange('worker', false); 
+        this.handleRoleChange('admin', false); 
     },
 
     setupEventListeners() {
@@ -47,11 +47,7 @@ const controller = {
                 view.renderHome(user);
                 break;
             case '#worker-dashboard':
-                if (user.role === 'worker') {
-                    view.renderWorkerDashboard(model.getServiceRequests());
-                } else {
-                    window.location.hash = '#home';
-                }
+                window.location.hash = '#home';
                 break;
             case '#profile':
                 view.renderProfile(user);

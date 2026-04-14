@@ -24,7 +24,7 @@ class UserController {
         }
 
         $_SESSION['user_id'] = $user->getId();
-        $_SESSION['user_name'] = $user->getName();
+        $_SESSION['user_name'] = $user->getDisplayName();
         $_SESSION['user_email'] = $user->getEmail();
         $_SESSION['user_role'] = $user->getRole();
         Profile::createIfMissing($user->getId());
@@ -44,7 +44,12 @@ class UserController {
 
         $user = User::create($input);
         Profile::createIfMissing($user->getId());
-        Profile::update($user->getId(), ['first_name' => $input['name']]);
+        // Extract clean name from input (User::create already handles admin- prefix)
+        $cleanName = trim($input['name']);
+        if (strpos($cleanName, 'admin-') === 0) {
+            $cleanName = substr($cleanName, 6);
+        }
+        Profile::update($user->getId(), ['first_name' => $cleanName]);
         return ['success' => 'Registration successful.', 'user' => $user];
     }
 
@@ -74,9 +79,17 @@ class UserController {
             return ['errors' => ['general' => 'Unable to update profile.']];
         }
 
+        // Get the updated user to use display name
+        $updatedUser = User::findById($id);
+        
         $profile = Profile::createIfMissing($id);
+        // Extract clean name from input for profile storage
+        $cleanName = trim($input['name']);
+        if (strpos($cleanName, 'admin-') === 0) {
+            $cleanName = substr($cleanName, 6);
+        }
         $profileData = [
-            'first_name' => $input['name'] ?? $input['first_name'] ?? $profile->getFirstName(),
+            'first_name' => $cleanName ?? $input['first_name'] ?? $profile->getFirstName(),
             'last_name' => $input['last_name'] ?? $profile->getLastName(),
             'bio' => $input['bio'] ?? $profile->getBio(),
             'avatar_url' => $input['avatar_url'] ?? $profile->getAvatarUrl(),
@@ -86,7 +99,7 @@ class UserController {
         Profile::update($id, $profileData);
 
         if (isset($_SESSION['user_id']) && $_SESSION['user_id'] === $id) {
-            $_SESSION['user_name'] = $input['name'];
+            $_SESSION['user_name'] = $updatedUser ? $updatedUser->getDisplayName() : $cleanName;
             if (!empty($input['email'])) {
                 $_SESSION['user_email'] = $input['email'];
             }

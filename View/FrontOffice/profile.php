@@ -25,7 +25,7 @@
                     <img src="<?= htmlspecialchars($currentUserAvatar ?: 'assets/images/default-avatar.png') ?>" alt="Avatar" style="width:150px; height:150px; object-fit:cover; border-radius:50%; border:1px solid #ccc;">
                 </div>
                 <div>
-                    <h2><?= htmlspecialchars($currentProfile->getFullName() ?: $currentUser->getName()) ?></h2>
+                    <h2><?= htmlspecialchars($currentProfile->getFullName() ?: $currentUser->getDisplayName()) ?></h2>
                     <p><strong>Email :</strong> <?= htmlspecialchars($currentUser->getEmail()) ?></p>
                     <p><strong>Rôle :</strong> <?= htmlspecialchars($currentUser->getRole()) ?></p>
                     <?php if (!empty($currentProfile->getPhoneNumber())): ?>
@@ -38,7 +38,9 @@
                         <p><strong>Bio :</strong> <?= htmlspecialchars($currentProfile->getBio()) ?></p>
                     <?php endif; ?>
                     <p><strong>Amis :</strong> <?= htmlspecialchars(count($friends)) ?></p>
-                    <p><strong>BackOffice :</strong> <a href="index.php?page=back_users_list">Voir le CRUD utilisateurs</a></p>
+                    <?php if (($_SESSION['user_role'] ?? '') === 'admin'): ?>
+                        <p><strong>BackOffice :</strong> <a href="index.php?page=back_users_list">Voir le CRUD utilisateurs</a></p>
+                    <?php endif; ?>
                     <?php if (!$isEditMode): ?>
                         <p><a href="index.php?page=front_profile&edit=1" class="button">Modifier le profil</a></p>
                     <?php endif; ?>
@@ -51,12 +53,12 @@
 
                     <div class="form-group">
                         <label for="name">Nom complet</label>
-                        <input id="name" name="name" type="text" value="<?= htmlspecialchars($old['name'] ?? $currentUser->getName()) ?>" required>
+                        <input id="name" name="name" type="text" value="<?= htmlspecialchars($old['name'] ?? $currentUser->getDisplayName()) ?>">
                     </div>
 
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input id="email" name="email" type="email" value="<?= htmlspecialchars($old['email'] ?? $currentUser->getEmail()) ?>" required>
+                        <input id="email" name="email" type="text" value="<?= htmlspecialchars($old['email'] ?? $currentUser->getEmail()) ?>">
                     </div>
 
                     <div class="form-group">
@@ -81,12 +83,12 @@
 
                     <div class="form-group">
                         <label for="date_of_birth">Date de naissance</label>
-                        <input id="date_of_birth" name="date_of_birth" type="date" value="<?= htmlspecialchars($old['date_of_birth'] ?? $currentProfile->getDateOfBirth()) ?>">
+                        <input id="date_of_birth" name="date_of_birth" type="text" value="<?= htmlspecialchars($old['date_of_birth'] ?? $currentProfile->getDateOfBirth()) ?>">
                     </div>
 
                     <div class="form-group">
                         <label for="avatar">Photo de profil</label>
-                        <input id="avatar" name="avatar" type="file" accept="image/*">
+                        <input id="avatar" name="avatar" type="file">
                     </div>
 
                     <div class="form-group">
