@@ -36,6 +36,7 @@ const view = {
                 <li><a href="#programs">programs</a></li>
                 <li><a href="#request-service">service requests</a></li>
                 <li><a href="#complaints">grievances</a></li>
+                <li><a href="forum.php">forum</a></li>
                 <li><a href="#profile">profile</a></li>
             </ul>
             <div class="user-controls">
@@ -76,6 +77,12 @@ const view = {
                         <h3>Grievances & Feedback</h3>
                         <p>Your voice matters. Submit complaints or feedback directly to the administration for review.</p>
                         <a href="#complaints" class="btn" style="align-self: flex-start; margin-top: auto;">Submit Grievance</a>
+                    </div>
+
+                    <div class="editorial-card editorial-highlight reveal">
+                        <h3>Citizens Forum</h3>
+                        <p>Discuss community issues, share ideas, and collaborate with fellow citizens on Infrastructure, Health, and Education topics.</p>
+                        <a href="forum.php" class="btn btn-primary" style="align-self: flex-start; margin-top: auto;">Enter Forum</a>
                     </div>
                 </div>
             </section>

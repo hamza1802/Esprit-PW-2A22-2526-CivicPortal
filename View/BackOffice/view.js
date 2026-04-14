@@ -34,7 +34,7 @@ const view = {
             <ul class="nav-links">
                 <li><a href="#home">home</a></li>
                 ${role === 'worker' ? '<li><a href="#worker-dashboard">dashboard</a></li>' : ''}
-                ${role === 'admin' ? '<li><a href="#admin-stats">statistics</a></li><li><a href="#admin-inbox">inbox</a></li>' : ''}
+                ${role === 'admin' ? '<li><a href="#admin-stats">statistics</a></li><li><a href="#admin-inbox">inbox</a></li><li><a href="forumDashboard.php">forum mgmt</a></li>' : ''}
                 <li><a href="#profile">profile</a></li>
             </ul>
             <div class="user-controls">
@@ -81,6 +81,12 @@ const view = {
                         <h3>Grievance Inbox</h3>
                         <p>Review and process citizen feedback securely routed to the administrative branch.</p>
                         <a href="#admin-inbox" class="btn" style="align-self: flex-start; margin-top: auto;">Open Inbox</a>
+                    </div>
+
+                    <div class="editorial-card editorial-highlight reveal">
+                        <h3>Forum Management</h3>
+                        <p>Manage citizen discussions. Pin important posts, close threads, and moderate inappropriate comments.</p>
+                        <a href="forumDashboard.php" class="btn btn-primary" style="align-self: flex-start; margin-top: auto;">Manage Forum</a>
                     </div>
                 </div>
             </section>
