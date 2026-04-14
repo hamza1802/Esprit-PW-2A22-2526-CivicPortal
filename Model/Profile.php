@@ -1,10 +1,8 @@
 <?php
 /**
  * Profile.php — Model/Profile.php
- * Gestion PDO des informations de profil utilisateur.
+ * Entité représentant les informations de profil utilisateur.
  */
-
-require_once __DIR__ . '/../config/database.php';
 
 class Profile {
     private int $userId;
@@ -47,55 +45,5 @@ class Profile {
             $row['date_of_birth'] ?? null
         );
     }
-
-    public static function findByUserId(int $userId): ?Profile {
-        $pdo = Database::getInstance();
-        $stmt = $pdo->prepare('SELECT * FROM profile WHERE user_id = :user_id');
-        $stmt->execute(['user_id' => $userId]);
-        $row = $stmt->fetch();
-        return $row ? self::fromRow($row) : null;
-    }
-
-    public static function create(int $userId): Profile {
-        $pdo = Database::getInstance();
-        $stmt = $pdo->prepare('INSERT INTO profile (user_id) VALUES (:user_id)');
-        $stmt->execute(['user_id' => $userId]);
-        return self::findByUserId($userId);
-    }
-
-    public static function createIfMissing(int $userId): ?Profile {
-        $profile = self::findByUserId($userId);
-        if ($profile) {
-            return $profile;
-        }
-        
-        // Verify user exists before creating profile
-        $pdo = Database::getInstance();
-        $stmt = $pdo->prepare('SELECT id FROM users WHERE id = :id');
-        $stmt->execute(['id' => $userId]);
-        if (!$stmt->fetch()) {
-            return null; // User doesn't exist
-        }
-        
-        return self::create($userId);
-    }
-
-    public static function update(int $userId, array $data): bool {
-        $pdo = Database::getInstance();
-        $query = 'UPDATE profile SET first_name = :first_name, bio = :bio, avatar_url = :avatar_url, phone_number = :phone_number, date_of_birth = :date_of_birth WHERE user_id = :user_id';
-        $stmt = $pdo->prepare($query);
-        $dateOfBirth = trim($data['date_of_birth'] ?? '');
-        if (empty($dateOfBirth)) {
-            $dateOfBirth = null;
-        }
-
-        return $stmt->execute([
-            'first_name' => trim($data['first_name'] ?? ''),
-            'bio' => trim($data['bio'] ?? ''),
-            'avatar_url' => trim($data['avatar_url'] ?? ''),
-            'phone_number' => trim($data['phone_number'] ?? ''),
-            'date_of_birth' => $dateOfBirth,
-            'user_id' => $userId,
-        ]);
-    }
 }
+

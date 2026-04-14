@@ -9,10 +9,11 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../../Model/Profile.php';
+require_once __DIR__ . '/../../Controller/UserController.php';
 
 $currentProfile = null;
 if (!empty($_SESSION['user_id'])) {
-    $currentProfile = Profile::findByUserId((int)$_SESSION['user_id']);
+    $currentProfile = UserController::getProfileByUserId((int)$_SESSION['user_id']);
 }
 
 $currentUser = [

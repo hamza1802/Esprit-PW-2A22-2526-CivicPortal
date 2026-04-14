@@ -29,7 +29,7 @@ if (!empty($_SESSION['user_id'])) {
         header('Location: index.php?page=front_login');
         exit;
     }
-    $currentProfile = Profile::createIfMissing((int)$_SESSION['user_id']);
+    $currentProfile = UserController::ensureProfileExists((int)$_SESSION['user_id']);
     // Only set avatar if profile exists
     if ($currentProfile) {
         $currentUserAvatar = $_SESSION['user_avatar'] ?? $currentProfile->getAvatarUrl();
