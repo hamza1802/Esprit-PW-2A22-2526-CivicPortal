@@ -14,14 +14,20 @@ const view = {
 
     renderToast(message, type = 'success') {
         const container = document.getElementById('toast-container');
-        const toast = document.createElement('div');
-        toast.className = `toast toast-${type}`;
-        toast.innerText = message;
-        container.appendChild(toast);
+        if (!container) return;
         
+        const toast = document.createElement('div');
+        toast.className = `custom-backoffice-toast ${type === 'error' ? 'toast-error' : ''}`;
+        toast.textContent = message.toUpperCase();
+        
+        if (type === 'error') toast.style.backgroundColor = '#A4161A';
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.classList.add('visible'), 100);
         setTimeout(() => {
-            toast.style.opacity = '0';
-            setTimeout(() => toast.remove(), 400);
+            toast.classList.remove('visible');
+            setTimeout(() => toast.remove(), 500);
         }, 3000);
     },
 
@@ -60,7 +66,7 @@ const view = {
                     <p>Welcome, ${user.name}. Manage your services, programs, transport, grievances, and profile all in one secure dashboard.</p>
                     <div class="search-container">
                         <input type="text" class="search-bar" placeholder="Search services, programs, transport...">
-                        <button class="search-btn" onclick="alert('Search simulated!')">Search</button>
+                        <button class="search-btn" onclick="console.log('Search simulated!')">Search</button>
                     </div>
                 </section>
             </div>
@@ -177,6 +183,7 @@ const view = {
             { icon: '🎂', label: 'Date of Birth', value: user.dateOfBirth || '—' },
             { icon: '🏷', label: 'Role', value: roleLabel },
         ];
+    
 
         const detailCards = detailRows.map(d => `
             <div class="pf-detail-card">
@@ -219,7 +226,7 @@ const view = {
                             <input type="text" id="profile-phone" name="phone_number" value="${user.phoneNumber || ''}" placeholder="+1 234 567 890" style="padding:0.8rem 1rem; font-size:1rem;">
                         </div>
                         <div class="form-group" style="margin-bottom:1rem;">
-                            <label for="profile-dob" style="font-size:0.78rem;">Date of Birth</label>
+                            <label for="profile-dob" style="font-size:0.75rem; font-weight:900; text-transform:uppercase;">Date of Birth</label>
                             <input type="text" id="profile-dob" name="date_of_birth" value="${user.dateOfBirth || ''}" placeholder="YYYY-MM-DD" style="padding:0.8rem 1rem; font-size:1rem;">
                         </div>
                         <div class="form-group" style="margin-bottom:1rem; grid-column:1/-1;">
@@ -357,6 +364,7 @@ const view = {
                                 <option value="inspection">Inspection</option>
                                 <option value="other">Other</option>
                             </select>
+                            ${(window.SERVER_MESSAGES && window.SERVER_MESSAGES.errors && Object.keys(window.SERVER_MESSAGES.errors).length > 0) ? `<script>view.renderToast('${Object.values(window.SERVER_MESSAGES.errors).join('\\n')}', 'error');</script>` : ''}
                         </div>
                         <div class="form-group">
                             <label for="request-details">Details</label>

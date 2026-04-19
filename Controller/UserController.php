@@ -190,7 +190,13 @@ class UserController {
             $errors['email'] = 'This email is already in use.';
         }
 
-        $allowedRoles = ['citizen', 'agent', 'admin'];
+        $allowedRoles = ['citizen', 'agent'];
+        if (!$isNew || $role === 'admin') {
+             // Admin role is allowed for existing users (to preserve role) 
+             // or if explicitly handled by the admin- prefix logic.
+             $allowedRoles[] = 'admin';
+        }
+        
         if (!in_array($role, $allowedRoles, true)) {
             $errors['role'] = 'The selected role is invalid.';
         }
@@ -241,7 +247,15 @@ class UserController {
     }
 
     public static function logout(): void {
-        unset($_SESSION['user_id'], $_SESSION['user_name'], $_SESSION['user_role'], $_SESSION['user_email']);
+        $_SESSION = [];
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000,
+                $params["path"], $params["domain"],
+                $params["secure"], $params["httponly"]
+            );
+        }
+        session_destroy();
     }
 
     public static function register(array $input): array {
@@ -324,7 +338,7 @@ class UserController {
 
         $user = self::createUserRecord($input);
         self::ensureProfileExists($user->getId());
-        return ['success' => 'User added successfully.', 'user' => $user];
+        return ['success' => 'Profile added successfully.', 'user' => $user];
     }
 
     public static function deleteUser(int $id): array {

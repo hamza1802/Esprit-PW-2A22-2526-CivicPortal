@@ -8,6 +8,15 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
+
+if (empty($_SESSION['user_id'])) {
+    header('Location: ../../index.php?page=front_login');
+    exit;
+}
+
 require_once __DIR__ . '/../../Model/Profile.php';
 require_once __DIR__ . '/../../Controller/UserController.php';
 

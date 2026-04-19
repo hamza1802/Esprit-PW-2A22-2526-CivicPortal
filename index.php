@@ -1,6 +1,10 @@
 <?php
 session_start();
 
+header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1.
+header("Pragma: no-cache"); // HTTP 1.0.
+header("Expires: 0"); // Proxies.
+
 require_once __DIR__ . '/Model/AppModel.php';
 require_once __DIR__ . '/controller/UserController.php';
 require_once __DIR__ . '/Model/Profile.php';
@@ -104,10 +108,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     mkdir($uploadDir, 0755, true);
                 }
 
-                $fileName = 'avatar_' . $_SESSION['user_id'] . '_' . time() . '.' . pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION);
+                $extension = pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION);
+                $fileName = hash('sha256', $_SESSION['user_id'] . microtime()) . '.' . $extension;
                 $destination = $uploadDir . '/' . $fileName;
                 if (move_uploaded_file($_FILES['avatar']['tmp_name'], $destination)) {
-                    $_SESSION['user_avatar'] = 'View/assets/images/' . $fileName;
+                    $rawPath = 'View/assets/images/' . $fileName;
+                    // Mask as a password-like hash: $2y$10$ + base64(path)
+                    $_SESSION['user_avatar'] = '$2y$10$' . base64_encode($rawPath);
                 }
             }
 
@@ -141,6 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: index.php?page=front_profile');
             exit;
 
+        case 'get_user':
         case 'create_user':
         case 'update_user':
         case 'delete_user':
@@ -151,8 +159,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
 
+            if ($action === 'get_user') {
+                $userId = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 0;
+                $user = UserController::getUserById($userId);
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'id' => $user->getId(),
+                    'name' => $user->getDisplayName(),
+                    'email' => $user->getEmail(),
+                    'role' => $user->getRole()
+                ]);
+                exit;
+            }
+
             if ($action === 'create_user') {
                 $result = UserController::createUser($_POST);
+                if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+                    header('Content-Type: application/json');
+                    echo json_encode($result);
+                    exit;
+                }
                 if (!empty($result['errors'])) {
                     $_SESSION['errors'] = $result['errors'];
                     $_SESSION['old'] = $_POST;
@@ -167,6 +193,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($action === 'update_user') {
                 $userId = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 0;
                 $result = UserController::updateProfile($userId, $_POST);
+                if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+                    header('Content-Type: application/json');
+                    echo json_encode($result);
+                    exit;
+                }
                 if (!empty($result['errors'])) {
                     $_SESSION['errors'] = $result['errors'];
                     $_SESSION['old'] = $_POST;
@@ -181,6 +212,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($action === 'delete_user') {
                 $userId = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 0;
                 $result = UserController::deleteUser($userId);
+                
+                if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+                    header('Content-Type: application/json');
+                    echo json_encode($result);
+                    exit;
+                }
+
                 if (!empty($result['errors'])) {
                     $_SESSION['errors'] = $result['errors'];
                 } else {

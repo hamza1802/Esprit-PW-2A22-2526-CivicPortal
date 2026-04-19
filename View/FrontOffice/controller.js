@@ -21,7 +21,7 @@ const controller = {
             }
             if (window.SERVER_MESSAGES.errors && Object.keys(window.SERVER_MESSAGES.errors).length > 0) {
                 const errorStr = Object.values(window.SERVER_MESSAGES.errors).join('\n');
-                alert("Errors:\n" + errorStr);
+                view.renderToast(errorStr, 'error');
             }
         }
     },

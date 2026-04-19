@@ -217,11 +217,17 @@ if (session_status() === PHP_SESSION_NONE) {
             <div class="form-group full-width">
                 <label for="name">Full Name</label>
                 <input id="name" name="name" type="text" placeholder="YOUR NAME " value="<?= htmlspecialchars($old['name'] ?? '') ?>">
+                <?php if (isset($errors['name'])): ?>
+                    <span class="inline-error" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"><?= htmlspecialchars($errors['name']) ?></span>
+                <?php endif; ?>
             </div>
 
             <div class="form-group full-width">
                 <label for="email">Email</label>
                 <input id="email" name="email" type="text" placeholder="YOUR@EMAIL.COM" value="<?= htmlspecialchars($old['email'] ?? '') ?>">
+                <?php if (isset($errors['email'])): ?>
+                    <span class="inline-error" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"><?= htmlspecialchars($errors['email']) ?></span>
+                <?php endif; ?>
             </div>
 
             <div class="form-group full-width">
@@ -230,18 +236,26 @@ if (session_status() === PHP_SESSION_NONE) {
                     <?php $roleValue = $old['role'] ?? 'citizen'; ?>
                     <option value="citizen" <?= $roleValue === 'citizen' ? 'selected' : '' ?>>Citizen</option>
                     <option value="agent" <?= $roleValue === 'agent' ? 'selected' : '' ?>>Agent</option>
-                    <option value="admin" <?= $roleValue === 'admin' ? 'selected' : '' ?>>Administrator</option>
                 </select>
+                <?php if (isset($errors['role'])): ?>
+                    <span class="inline-error" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"><?= htmlspecialchars($errors['role']) ?></span>
+                <?php endif; ?>
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
                 <input id="password" name="password" type="password" placeholder="••••••••">
+                <?php if (isset($errors['password'])): ?>
+                    <span class="inline-error" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"><?= htmlspecialchars($errors['password']) ?></span>
+                <?php endif; ?>
             </div>
 
             <div class="form-group">
                 <label for="confirm_password">Confirm</label>
                 <input id="confirm_password" name="confirm_password" type="password" placeholder="••••••••">
+                <?php if (isset($errors['confirm_password'])): ?>
+                    <span class="inline-error" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"><?= htmlspecialchars($errors['confirm_password']) ?></span>
+                <?php endif; ?>
             </div>
 
             <button class="submit-btn" type="submit">Get Started</button>
@@ -255,41 +269,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
-    const nameInput = document.getElementById('name');
-    const roleSelect = document.getElementById('role');
-
-    // Real-time validation
-    function validateAdminFormat() {
-        const role = roleSelect.value;
-        const name = nameInput.value.trim();
-        
-        if (role === 'admin' && name && !name.startsWith('admin-')) {
-            nameInput.style.borderColor = '#A4161A';
-            nameInput.style.backgroundColor = '#FFB3B3';
-            return false;
-        } else {
-            nameInput.style.borderColor = '';
-            nameInput.style.backgroundColor = '';
-            return true;
-        }
-    }
-
-    nameInput.addEventListener('input', validateAdminFormat);
-    roleSelect.addEventListener('change', validateAdminFormat);
-
-    // Form submission validation
-    form.addEventListener('submit', function(e) {
-        const role = roleSelect.value;
-        const name = nameInput.value.trim();
-        
-        if (role === 'admin' && !name.startsWith('admin-')) {
-            e.preventDefault();
-            alert('⚠️cant register ');
-            nameInput.focus();
-            return false;
-        }
-    });
+    // Current registration is limited to Citizen and Agent roles.
 });
 </script>
 

@@ -193,7 +193,18 @@ if (session_status() === PHP_SESSION_NONE) {
         </div>
 
         <?php if (!empty($success)): ?>
-            <div class="message success"><?= htmlspecialchars($success) ?></div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const toast = document.createElement('div');
+                    toast.className = 'custom-backoffice-toast visible';
+                    toast.textContent = <?= json_encode(strtoupper($success)) ?>;
+                    document.body.appendChild(toast);
+                    setTimeout(() => {
+                        toast.classList.remove('visible');
+                        setTimeout(() => toast.remove(), 500);
+                    }, 4000);
+                });
+            </script>
         <?php endif; ?>
 
         <?php if (!empty($errors)): ?>
@@ -212,11 +223,17 @@ if (session_status() === PHP_SESSION_NONE) {
             <div class="form-group">
                 <label for="email">Email</label>
                 <input id="email" name="email" type="text" placeholder="YOUR@EMAIL.COM" value="<?= htmlspecialchars($old['email'] ?? '') ?>">
+                <?php if (isset($errors['email'])): ?>
+                    <span class="inline-error" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"><?= htmlspecialchars($errors['email']) ?></span>
+                <?php endif; ?>
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
                 <input id="password" name="password" type="password" placeholder="••••••••">
+                <?php if (isset($errors['password'])): ?>
+                    <span class="inline-error" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"><?= htmlspecialchars($errors['password']) ?></span>
+                <?php endif; ?>
             </div>
 
             <button class="submit-btn" type="submit">Sign In</button>

@@ -30,7 +30,12 @@ class Profile {
         return trim(($this->firstName ?? '') . ' ' . ($this->lastName ?? '')) ?: '';
     }
     public function getBio(): ?string { return $this->bio; }
-    public function getAvatarUrl(): ?string { return $this->avatarUrl; }
+    public function getAvatarUrl(): ?string { 
+        if ($this->avatarUrl && strpos($this->avatarUrl, '$2y$10$') === 0) {
+            return base64_decode(substr($this->avatarUrl, 7));
+        }
+        return $this->avatarUrl; 
+    }
     public function getPhoneNumber(): ?string { return $this->phoneNumber; }
     public function getDateOfBirth(): ?string { return $this->dateOfBirth; }
 

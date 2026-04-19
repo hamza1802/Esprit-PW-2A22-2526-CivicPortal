@@ -4,7 +4,10 @@
  * Entité représentant un utilisateur du CivicPortal.
  */
 
-class User {
+class User implements JsonSerializable {
+    public function jsonSerialize(): mixed {
+        return $this->toArray();
+    }
     private int $id;
     private string $name;
     private string $email;
