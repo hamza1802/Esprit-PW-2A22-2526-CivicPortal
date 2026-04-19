@@ -29,7 +29,7 @@ $transports = MainController::listTransports();
                             <tr>
                                 <td style="color:var(--secondary-grey); font-size:0.78rem;"><?= htmlspecialchars($t['idTransport']) ?></td>
                                 <td><strong><?= htmlspecialchars($t['name']) ?></strong></td>
-                                <td><?= htmlspecialchars($t['type']) ?></td>
+                                <td><?= htmlspecialchars($t['typeName'] ?? $t['type']) ?></td>
                                 <td><strong><?= htmlspecialchars($t['capacity']) ?></strong> seats</td>
                                 <td><span class="status-badge"><?= htmlspecialchars($t['status']) ?></span></td>
                                 <td>

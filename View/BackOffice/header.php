@@ -2,6 +2,7 @@
 /**
  * BackOffice Header
  */
+require_once __DIR__ . '/../../config.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -18,6 +19,7 @@
         </div>
         <ul class="nav-links">
             <li><a href="index.php">home</a></li>
+            <li><a href="showTransportType.php">types</a></li>
             <li><a href="showTransport.php">transports</a></li>
             <li><a href="showTrajet.php">trajets</a></li>
             <li><a href="showTicket.php">tickets</a></li>

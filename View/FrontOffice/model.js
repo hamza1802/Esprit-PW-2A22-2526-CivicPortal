@@ -14,7 +14,9 @@ const model = {
         ],
         serviceRequests: [],
         enrollments: [],
-        complaints: []
+        complaints: [],
+        transportTypes: [],
+        myTickets: []
     },
 
     async apiCall(action, data = {}) {
@@ -33,20 +35,40 @@ const model = {
         }
     },
 
+    async transportApi(action, data = {}) {
+        try {
+            const response = await fetch('../../api_transport.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, ...data })
+            });
+            const result = await response.json();
+            if (!result.success) throw new Error(result.error);
+            return result.data;
+        } catch (error) {
+            console.error("Transport API Error:", error);
+            return [];
+        }
+    },
+
     async sync() {
         const requests = await this.apiCall('get_requests');
         if (requests) this.state.serviceRequests = requests;
         
-        // Front office users generally don't get all complaints, but let's sync to emulate the backend state if needed.
-        // Even better, avoid loading them if unneeded.
+        // Sync transport types for dynamic rendering
+        const types = await this.transportApi('list_transport_types');
+        if (types) this.state.transportTypes = types;
     },
 
     getPrograms() {
         return this.state.programs;
     },
 
+    getTransportTypes() {
+        return this.state.transportTypes;
+    },
+
     getServiceRequests() {
-        // Filter requests for just this user (simulate isolation in UI)
         return this.state.serviceRequests.filter(r => r.userId === this.state.currentUser.id);
     },
 
@@ -91,19 +113,7 @@ const model = {
     },
 
     async getTrajetsByTypeAndSort(type, sortBy, order) {
-        try {
-            const response = await fetch('../../api_transport.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'list_trajets', type, sortBy, order })
-            });
-            const result = await response.json();
-            if (!result.success) throw new Error(result.error);
-            return result.data;
-        } catch (error) {
-            console.error("API Error:", error);
-            return [];
-        }
+        return await this.transportApi('list_trajets', { type, sortBy, order });
     },
 
     async bookTicket(idTrajet, citizenName, idUser) {
@@ -117,6 +127,24 @@ const model = {
         } catch (error) {
             console.error("API Error:", error);
             return { success: false, error: 'Network error booking ticket.' };
+        }
+    },
+
+    async getMyTickets() {
+        return await this.transportApi('list_tickets_enriched');
+    },
+
+    async cancelTicket(idTicket) {
+        try {
+            const response = await fetch('../../api_transport.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'cancel_ticket', idTicket })
+            });
+            return await response.json();
+        } catch (error) {
+            console.error("API Error:", error);
+            return { success: false, error: 'Network error cancelling ticket.' };
         }
     }
 };

@@ -49,11 +49,14 @@ $trajets = MainController::listTrajets();
                                     </div>
                                 </td>
                                 <td>
-                                    <form action="../../Verification.php" method="POST" style="display:inline;" onsubmit="return confirm('Delete this trajet and all linked tickets?');">
-                                        <input type="hidden" name="action" value="deleteTrajet">
-                                        <input type="hidden" name="idTrajet" value="<?= $t['idTrajet'] ?>">
-                                        <button type="submit" class="btn btn-small btn-danger" title="Delete">🗑</button>
-                                    </form>
+                                    <div style="display:flex; gap:8px;">
+                                        <a href="updateTrajet.php?id=<?= $t['idTrajet'] ?>" class="btn btn-small" title="Edit">✎ Edit</a>
+                                        <form action="../../Verification.php" method="POST" style="display:inline;" onsubmit="return confirm('Delete this trajet and all linked tickets?');">
+                                            <input type="hidden" name="action" value="deleteTrajet">
+                                            <input type="hidden" name="idTrajet" value="<?= $t['idTrajet'] ?>">
+                                            <button type="submit" class="btn btn-small btn-danger" title="Delete">🗑</button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

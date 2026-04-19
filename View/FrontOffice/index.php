@@ -34,6 +34,8 @@ AppModel::init();
     <div id="toast-container" class="toast-container"></div>
 
     <!-- Scripts -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module" src="app.js"></script>
 </body>
 </html>

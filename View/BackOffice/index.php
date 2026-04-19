@@ -18,6 +18,11 @@ require_once 'header.php';
     <section class="page-container">
         <h2>Transport Management</h2>
         <div class="editorial-grid">
+            <div class="editorial-card">
+                <h3>🏷️ Types</h3>
+                <p>Define and manage transport categories — planes, buses, trains — with photos and descriptions for citizen-facing display.</p>
+                <a href="showTransportType.php" class="btn" style="align-self: flex-start; margin-top: auto;">Manage Types</a>
+            </div>
             <div class="editorial-card editorial-highlight">
                 <h3>🚐 Fleet</h3>
                 <p>View and manage the municipality's physical vehicles — planes, buses, trains, and metros.</p>
@@ -25,7 +30,7 @@ require_once 'header.php';
             </div>
             <div class="editorial-card">
                 <h3>🗺️ Routes</h3>
-                <p>Schedule trips by assigning vehicles to routes with departure times and pricing.</p>
+                <p>Schedule trips by assigning vehicles to routes with departure times, pricing, and interactive map support.</p>
                 <a href="showTrajet.php" class="btn" style="align-self: flex-start; margin-top: auto;">Manage Routes</a>
             </div>
             <div class="editorial-card">

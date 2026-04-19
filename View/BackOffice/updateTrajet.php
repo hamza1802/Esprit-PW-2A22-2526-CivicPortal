@@ -2,6 +2,11 @@
 require_once '../../Controller/MainController.php';
 require_once 'header.php';
 
+$id = $_GET['id'] ?? null;
+if (!$id) { echo "ID not provided"; exit; }
+$trajet = MainController::showTrajet($id);
+if (!$trajet) { echo "Trajet not found"; exit; }
+
 $transports = MainController::listTransports();
 ?>
 
@@ -17,28 +22,29 @@ $transports = MainController::listTransports();
         <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:2rem; border-bottom: var(--border-main); padding-bottom:1rem;">
             <h2 style="margin-bottom:0; border-bottom:none; padding-bottom:0;">
                 <a href="showTrajet.php" style="text-decoration:none; color:var(--secondary-grey);" title="Back">←</a>
-                Add New Trajet
+                Edit Trajet
             </h2>
         </div>
         <div class="form-card">
             <form action="../../Verification.php" method="POST" id="trajetForm">
-                <input type="hidden" name="action" value="addTrajet">
-                <input type="hidden" name="depLat" id="depLat">
-                <input type="hidden" name="depLng" id="depLng">
-                <input type="hidden" name="depAddress" id="depAddress">
-                <input type="hidden" name="destLat" id="destLat">
-                <input type="hidden" name="destLng" id="destLng">
-                <input type="hidden" name="destAddress" id="destAddress">
+                <input type="hidden" name="action" value="updateTrajet">
+                <input type="hidden" name="idTrajet" value="<?= $trajet['idTrajet'] ?>">
+                <input type="hidden" name="depLat" id="depLat" value="<?= htmlspecialchars($trajet['depLat'] ?? '') ?>">
+                <input type="hidden" name="depLng" id="depLng" value="<?= htmlspecialchars($trajet['depLng'] ?? '') ?>">
+                <input type="hidden" name="depAddress" id="depAddress" value="<?= htmlspecialchars($trajet['depAddress'] ?? '') ?>">
+                <input type="hidden" name="destLat" id="destLat" value="<?= htmlspecialchars($trajet['destLat'] ?? '') ?>">
+                <input type="hidden" name="destLng" id="destLng" value="<?= htmlspecialchars($trajet['destLng'] ?? '') ?>">
+                <input type="hidden" name="destAddress" id="destAddress" value="<?= htmlspecialchars($trajet['destAddress'] ?? '') ?>">
 
                 <div style="display:flex; gap:2rem; flex-wrap:wrap;">
                     <div class="form-group" style="flex:1; min-width:200px; position:relative;">
                         <label for="departure">From (Departure)</label>
-                        <input type="text" id="departure" name="departure" placeholder="Search a location..." required autocomplete="off">
+                        <input type="text" id="departure" name="departure" value="<?= htmlspecialchars($trajet['departure']) ?>" required autocomplete="off">
                         <div id="depSuggestions" class="autocomplete-list" style="display:none;"></div>
                     </div>
                     <div class="form-group" style="flex:1; min-width:200px; position:relative;">
                         <label for="destination">To (Destination)</label>
-                        <input type="text" id="destination" name="destination" placeholder="Search a location..." required autocomplete="off">
+                        <input type="text" id="destination" name="destination" value="<?= htmlspecialchars($trajet['destination']) ?>" required autocomplete="off">
                         <div id="destSuggestions" class="autocomplete-list" style="display:none;"></div>
                     </div>
                 </div>
@@ -47,7 +53,7 @@ $transports = MainController::listTransports();
                 <div style="margin-bottom:1.5rem;">
                     <label style="display:block; margin-bottom:8px; font-size:0.82rem; font-weight:600; color:var(--secondary-grey); text-transform:uppercase; letter-spacing:0.3px;">Route Preview</label>
                     <div id="map" style="width:100%; height:380px; border-radius:12px; border:var(--border-main); background:#1a1a2e;"></div>
-                    <p id="mapStatus" style="font-size:0.8rem; color:var(--secondary-grey); margin-top:6px;">Select departure and destination to preview the route.</p>
+                    <p id="mapStatus" style="font-size:0.8rem; color:var(--secondary-grey); margin-top:6px;">Loading existing route...</p>
                 </div>
 
                 <div style="display:flex; gap:2rem; flex-wrap:wrap;">
@@ -57,23 +63,23 @@ $transports = MainController::listTransports();
                             <option value="">Select vehicle</option>
                             <?php foreach ($transports as $t): ?>
                                 <?php if ($t['status'] === 'Active'): ?>
-                                    <option value="<?= $t['idTransport'] ?>"><?= htmlspecialchars($t['name']) ?> (<?= $t['typeName'] ?? $t['type'] ?>, <?= $t['capacity'] ?> seats)</option>
+                                    <option value="<?= $t['idTransport'] ?>" <?= ($trajet['idTransport'] == $t['idTransport']) ? 'selected' : '' ?>><?= htmlspecialchars($t['name']) ?> (<?= $t['typeName'] ?? $t['type'] ?>, <?= $t['capacity'] ?> seats)</option>
                                 <?php endif; ?>
                             <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="form-group" style="flex:1; min-width:200px;">
                         <label for="departureTime">Departure Time</label>
-                        <input type="datetime-local" id="departureTime" name="departureTime" required>
+                        <input type="datetime-local" id="departureTime" name="departureTime" value="<?= date('Y-m-d\TH:i', strtotime($trajet['departureTime'])) ?>" required>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="price">Price (TND)</label>
-                    <input type="number" id="price" name="price" min="0" step="0.1" placeholder="e.g. 2.500" required>
+                    <input type="number" id="price" name="price" min="0" step="0.1" value="<?= htmlspecialchars($trajet['price']) ?>" required>
                 </div>
                 <div style="margin-top:25px; display:flex; gap:15px;">
                     <a href="showTrajet.php" class="btn">Cancel</a>
-                    <button type="submit" class="btn btn-primary">Save Trajet</button>
+                    <button type="submit" class="btn btn-primary">Update Trajet</button>
                 </div>
             </form>
         </div>
@@ -157,11 +163,11 @@ function drawRoute() {
                 map.fitBounds(routeLine.getBounds(), { padding: [40, 40] });
                 const dist = (data.routes[0].distance / 1000).toFixed(1);
                 const dur = Math.round(data.routes[0].duration / 60);
-                document.getElementById('mapStatus').textContent = '✓ Route calculated — ' + dist + ' km, ' + dur + ' min';
+                document.getElementById('mapStatus').textContent = '✓ Route — ' + dist + ' km, ' + dur + ' min';
                 document.getElementById('mapStatus').style.color = '#22c55e';
             } else {
                 map.fitBounds([[depLat, depLng], [destLat, destLng]], { padding: [40, 40] });
-                document.getElementById('mapStatus').textContent = '⚠ Driving route unavailable. Markers placed.';
+                document.getElementById('mapStatus').textContent = '⚠ Route unavailable. Markers placed.';
                 document.getElementById('mapStatus').style.color = '#f59e0b';
             }
         })
@@ -171,6 +177,9 @@ function drawRoute() {
             document.getElementById('mapStatus').style.color = '#f59e0b';
         });
 }
+
+// Draw existing route on load
+drawRoute();
 </script>
 </body>
 </html>

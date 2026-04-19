@@ -16,6 +16,14 @@ $action = $data['action'];
 switch ($action) {
 
     // ============================================
+    // TRANSPORT TYPE
+    // ============================================
+    case 'list_transport_types':
+        $types = MainController::listTransportTypes();
+        echo json_encode(['success' => true, 'data' => $types]);
+        break;
+
+    // ============================================
     // TRANSPORT CRUD
     // ============================================
     case 'list_transports':
@@ -29,13 +37,13 @@ switch ($action) {
         break;
 
     case 'add_transport':
-        $transport = new Transport(null, $data['name'], $data['type'], (int)$data['capacity'], $data['status']);
+        $transport = new Transport(null, $data['name'], $data['type'], (int)$data['capacity'], $data['status'], isset($data['idTransportType']) ? (int)$data['idTransportType'] : null);
         MainController::addTransport($transport);
         echo json_encode(['success' => true]);
         break;
 
     case 'update_transport':
-        $transport = new Transport($data['idTransport'], $data['name'], $data['type'], (int)$data['capacity'], $data['status']);
+        $transport = new Transport($data['idTransport'], $data['name'], $data['type'], (int)$data['capacity'], $data['status'], isset($data['idTransportType']) ? (int)$data['idTransportType'] : null);
         MainController::updateTransport($transport, $data['idTransport']);
         echo json_encode(['success' => true]);
         break;
@@ -78,14 +86,27 @@ switch ($action) {
                 'price' => $t['price'],
                 'transportName' => $t['transportName'],
                 'capacity' => $occ['capacity'],
-                'sold' => $occ['sold']
+                'sold' => $occ['sold'],
+                'depLat' => $t['depLat'],
+                'depLng' => $t['depLng'],
+                'depAddress' => $t['depAddress'],
+                'destLat' => $t['destLat'],
+                'destLng' => $t['destLng'],
+                'destAddress' => $t['destAddress']
             ];
         }
         echo json_encode(['success' => true, 'data' => $enriched]);
         break;
 
     case 'add_trajet':
-        $trajet = new Trajet(null, $data['departure'], $data['destination'], (int)$data['idTransport'], $data['departureTime'], (float)$data['price']);
+        $trajet = new Trajet(null, $data['departure'], $data['destination'], (int)$data['idTransport'], $data['departureTime'], (float)$data['price'],
+            isset($data['depLat']) ? (float)$data['depLat'] : null,
+            isset($data['depLng']) ? (float)$data['depLng'] : null,
+            $data['depAddress'] ?? null,
+            isset($data['destLat']) ? (float)$data['destLat'] : null,
+            isset($data['destLng']) ? (float)$data['destLng'] : null,
+            $data['destAddress'] ?? null
+        );
         MainController::addTrajet($trajet);
         echo json_encode(['success' => true]);
         break;
@@ -100,6 +121,11 @@ switch ($action) {
     // ============================================
     case 'list_tickets':
         $tickets = MainController::listTickets();
+        echo json_encode(['success' => true, 'data' => $tickets]);
+        break;
+
+    case 'list_tickets_enriched':
+        $tickets = MainController::listTicketsEnriched();
         echo json_encode(['success' => true, 'data' => $tickets]);
         break;
 

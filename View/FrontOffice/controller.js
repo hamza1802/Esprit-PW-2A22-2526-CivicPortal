@@ -23,6 +23,9 @@ const controller = {
             if (action === 'enroll') {
                 this.handleEnrollment(id);
             }
+            if (action === 'cancel-ticket') {
+                this.handleCancelTicket(id);
+            }
         });
 
         window.addEventListener('hashchange', () => {
@@ -72,7 +75,11 @@ const controller = {
                 view.renderComplaintForm();
                 break;
             case '#transport':
-                view.renderTransport();
+                view.renderTransport(model.getTransportTypes());
+                break;
+            case '#my-tickets':
+                const tickets = await model.getMyTickets();
+                view.renderMyTickets(tickets, user);
                 break;
             default:
                 if (hash.startsWith('#transport_list')) {
@@ -81,7 +88,6 @@ const controller = {
                     const sortBy = urlParams.get('sort') || 'departure';
                     const order = urlParams.get('order') || 'ASC';
                     
-                    // Fetch from backend API
                     const trajets = await model.getTrajetsByTypeAndSort(type, sortBy, order);
                     view.renderTransportList(type, trajets, sortBy, order);
                 } else {
@@ -129,9 +135,22 @@ const controller = {
         const result = await model.bookTicket(idTrajet, citizenName, idUser);
         if (result && result.success) {
             view.renderToast('Ticket successfully booked!');
-            this.handleRouting(); // Refresh the list to reflect occupancy
+            window.location.hash = '#my-tickets';
         } else {
             view.renderToast(result && result.error ? result.error : 'Failed to book ticket', 'danger');
+        }
+    },
+
+    async handleCancelTicket(idTicket) {
+        if (!confirm('Cancel this ticket?')) return;
+        const result = await model.cancelTicket(idTicket);
+        if (result && result.success) {
+            view.renderToast('Ticket cancelled.');
+            // Refresh tickets view
+            const tickets = await model.getMyTickets();
+            view.renderMyTickets(tickets, model.getCurrentUser());
+        } else {
+            view.renderToast('Failed to cancel ticket.', 'danger');
         }
     }
 };

@@ -1,4 +1,8 @@
-<?php require_once 'header.php'; ?>
+<?php
+require_once '../../Controller/MainController.php';
+require_once 'header.php';
+$transportTypes = MainController::listTransportTypes();
+?>
 
 <main id="app">
     <section class="page-container">
@@ -17,14 +21,15 @@
                 </div>
                 <div style="display:flex; gap:2rem; flex-wrap:wrap;">
                     <div class="form-group" style="flex:1; min-width:200px;">
-                        <label for="type">Type</label>
-                        <select id="type" name="type" required>
+                        <label for="idTransportType">Type</label>
+                        <select id="idTransportType" name="idTransportType" required>
                             <option value="">Select type</option>
-                            <option value="Plane">Plane</option>
-                            <option value="Bus">Bus</option>
-                            <option value="Train">Train</option>
-                            <option value="Metro">Metro</option>
+                            <?php foreach ($transportTypes as $tt): ?>
+                                <option value="<?= $tt['idTransportType'] ?>"><?= htmlspecialchars($tt['name']) ?></option>
+                            <?php endforeach; ?>
                         </select>
+                        <!-- Hidden field: auto-filled by JS for backward compat with transport.type column -->
+                        <input type="hidden" id="type" name="type" value="">
                     </div>
                     <div class="form-group" style="flex:1; min-width:200px;">
                         <label for="capacity">Capacity (seats)</label>
@@ -47,5 +52,11 @@
         </div>
     </section>
 </main>
+<script>
+// Sync hidden type field with transport type name
+document.getElementById('idTransportType').addEventListener('change', function() {
+    document.getElementById('type').value = this.options[this.selectedIndex].text;
+});
+</script>
 </body>
 </html>

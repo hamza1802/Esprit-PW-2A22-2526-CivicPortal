@@ -3,15 +3,10 @@ require_once '../../Controller/MainController.php';
 require_once 'header.php';
 
 $id = $_GET['id'] ?? null;
-if (!$id) {
-    echo "ID not provided";
-    exit;
-}
+if (!$id) { echo "ID not provided"; exit; }
 $t = MainController::showTransport($id);
-if (!$t) {
-    echo "Transport not found";
-    exit;
-}
+if (!$t) { echo "Transport not found"; exit; }
+$transportTypes = MainController::listTransportTypes();
 ?>
 
 <main id="app">
@@ -32,13 +27,14 @@ if (!$t) {
                 </div>
                 <div style="display:flex; gap:2rem; flex-wrap:wrap;">
                     <div class="form-group" style="flex:1; min-width:200px;">
-                        <label for="type">Type</label>
-                        <select id="type" name="type" required>
-                            <option value="Plane" <?= $t['type'] === 'Plane' ? 'selected' : '' ?>>Plane</option>
-                            <option value="Bus" <?= $t['type'] === 'Bus' ? 'selected' : '' ?>>Bus</option>
-                            <option value="Train" <?= $t['type'] === 'Train' ? 'selected' : '' ?>>Train</option>
-                            <option value="Metro" <?= $t['type'] === 'Metro' ? 'selected' : '' ?>>Metro</option>
+                        <label for="idTransportType">Type</label>
+                        <select id="idTransportType" name="idTransportType" required>
+                            <option value="">Select type</option>
+                            <?php foreach ($transportTypes as $tt): ?>
+                                <option value="<?= $tt['idTransportType'] ?>" <?= ($t['idTransportType'] == $tt['idTransportType']) ? 'selected' : '' ?>><?= htmlspecialchars($tt['name']) ?></option>
+                            <?php endforeach; ?>
                         </select>
+                        <input type="hidden" id="type" name="type" value="<?= htmlspecialchars($t['type']) ?>">
                     </div>
                     <div class="form-group" style="flex:1; min-width:200px;">
                         <label for="capacity">Capacity (seats)</label>
@@ -61,5 +57,10 @@ if (!$t) {
         </div>
     </section>
 </main>
+<script>
+document.getElementById('idTransportType').addEventListener('change', function() {
+    document.getElementById('type').value = this.options[this.selectedIndex].text;
+});
+</script>
 </body>
 </html>
