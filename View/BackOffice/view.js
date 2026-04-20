@@ -16,7 +16,7 @@ const view = {
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
-        toast.innerText = message;
+        toast.innerHTML = `<i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i> ${message}`;
         container.appendChild(toast);
         
         setTimeout(() => {
@@ -31,27 +31,43 @@ const view = {
             ? `<span class="nav-dot">${enrollmentCounts.pending}</span>` : '';
 
         const links = `
-            <div class="nav-brand" style="color:var(--primary-red);">
-                CivicPortal Staff
+            <div class="nav-brand">
+                <i class="bi bi-building"></i> CivicPortal<br/><span style="font-size:0.8rem;opacity:0.7;font-weight:600;">STAFF PORTAL</span>
             </div>
             <ul class="nav-links">
-                <li><a href="#home">home</a></li>
+                <li><a href="#home"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                 ${role === 'worker' ? `
-                    <li><a href="#worker-dashboard">dashboard</a></li>
-                    <li><a href="#manage-programs" style="position:relative;">programs ${totalBadge}</a></li>
+                    <li><a href="#worker-dashboard"><i class="bi bi-clipboard2-check"></i> Service Queue</a></li>
+                    <li><a href="#manage-programs"><i class="bi bi-tree"></i> Programs ${totalBadge}</a></li>
                 ` : ''}
                 ${role === 'admin' ? `
-                    <li><a href="#admin-stats">statistics</a></li>
-                    <li><a href="#manage-programs" style="position:relative;">programs ${totalBadge}</a></li>
-                    <li><a href="#admin-inbox">inbox</a></li>
+                    <li><a href="#admin-stats"><i class="bi bi-bar-chart-line"></i> Statistics</a></li>
+                    <li><a href="#manage-programs"><i class="bi bi-tree"></i> Programs ${totalBadge}</a></li>
+                    <li><a href="#admin-inbox"><i class="bi bi-envelope-open"></i> Inbox</a></li>
                 ` : ''}
-                <li><a href="#profile">profile</a></li>
+                <li><a href="#profile"><i class="bi bi-person-circle"></i> Profile</a></li>
+                <li style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
+                    <a href="../FrontOffice/index.php" style="opacity:0.6;"><i class="bi bi-box-arrow-left"></i> Front Office</a>
+                </li>
             </ul>
             <div class="user-controls">
-                <div class="user-role-badge" style="background:var(--primary-red);color:white;">${role}</div>
+                <div class="user-role-badge">${role}</div>
             </div>
         `;
         nav.innerHTML = links;
+        
+        // Highlight active link
+        setTimeout(() => {
+            const hash = window.location.hash || '#home';
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                // simple startswith for program detail views
+                if (hash.startsWith(link.getAttribute('href'))) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        }, 50);
     },
 
     renderHome(user) {
@@ -143,8 +159,8 @@ const view = {
                 <td>${r.date}</td>
                 <td><span class="status-badge status-${r.status}">${r.status}</span></td>
                 <td>
-                    <button class="btn btn-small btn-success" data-action="validate" data-id="${r.id}" style="margin-right: 5px;">VALIDATE</button>
-                    <button class="btn btn-small btn-danger" data-action="reject" data-id="${r.id}">REJECT</button>
+                    <button class="btn btn-small btn-success" data-action="validate" data-id="${r.id}" style="margin-right: 5px;"><i class="bi bi-check-lg"></i> VALIDATE</button>
+                    <button class="btn btn-small btn-danger" data-action="reject" data-id="${r.id}"><i class="bi bi-x-lg"></i> REJECT</button>
                 </td>
             </tr>
         `).join('');
@@ -181,19 +197,19 @@ const view = {
                 <h2 class="reveal">System Statistics</h2>
                 <div class="editorial-grid">
                     <div class="editorial-card reveal">
-                        <h3>Total Users</h3>
+                        <i class="bi bi-people-fill" style="font-size: 2rem; margin-bottom: 0.5rem; display: block; color: inherit;"></i><h3>Total Users</h3>
                         <p class="stats-number">${stats.usersCount}</p>
                     </div>
                     <div class="editorial-card reveal editorial-highlight">
-                        <h3>Service Requests</h3>
+                        <i class="bi bi-file-earmark-arrow-up" style="font-size: 2rem; margin-bottom: 0.5rem; display: block; color: inherit;"></i><h3>Service Requests</h3>
                         <p class="stats-number">${stats.requestsCount}</p>
                     </div>
                     <div class="editorial-card reveal">
-                        <h3>Active Programs</h3>
+                        <i class="bi bi-calendar2-event" style="font-size: 2rem; margin-bottom: 0.5rem; display: block; color: inherit;"></i><h3>Active Programs</h3>
                         <p class="stats-number">${stats.programsCount}</p>
                     </div>
                     <div class="editorial-card reveal">
-                        <h3>Enrollments</h3>
+                        <i class="bi bi-person-check" style="font-size: 2rem; margin-bottom: 0.5rem; display: block; color: inherit;"></i><h3>Enrollments</h3>
                         <p class="stats-number">${stats.enrollmentsCount}</p>
                     </div>
                 </div>
@@ -262,7 +278,7 @@ const view = {
                         <h3 style="margin: 0.5rem 0;">${p.title}</h3>
                         <p style="font-size: 0.95rem; flex-grow: 1; margin-bottom: 1rem;">${p.description.substring(0, 80)}${p.description.length > 80 ? '...' : ''}</p>
                         <div style="display: flex; gap: 0.5rem; align-items: center; font-size: 0.85rem; margin-bottom: 0.5rem;">
-                            <span style="font-weight:800;">📍 ${p.location}</span>
+                            <span style="font-weight:800;"><i class="bi bi-geo-alt-fill"></i> ${p.location}</span>
                             <span style="margin-left:auto; font-weight:800;">${enrolled}/${cap} enrolled</span>
                         </div>
                         <div class="capacity-track">
@@ -327,7 +343,7 @@ const view = {
         this.app.innerHTML = `
             <section class="page-container">
                 <div style="margin-bottom: 2rem;">
-                    <a href="#manage-programs" style="font-weight:800; text-transform:uppercase; text-decoration:none; color:var(--primary-navy); font-size:0.9rem; letter-spacing:1px;">&larr; Back to Programs</a>
+                    <a href="#manage-programs" style="font-weight:800; text-transform:uppercase; text-decoration:none; color:var(--primary-navy); font-size:0.9rem; letter-spacing:1px;"><i class="bi bi-arrow-left"></i> Back to Programs</a>
                 </div>
 
                 <div class="program-detail-hero reveal">
@@ -361,8 +377,8 @@ const view = {
                         <p style="font-size:0.8rem; font-weight:700; margin-top:0.5rem;">${fillPct}% capacity filled</p>
                         ${role === 'admin' ? `
                             <div style="display:flex; gap:0.5rem; margin-top:1.5rem;">
-                                <button class="btn btn-small btn-primary" data-action="edit-program" data-id="${program.id}">EDIT PROGRAM</button>
-                                <button class="btn btn-small btn-danger" data-action="delete-program" data-id="${program.id}">DELETE</button>
+                                <button class="btn btn-small btn-primary" data-action="edit-program" data-id="${program.id}"><i class="bi bi-pencil-square"></i> EDIT PROGRAM</button>
+                                <button class="btn btn-small btn-danger" data-action="delete-program" data-id="${program.id}"><i class="bi bi-trash3"></i> DELETE</button>
                             </div>
                         ` : ''}
                     </div>
@@ -437,7 +453,7 @@ const view = {
                             <label for="prog-image">Program Image (Visual Identity)</label>
                             <div style="display: flex; gap: 1rem; align-items: center;">
                                 <input type="file" id="prog-image" name="image" accept="image/*" style="flex: 1;">
-                                <button type="button" class="btn" id="btn-generate-image" style="padding: 0.8rem 1.5rem; font-size: 0.9rem;">✨ GENERATE WITH AI</button>
+                                <button type="button" class="btn" id="btn-generate-image" style="padding: 0.8rem 1.5rem; font-size: 0.9rem;"><i class="bi bi-stars"></i> GENERATE WITH AI</button>
                             </div>
                             <div id="prog-image-preview" style="margin-top: 1rem;">
                                 ${isEdit && program.image && program.image !== 'default.jpg' ? `<img src="../assets/images/${program.image}" style="max-width: 200px; border: var(--border-main);" />` : ''}

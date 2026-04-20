@@ -141,9 +141,9 @@ const model = {
         const stats = await this.apiCall('get_stats');
         return stats || {
             usersCount: 3, // Total simulation
-            programsCount: this.state.programsCount,
+            programsCount: this.state.programs.length,
             requestsCount: this.state.serviceRequests.length,
-            enrollmentsCount: this.state.enrollmentsCount,
+            enrollmentsCount: 0, // Fallback since we don't track all enrollments globally
             complaintsCount: this.state.complaints.length
         };
     }

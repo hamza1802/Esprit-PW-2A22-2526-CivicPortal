@@ -16,7 +16,7 @@ const view = {
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
-        toast.innerText = message;
+        toast.innerHTML = `<i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i> ${message}`;
         container.appendChild(toast);
         
         setTimeout(() => {
@@ -29,7 +29,7 @@ const view = {
         const nav = document.querySelector('nav');
         const links = `
             <div class="nav-brand">
-                CivicPortal
+                <i class="bi bi-building"></i> CivicPortal
             </div>
             <ul class="nav-links">
                 <li><a href="#home">home</a></li>
@@ -53,7 +53,7 @@ const view = {
                     <p>Welcome back, ${user.name}. Navigate municipal services with unmatched clarity and precision.</p>
                     <div class="search-container">
                         <input type="text" class="search-bar" placeholder="search services, programs, documents...">
-                        <button class="search-btn" onclick="alert('Search simulated!')">Search</button>
+                        <button class="search-btn" onclick="alert('Search simulated!')"><i class="bi bi-search"></i> Search</button>
                     </div>
                 </section>
             </div>
@@ -61,18 +61,21 @@ const view = {
                 <h2 class="reveal">Directory of Services</h2>
                 <div class="editorial-grid">
                     <div class="editorial-card editorial-highlight reveal">
+                        <i class="bi bi-file-earmark-text" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
                         <h3>Document Submission</h3>
                         <p>Submit critical civil documents securely online. Ensure civic records are updated without the need for physical visitation.</p>
                         <a href="#request-service" class="btn btn-primary" style="align-self: flex-start; margin-top: auto;">Start Filing</a>
                     </div>
                     
                     <div class="editorial-card reveal">
+                        <i class="bi bi-people" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
                         <h3>Community Programs</h3>
                         <p>Engage with local initiatives. Our Parks & Recreation catalog lists the latest activities sponsored by the city.</p>
                         <a href="#programs" class="btn" style="align-self: flex-start; margin-top: auto;">View Catalog</a>
                     </div>
 
                     <div class="editorial-card reveal">
+                        <i class="bi bi-megaphone" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
                         <h3>Grievances & Feedback</h3>
                         <p>Your voice matters. Submit complaints or feedback directly to the administration for review.</p>
                         <a href="#complaints" class="btn" style="align-self: flex-start; margin-top: auto;">Submit Grievance</a>
@@ -146,7 +149,7 @@ const view = {
                             </select>
                         </div>
                         <div class="form-group reveal">
-                            <label for="document-upload">Upload Documents (PDF/JPG)</label>
+                            <label for="document-upload"><i class="bi bi-cloud-upload"></i> Upload Documents (PDF/JPG)</label>
                             <input type="file" id="document-upload" name="file" required style="border:none; padding:1.5rem 0;">
                         </div>
                         <button type="submit" class="btn btn-primary reveal" style="width: 100%;">SUBMIT REQUEST</button>

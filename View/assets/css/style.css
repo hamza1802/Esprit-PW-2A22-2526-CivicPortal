@@ -7,6 +7,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap');
 
 :root {
+    /* Color System */
     --primary-navy: #1D2A44;
     --secondary-grey: #BCC1C1;
     --accent-blue: #3A86FF;
@@ -17,10 +18,44 @@
     --success: #27AE60;
     --danger: #E74C3C;
     
+    /* Glassmorphism Colors */
+    --glass-bg-light: rgba(255, 255, 255, 0.55);
+    --glass-bg-dark: rgba(255, 255, 255, 0.08);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.18);
+    --glow-primary: rgba(29, 42, 68, 0.3);
+    --glow-accent: rgba(58, 134, 255, 0.4);
+
+    /* Typography (One Font Pairing Site-Wide) */
+    --font-primary: 'Montserrat', sans-serif;
+    
+    /* Spacing Scale (8pt System) */
+    --space-4: 4px;
+    --space-8: 8px;
+    --space-12: 12px;
+    --space-16: 16px;
+    --space-24: 24px;
+    --space-32: 32px;
+    --space-48: 48px;
+
+    /* Border Radius (Min 12px) */
+    --radius-sm: 12px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-xl: 32px;
+
+    /* Shadow Scale */
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.2);
+    --glass-shadow: var(--shadow-md);
+
+    /* Motion */
+    --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
     /* Editorial Constants */
     --border-main: 1px solid var(--primary-navy);
     --border-light: 1px solid var(--secondary-grey);
-    --transition-fast: all 0.2s ease-in-out;
 }
 
 html {
@@ -804,4 +839,962 @@ nav {
     .program-mgmt-card { border-left: none; border-right: none; border-top: var(--border-main); }
     .program-detail-hero { grid-template-columns: 1fr; }
     .program-detail-img { min-height: 250px; border-right: none; border-bottom: var(--border-main); }
+}
+
+/* ==========================================================================
+   GLASSMORPHISM & TACTILE REFIT (OVERRIDE)
+   ========================================================================== */
+
+/* Base Body Update for tracking */
+body {
+    /* For the pseudo-element glare tracking */
+    position: relative;
+    /* Soft glowing background objects for depth */
+}
+
+/* Additional Hero background blob to give the glass something to blur */
+body::before {
+    content: '';
+    position: fixed;
+    top: -20%;
+    left: -10%;
+    width: 60vw;
+    height: 60vw;
+    background: radial-gradient(circle, var(--accent-blue) 0%, transparent 60%);
+    opacity: 0.15;
+    z-index: -1;
+    pointer-events: none;
+}
+body::after {
+    content: '';
+    position: fixed;
+    bottom: -20%;
+    right: -10%;
+    width: 50vw;
+    height: 50vw;
+    background: radial-gradient(circle, var(--primary-navy) 0%, transparent 60%);
+    opacity: 0.1;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Nav & Header Adjustments */
+nav {
+    background: var(--glass-bg-light) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: var(--glass-border) !important;
+    box-shadow: var(--glass-shadow);
+    border-radius: var(--radius-lg) !important;
+    margin: 1rem 2rem !important;
+    top: 10px;
+    position: sticky;
+}
+
+/* Grid & Cards (Remove sharp editorial grid) */
+.editorial-grid, .programs-mgmt-grid {
+    border: none !important;
+    gap: 2rem;
+    padding: 1rem 0;
+}
+
+.editorial-card, .program-card, .program-mgmt-card, .form-card, .status-widget {
+    background: var(--glass-bg-light) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: var(--glass-border) !important;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--glass-shadow);
+    overflow: hidden;
+    position: relative;
+    transform: scale(1);
+    transition: all 0.3s ease !important;
+}
+
+/* Hover States for Interactive Cards */
+.editorial-card:hover, .program-card:hover, .program-mgmt-card:hover {
+    transform: scale(1.02) translateY(-4px);
+    box-shadow: 0 12px 40px var(--glow-primary);
+    background: rgba(255, 255, 255, 0.7) !important; 
+    border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Hover typography preservation */
+.editorial-card:hover h3, 
+.editorial-card:hover p,
+.program-card:hover h3,
+.program-card:hover p,
+.program-mgmt-card:hover h3,
+.program-mgmt-card:hover p,
+.editorial-card:hover .stats-number {
+    color: var(--primary-navy) !important; 
+}
+
+/* Adjust dark highlight cards */
+.editorial-highlight {
+    background: var(--glass-bg-dark) !important;
+    background-color: var(--primary-navy) !important; 
+}
+.editorial-highlight:hover {
+    background: var(--accent-blue) !important;
+    box-shadow: 0 12px 40px var(--glow-accent);
+}
+.editorial-highlight h3, .editorial-highlight p,
+.editorial-highlight:hover h3, .editorial-highlight:hover p {
+    color: var(--bg-neutral) !important;
+}
+
+/* Images inside cards */
+.program-img-wrapper, .program-mgmt-header {
+    border-bottom: var(--glass-border) !important;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.program-img, .program-mgmt-img {
+    filter: grayscale(20%) !important; /* Softer grayscale */
+    transition: transform 0.5s ease, filter 0.5s ease;
+}
+.program-card:hover .program-img,
+.program-mgmt-card:hover .program-mgmt-img {
+    transform: scale(1.05);
+    filter: grayscale(0%) !important;
+}
+
+/* Badges override so they do not disappear on hover */
+.program-mgmt-card:hover .category-badge,
+.program-card:hover .category-badge {
+    color: var(--primary-navy) !important;
+    border-color: var(--primary-navy) !important;
+}
+
+/* Track overrides */
+.editorial-card:hover .progress-track,
+.program-mgmt-card:hover .capacity-track {
+    border-color: var(--border-main) !important;
+}
+.editorial-card:hover .progress-fill,
+.program-mgmt-card:hover .capacity-fill {
+    background: var(--primary-navy) !important;
+}
+
+/* Buttons */
+.btn {
+    border-radius: var(--radius-xl);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border: var(--glass-border) !important;
+    transition: all 0.3s ease !important;
+    position: relative;
+    overflow: hidden;
+    background: var(--glass-bg-light);
+}
+
+.btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 24px var(--glow-primary);
+    background: var(--primary-navy) !important;
+    color: var(--white) !important;
+}
+
+.btn-primary {
+    background: var(--primary-navy) !important;
+    color: var(--white) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+}
+.btn-primary:hover {
+    background: var(--accent-blue) !important;
+    box-shadow: 0 8px 24px var(--glow-accent);
+}
+
+/* Waitlisted, Cancelled mini-stats */
+.program-mgmt-card:hover .mini-stat {
+    border-color: var(--glass-border) !important;
+    color: var(--primary-navy) !important;
+}
+
+/* Search Bar */
+.search-container {
+    border-radius: var(--radius-xl);
+    background: var(--glass-bg-light);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: var(--glass-border) !important;
+    box-shadow: var(--glass-shadow);
+    overflow: hidden;
+}
+.search-bar {
+    border: none !important;
+    background: transparent !important;
+}
+.search-btn {
+    border-radius: var(--radius-xl);
+    margin: 4px;
+}
+
+/* Inputs & Forms */
+.form-group input, 
+.form-group select, 
+.form-group textarea {
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.4) !important;
+    border: var(--glass-border) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+.form-group input:focus, 
+.form-group select:focus,
+.form-group textarea:focus {
+    background: rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 0 0 3px rgba(58, 134, 255, 0.3);
+}
+
+/* Badges & Modals/Toasts */
+.category-badge, .status-badge, .user-role-badge, .role-switcher-container {
+    border-radius: var(--radius-xl);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.toast {
+    border-radius: var(--radius-lg);
+    background: rgba(29, 42, 68, 0.85) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: var(--glass-border) !important;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+}
+
+/* Radial Glow Tracking (CSS Custom Props driven by JS) */
+.glow-effect {
+    position: relative;
+}
+
+.glow-effect::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    background: radial-gradient(
+        circle 600px at var(--x, 50%) var(--y, 50%),
+        rgba(255, 255, 255, 0.3),
+        transparent 40%
+    );
+    z-index: 1;
+    border-radius: inherit;
+    transition: opacity 0.3s ease;
+    opacity: 0;
+}
+
+.glow-effect:hover::before {
+    opacity: 1;
+}
+
+/* Entry Animations Reveal Sequence */
+.reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.reveal.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ==========================================================================
+   FORM CONTROLS & UTILITIES (Refining Boxy Native Designs)
+   ========================================================================== */
+
+/* File Input Wrapper overrides */
+input[type="file"] {
+    padding: 0.5rem;
+    cursor: pointer;
+}
+
+/* File Selector Button Stylization */
+input[type="file"]::file-selector-button,
+::-webkit-file-upload-button {
+    background: var(--glass-bg-light) !important;
+    border: var(--glass-border) !important;
+    border-radius: var(--radius-xl);
+    padding: 0.8rem 1.5rem;
+    color: var(--primary-navy);
+    font-weight: 800;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    margin-right: 1.5rem;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+input[type="file"]::file-selector-button:hover,
+::-webkit-file-upload-button:hover {
+    background: var(--primary-navy) !important;
+    color: var(--white);
+    transform: scale(1.05);
+    box-shadow: 0 8px 24px var(--glow-primary);
+}
+
+/* Custom Checkboxes and Radios */
+input[type="checkbox"],
+input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    border: var(--glass-border) !important;
+    border-radius: var(--radius-sm);
+    background: var(--glass-bg-light);
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: var(--space-12);
+    position: relative;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+
+input[type="radio"] {
+    border-radius: var(--radius-sm);
+}
+
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+    background: var(--primary-navy) !important;
+    border-color: var(--primary-navy) !important;
+}
+
+input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid var(--white);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    width: 8px;
+    height: 8px;
+    background: var(--white);
+    border-radius: 50%;
+}
+
+/* Scrollbars Glassmorphism */
+::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-neutral);
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(29, 42, 68, 0.3);
+    border-radius: var(--radius-xl);
+    border: 3px solid var(--bg-neutral);
+    background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(29, 42, 68, 0.7);
+}
+
+/* Corner Fixes for Tables Native Boxiness */
+.table-responsive {
+    border-radius: var(--radius-lg);
+    border: var(--glass-border) !important;
+    overflow: hidden;
+}
+.data-table {
+    border-radius: var(--radius-lg);
+    border-style: hidden;
+}
+.data-table th:first-child { border-top-left-radius: var(--radius-lg); }
+.data-table th:last-child { border-top-right-radius: var(--radius-lg); }
+
+/* ==========================================================================
+   UIVERSE.IO COMPONENTS & ENHANCEMENTS
+   ========================================================================== */
+
+/* 1. Pulse Glow Buttons */
+.btn:hover {
+    animation: uv-pulse-glow 1.5s infinite;
+}
+.btn-primary:hover {
+    animation: uv-pulse-glow-accent 1.5s infinite;
+}
+@keyframes uv-pulse-glow {
+    0% { box-shadow: 0 0 0 0 rgba(29, 42, 68, 0.4); }
+    70% { box-shadow: 0 0 0 15px rgba(29, 42, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(29, 42, 68, 0); }
+}
+@keyframes uv-pulse-glow-accent {
+    0% { box-shadow: 0 0 0 0 rgba(58, 134, 255, 0.5); }
+    70% { box-shadow: 0 0 0 15px rgba(58, 134, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(58, 134, 255, 0); }
+}
+
+/* 2. Animated Input Focus Ring & Search Expanding */
+.form-group input, .form-group select, .form-group textarea, .search-bar {
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1), 0 0 0 3px rgba(58, 134, 255, 0.3) !important;
+}
+.search-container:focus-within {
+    box-shadow: 0 8px 25px rgba(58, 134, 255, 0.25) !important;
+    transform: scale(1.02);
+}
+
+/* 3. Card Shimmer Border on Hover */
+.editorial-card::before, .program-card::before, .program-mgmt-card::before, .form-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.8) 50%, transparent 60%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    background-size: 200% 200%;
+}
+.editorial-card:hover::before, .program-card:hover::before, .program-mgmt-card:hover::before, .form-card:hover::before {
+    opacity: 1;
+    animation: uv-shimmer-border 2s linear infinite;
+}
+@keyframes uv-shimmer-border {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* 4. Orbital Spinner Loader */
+.uv-loader-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 100px;
+}
+.uv-loader {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+}
+.uv-loader-orbit {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    border: 3px solid transparent;
+}
+.uv-loader-orbit:nth-child(1) {
+    border-top-color: var(--primary-navy);
+    animation: uv-spin 1.5s linear infinite;
+}
+.uv-loader-orbit:nth-child(2) {
+    border-right-color: var(--accent-blue);
+    width: 80%; height: 80%;
+    top: 10%; left: 10%;
+    animation: uv-spin 2s linear infinite reverse;
+}
+.uv-loader-orbit:nth-child(3) {
+    border-bottom-color: var(--success);
+    width: 60%; height: 60%;
+    top: 20%; left: 20%;
+    animation: uv-spin 1s linear infinite;
+}
+@keyframes uv-spin { 100% { transform: rotate(360deg); } }
+.uv-loader-text {
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--primary-navy);
+    animation: uv-pulse 1.5s ease-in-out infinite;
+}
+@keyframes uv-pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+/* 5. Toasts - Slide with Progress */
+.toast {
+    position: relative;
+    overflow: hidden;
+    padding: 1.2rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: uv-toast-slide-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+}
+.toast::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    height: 4px;
+    width: 100%;
+    vertical-align: middle;
+    margin-right: var(--space-12);
+    position: relative;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+
+input[type="radio"] {
+    border-radius: var(--radius-sm);
+}
+
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+    background: var(--primary-navy) !important;
+    border-color: var(--primary-navy) !important;
+}
+
+input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid var(--white);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    width: 8px;
+    height: 8px;
+    background: var(--white);
+    border-radius: 50%;
+}
+
+/* Scrollbars Glassmorphism */
+::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-neutral);
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(29, 42, 68, 0.3);
+    border-radius: var(--radius-xl);
+    border: 3px solid var(--bg-neutral);
+    background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(29, 42, 68, 0.7);
+}
+
+/* Corner Fixes for Tables Native Boxiness */
+.table-responsive {
+    border-radius: var(--radius-lg);
+    border: var(--glass-border) !important;
+    overflow: hidden;
+}
+.data-table {
+    border-radius: var(--radius-lg);
+    border-style: hidden;
+}
+.data-table th:first-child { border-top-left-radius: var(--radius-lg); }
+.data-table th:last-child { border-top-right-radius: var(--radius-lg); }
+
+/* ==========================================================================
+   UIVERSE.IO COMPONENTS & ENHANCEMENTS
+   ========================================================================== */
+
+/* 1. Pulse Glow Buttons */
+.btn:hover {
+    animation: uv-pulse-glow 1.5s infinite;
+}
+.btn-primary:hover {
+    animation: uv-pulse-glow-accent 1.5s infinite;
+}
+@keyframes uv-pulse-glow {
+    0% { box-shadow: 0 0 0 0 rgba(29, 42, 68, 0.4); }
+    70% { box-shadow: 0 0 0 15px rgba(29, 42, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(29, 42, 68, 0); }
+}
+@keyframes uv-pulse-glow-accent {
+    0% { box-shadow: 0 0 0 0 rgba(58, 134, 255, 0.5); }
+    70% { box-shadow: 0 0 0 15px rgba(58, 134, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(58, 134, 255, 0); }
+}
+
+/* 2. Animated Input Focus Ring & Search Expanding */
+.form-group input, .form-group select, .form-group textarea, .search-bar {
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1), 0 0 0 3px rgba(58, 134, 255, 0.3) !important;
+}
+.search-container:focus-within {
+    box-shadow: 0 8px 25px rgba(58, 134, 255, 0.25) !important;
+    transform: scale(1.02);
+}
+
+/* 3. Card Shimmer Border on Hover */
+.editorial-card::before, .program-card::before, .program-mgmt-card::before, .form-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.8) 50%, transparent 60%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    background-size: 200% 200%;
+}
+.editorial-card:hover::before, .program-card:hover::before, .program-mgmt-card:hover::before, .form-card:hover::before {
+    opacity: 1;
+    animation: uv-shimmer-border 2s linear infinite;
+}
+@keyframes uv-shimmer-border {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* 4. Orbital Spinner Loader */
+.uv-loader-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 100px;
+}
+.uv-loader {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+}
+.uv-loader-orbit {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    border: 3px solid transparent;
+}
+.uv-loader-orbit:nth-child(1) {
+    border-top-color: var(--primary-navy);
+    animation: uv-spin 1.5s linear infinite;
+}
+.uv-loader-orbit:nth-child(2) {
+    border-right-color: var(--accent-blue);
+    width: 80%; height: 80%;
+    top: 10%; left: 10%;
+    animation: uv-spin 2s linear infinite reverse;
+}
+.uv-loader-orbit:nth-child(3) {
+    border-bottom-color: var(--success);
+    width: 60%; height: 60%;
+    top: 20%; left: 20%;
+    animation: uv-spin 1s linear infinite;
+}
+@keyframes uv-spin { 100% { transform: rotate(360deg); } }
+.uv-loader-text {
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--primary-navy);
+    animation: uv-pulse 1.5s ease-in-out infinite;
+}
+@keyframes uv-pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+/* 5. Toasts - Slide with Progress */
+.toast {
+    position: relative;
+    overflow: hidden;
+    padding: 1.2rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: uv-toast-slide-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+}
+.toast::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    height: 4px;
+    width: 100%;
+    background: var(--accent-blue);
+    animation: uv-toast-progress 3s linear forwards;
+}
+.toast-success::after { background: var(--success); }
+.toast-danger::after { background: var(--danger); }
+.toast i { font-size: 1.2rem; }
+
+@keyframes uv-toast-slide-in {
+    from { opacity: 0; transform: translateY(-40px) scale(0.9); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes uv-toast-progress { from { width: 100%; } to { width: 0%; } }
+
+/* 6. Toggle / Select custom dropdown styling */
+.role-switcher-container select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%231D2A44' class='bi bi-chevron-down' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 10px center !important;
+    padding-right: 30px !important;
+}
+nt;
+}
+
+/* ==========================================================================
+   DESIGN-TOKEN UTILITY CLASSES
+   Replaces inline styles in JS templates with reusable, token-based classes
+   ========================================================================== */
+
+/* Card Lead Icon (services directory, stats cards) */
+.card-icon {
+    font-size: 2rem;
+    margin-bottom: var(--space-16);
+    display: block;
+    color: inherit;
+}
+
+/* Filter / Toolbar Controls */
+.filter-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-32);
+    flex-wrap: wrap;
+    gap: var(--space-16);
+}
+
+.filter-toolbar h2 {
+    margin: 0;
+    border: none;
+    padding: 0;
+}
+
+.filter-actions {
+    display: flex;
+    gap: var(--space-16);
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-input {
+    flex-grow: 1;
+    padding: var(--space-16);
+    border: var(--border-main);
+    background: transparent;
+    font-family: var(--font-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-navy);
+    outline: none;
+    border-radius: var(--radius-md);
+}
+
+.filter-select {
+    padding: var(--space-16) var(--space-32) var(--space-16) var(--space-16);
+    border: var(--border-main);
+    background: transparent;
+    font-family: var(--font-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-navy);
+    outline: none;
+    cursor: pointer;
+    border-radius: var(--radius-md);
+}
+
+/* Button Full Width Variant */
+.btn-block {
+    width: 100%;
+}
+
+/* Button flex row */
+.btn-row {
+    display: flex;
+    gap: var(--space-16);
+    margin-top: var(--space-16);
+}
+
+.btn-row > .btn { flex: 1; }
+
+/* Card Bottom Action (anchored to bottom) */
+.card-action {
+    align-self: flex-start;
+    margin-top: auto;
+}
+
+/* Program Detail Meta Label */
+.meta-label {
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: var(--space-4);
+}
+
+/* Stats Summary Pill */
+.summary-pill {
+    font-weight: 800;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Detail Stats Layout */
+.detail-stats-row {
+    display: flex;
+    gap: var(--space-32);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-16);
+}
+
+/* Program Detail Meta Row */
+.detail-meta-row {
+    display: flex;
+    gap: var(--space-32);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-24);
+}
+
+/* Back Link */
+.back-link {
+    font-weight: 800;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--primary-navy);
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-8);
+    margin-bottom: var(--space-32);
+    transition: var(--transition-fast);
+}
+
+.back-link:hover {
+    color: var(--accent-blue);
+}
+
+/* Disabled Button State */
+.btn:disabled,
+.btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+    transform: none !important;
+    animation: none !important;
+}
+
+/* Focus Visible State (Accessibility) */
+.btn:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+    outline: 3px solid var(--accent-blue);
+    outline-offset: 2px;
+}
+
+/* Skip Navigation (Accessibility) */
+.skip-link {
+    position: absolute;
+    top: -100%;
+    left: var(--space-16);
+    background: var(--primary-navy);
+    color: var(--white);
+    padding: var(--space-12) var(--space-24);
+    border-radius: var(--radius-md);
+    z-index: 9999;
+    font-weight: 800;
+    text-decoration: none;
+    transition: var(--transition-fast);
+}
+
+.skip-link:focus {
+    top: var(--space-16);
+}
+
+/* Program Detail Image (Glassmorphism context) */
+.program-detail-hero {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+/* Enrollment Mini-Stat Row */
+.mini-stat-row {
+    display: flex;
+    gap: var(--space-8);
+    margin-top: var(--space-16);
+    font-size: 0.8rem;
+}
+
+/* Capacity Label */
+.capacity-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-top: var(--space-8);
+}
+
+/* Location + Enrollment Info Row */
+.card-info-row {
+    display: flex;
+    gap: var(--space-8);
+    align-items: center;
+    font-size: 0.85rem;
+    margin-bottom: var(--space-8);
+}
+
+.card-info-row .location {
+    font-weight: 800;
+}
+
+.card-info-row .enrollment-count {
+    margin-left: auto;
+    font-weight: 800;
+}
+
+/* Image Preview */
+.img-preview {
+    margin-top: var(--space-16);
+}
+
+.img-preview img {
+    max-width: 400px;
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border: var(--border-main);
+    border-radius: var(--radius-md);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: var(--space-48);
+    font-weight: 600;
+    opacity: 0.6;
 }

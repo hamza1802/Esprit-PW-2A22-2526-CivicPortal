@@ -1,0 +1,347 @@
+/*
+ * admin.css
+ * BackOffice Utility-First Dashboard Styles
+ * Enhances the base style.css for a sidebar layout and data-dense views
+ */
+
+body {
+    display: flex;
+    min-height: 100vh;
+    margin: 0;
+    overflow: hidden; /* Prevent body scroll, scroll main area instead */
+    background-color: var(--secondary-grey);
+}
+
+/* Sidebar Navigation */
+nav {
+    width: 260px;
+    height: 100vh;
+    position: static !important;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: var(--space-32);
+    background: var(--primary-navy) !important;
+    border-radius: 0 var(--radius-lg) var(--radius-lg) 0 !important;
+    margin: var(--space-16) 0 var(--space-16) var(--space-16) !important;
+    border: none !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 2px 0 15px rgba(0, 0, 0, 0.2) !important;
+    z-index: 10;
+    backdrop-filter: none !important;
+}
+
+.nav-brand {
+    color: var(--white) !important;
+    margin-bottom: 2.5rem;
+    font-size: 1.5rem;
+    width: 100%;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-links {
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.nav-links li {
+    width: 100%;
+}
+
+.nav-links a {
+    color: rgba(255, 255, 255, 0.7) !important;
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    border-radius: var(--radius-md);
+    transition: var(--transition-fast);
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.nav-links a:hover, .nav-links a.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--white) !important;
+    text-decoration: none;
+    padding-left: 1.5rem;
+}
+
+.nav-dot {
+    margin-left: auto; /* Push badge to the right in flex layout */
+}
+
+.user-controls {
+    margin-top: auto;
+    width: 100%;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    justify-content: center;
+}
+
+.user-role-badge {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: var(--white) !important;
+    width: 100%;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Main Content Area */
+main#app {
+    flex: 1;
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--bg-neutral);
+    padding: 2rem 3rem;
+}
+
+/* Redesigning BackOffice components for density and clarity */
+.page-container {
+    padding: 0;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.hero-container {
+    padding: 0 0 2rem 0;
+    border-bottom: none;
+    max-width: none;
+}
+
+.hero-section {
+    padding-bottom: 0;
+}
+
+.hero-section h1 {
+    font-size: 2rem;
+    color: var(--primary-navy);
+    letter-spacing: -0.02em;
+}
+
+.hero-section p {
+    font-size: 1rem;
+    color: var(--text-dark);
+    opacity: 0.7;
+    margin-top: 0.5rem;
+    font-weight: 500;
+}
+
+h2.reveal {
+    font-size: 1.5rem;
+    border-bottom: none;
+    margin-bottom: 1.5rem;
+    color: var(--primary-navy);
+    display: flex;
+    align-items: center;
+}
+
+/* Override global glassmorphism from style.css for BackOffice */
+.editorial-card, .program-card, .program-mgmt-card, .form-card, .status-widget {
+    background: var(--white) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid var(--secondary-grey) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02) !important;
+}
+
+/* Dashboard Grid (KPIs) */
+.editorial-grid {
+    gap: 1.5rem;
+    border: none !important;
+    padding: 0 !important;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.editorial-card {
+    padding: 1.5rem !important;
+}
+
+.editorial-highlight {
+    background: var(--primary-navy) !important;
+}
+
+.editorial-highlight h3, .editorial-highlight .stats-number {
+    color: var(--white) !important;
+}
+
+.editorial-card h3 {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    color: var(--text-dark);
+    opacity: 0.7;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.5px;
+}
+
+.stats-number {
+    font-size: 2.5rem;
+    color: var(--primary-navy);
+    font-weight: 900;
+}
+
+.editorial-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.06) !important;
+}
+
+.editorial-card:hover h3 {
+    color: var(--text-dark);
+    opacity: 0.7;
+}
+
+.editorial-highlight:hover h3, .editorial-highlight:hover p {
+    color: var(--white) !important;
+}
+
+.editorial-card:hover .stats-number {
+    color: var(--accent-blue) !important;
+}
+
+/* Tables */
+.table-responsive {
+    border-radius: var(--radius-md);
+    background: var(--white) !important;
+    border: 1px solid var(--secondary-grey) !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    padding: 0;
+}
+
+.data-table {
+    margin: 0;
+}
+
+.data-table th {
+    background: rgba(255, 255, 255, 0.5) !important;
+    color: var(--text-dark) !important;
+    font-size: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-right: none;
+    border-bottom: 1px solid var(--secondary-grey);
+    letter-spacing: 1px;
+}
+
+.data-table td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--secondary-grey);
+    border-right: none;
+    font-size: 0.9rem;
+    color: var(--text-dark);
+}
+
+.data-table tr:hover td {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+/* Forms */
+.form-card {
+    padding: 2rem !important;
+    max-width: 1000px;
+    margin: 0;
+}
+
+.form-group label {
+    font-size: 0.8rem;
+    color: var(--text-dark);
+}
+
+.form-group input, 
+.form-group select, 
+.form-group textarea {
+    background: rgba(255, 255, 255, 0.5) !important;
+    border: 1px solid var(--secondary-grey) !important;
+    font-size: 1rem;
+    padding: 1rem;
+    border-radius: var(--radius-sm) !important;
+}
+
+.form-group input:focus, 
+.form-group select:focus, 
+.form-group textarea:focus {
+    background: var(--white) !important;
+    border-color: var(--accent-blue) !important;
+    box-shadow: 0 0 0 3px rgba(58, 134, 255, 0.1);
+}
+
+/* Buttons */
+.btn {
+    border-radius: var(--radius-sm) !important;
+    font-size: 0.85rem;
+    padding: 0.8rem 1.5rem;
+    box-shadow: none !important;
+    background: var(--white);
+    border: 1px solid var(--secondary-grey) !important;
+}
+
+.btn-primary {
+    background: var(--primary-navy) !important;
+    border: none !important;
+}
+
+.btn-small {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+}
+
+.btn:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important;
+}
+
+/* Programs Management Grid */
+.programs-mgmt-grid {
+    gap: 1.5rem;
+    border: none !important;
+    padding: 0 !important;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.program-mgmt-card {
+    padding: 0;
+}
+
+.program-mgmt-header {
+    height: 140px;
+    border-bottom: 1px solid var(--secondary-grey) !important;
+}
+
+.program-mgmt-body {
+    padding: 1.5rem;
+}
+
+.program-mgmt-card:hover {
+    transform: translateY(-3px) !important;
+    background: var(--white) !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08) !important;
+}
+
+.program-mgmt-card:hover h3, 
+.program-mgmt-card:hover p {
+    color: var(--primary-navy) !important;
+}
+
+.program-mgmt-card:hover .category-badge {
+    color: var(--accent-blue) !important;
+    border-color: var(--accent-blue) !important;
+}
+
+/* Role Switcher adjustments for sidebar layout */
+.role-switcher-container {
+    bottom: 20px;
+    right: 30px;
+    border-radius: var(--radius-md);
+    background: var(--white);
+    color: var(--text-dark);
+    border: 1px solid var(--secondary-grey);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.role-switcher-container select {
+    background: rgba(255, 255, 255, 0.6);
+    color: var(--text-dark);
+    border: 1px solid var(--secondary-grey);
+}

@@ -103,11 +103,20 @@ const controller = {
         });
 
         const user = model.getCurrentUser();
+        const activeElementId = document.activeElement ? document.activeElement.id : null;
         view.renderProgramCatalog(filtered, model.getEnrollments(user.id));
         
-        // Preserve values
+        // Preserve values and focus
         if(document.getElementById('prog-search')) document.getElementById('prog-search').value = search;
         if(document.getElementById('prog-filter-cat')) document.getElementById('prog-filter-cat').value = category;
+        if(activeElementId && document.getElementById(activeElementId)) {
+            const el = document.getElementById(activeElementId);
+            el.focus();
+            if(el.setSelectionRange) {
+                const len = el.value.length;
+                el.setSelectionRange(len, len);
+            }
+        }
     },
 
     async handleServiceRequest(formData) {

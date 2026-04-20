@@ -9,7 +9,7 @@
       "source_file": "debug_api_root.php",
       "source_location": "L1",
       "id": "debug_api_root",
-      "community": 8
+      "community": 9
     },
     {
       "label": "migrate_v2.php",
@@ -17,7 +17,7 @@
       "source_file": "migrate_v2.php",
       "source_location": "L1",
       "id": "migrate_v2",
-      "community": 9
+      "community": 10
     },
     {
       "label": "Verification.php",
@@ -25,7 +25,7 @@
       "source_file": "Verification.php",
       "source_location": "L1",
       "id": "verification",
-      "community": 10
+      "community": 11
     },
     {
       "label": "MainController.php",
@@ -33,7 +33,7 @@
       "source_file": "Controller\\MainController.php",
       "source_location": "L1",
       "id": "maincontroller",
-      "community": 5
+      "community": 6
     },
     {
       "label": "MainController",
@@ -41,7 +41,7 @@
       "source_file": "Controller\\MainController.php",
       "source_location": "L10",
       "id": "maincontroller_maincontroller",
-      "community": 5
+      "community": 6
     },
     {
       "label": ".showData()",
@@ -49,7 +49,7 @@
       "source_file": "Controller\\MainController.php",
       "source_location": "L12",
       "id": "maincontroller_maincontroller_showdata",
-      "community": 5
+      "community": 6
     },
     {
       "label": ".handleRequest()",
@@ -57,7 +57,7 @@
       "source_file": "Controller\\MainController.php",
       "source_location": "L20",
       "id": "maincontroller_maincontroller_handlerequest",
-      "community": 5
+      "community": 6
     },
     {
       "label": "AppModel.php",
@@ -233,7 +233,7 @@
       "source_file": "Model\\Database.php",
       "source_location": "L1",
       "id": "database",
-      "community": 4
+      "community": 5
     },
     {
       "label": "Database",
@@ -241,7 +241,7 @@
       "source_file": "Model\\Database.php",
       "source_location": "L7",
       "id": "database_database",
-      "community": 4
+      "community": 5
     },
     {
       "label": ".__construct()",
@@ -249,7 +249,7 @@
       "source_file": "Model\\Database.php",
       "source_location": "L17",
       "id": "database_database_construct",
-      "community": 4
+      "community": 5
     },
     {
       "label": ".getInstance()",
@@ -257,7 +257,7 @@
       "source_file": "Model\\Database.php",
       "source_location": "L33",
       "id": "database_database_getinstance",
-      "community": 4
+      "community": 5
     },
     {
       "label": ".getConnection()",
@@ -265,7 +265,7 @@
       "source_file": "Model\\Database.php",
       "source_location": "L40",
       "id": "database_database_getconnection",
-      "community": 4
+      "community": 5
     },
     {
       "label": "DbSetup.php",
@@ -273,7 +273,7 @@
       "source_file": "Model\\DbSetup.php",
       "source_location": "L1",
       "id": "dbsetup",
-      "community": 6
+      "community": 7
     },
     {
       "label": "setupDatabase()",
@@ -281,7 +281,7 @@
       "source_file": "Model\\DbSetup.php",
       "source_location": "L12",
       "id": "dbsetup_setupdatabase",
-      "community": 6
+      "community": 7
     },
     {
       "label": "Program.php",
@@ -553,7 +553,55 @@
       "source_file": "scratch\\debug_api.php",
       "source_location": "L1",
       "id": "debug_api",
-      "community": 11
+      "community": 12
+    },
+    {
+      "label": "glass-animations.js",
+      "file_type": "code",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L1",
+      "id": "glass_animations",
+      "community": 4
+    },
+    {
+      "label": "InteractiveUI",
+      "file_type": "code",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L6",
+      "id": "glass_animations_interactiveui",
+      "community": 4
+    },
+    {
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L7",
+      "id": "glass_animations_interactiveui_constructor",
+      "community": 4
+    },
+    {
+      "label": ".initReveal()",
+      "file_type": "code",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L18",
+      "id": "glass_animations_interactiveui_initreveal",
+      "community": 4
+    },
+    {
+      "label": ".initCursorTracking()",
+      "file_type": "code",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L50",
+      "id": "glass_animations_interactiveui_initcursortracking",
+      "community": 4
+    },
+    {
+      "label": ".observeDOM()",
+      "file_type": "code",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L73",
+      "id": "glass_animations_interactiveui_observedom",
+      "community": 4
     },
     {
       "label": "app.js",
@@ -561,7 +609,7 @@
       "source_file": "View\\FrontOffice\\app.js",
       "source_location": "L1",
       "id": "app",
-      "community": 7
+      "community": 8
     },
     {
       "label": "setupScrollAnimations()",
@@ -569,7 +617,7 @@
       "source_file": "View\\FrontOffice\\app.js",
       "source_location": "L9",
       "id": "app_setupscrollanimations",
-      "community": 7
+      "community": 8
     },
     {
       "label": "controller.js",
@@ -577,7 +625,7 @@
       "source_file": "View\\FrontOffice\\controller.js",
       "source_location": "L1",
       "id": "controller",
-      "community": 12
+      "community": 13
     },
     {
       "label": "index.php",
@@ -585,7 +633,7 @@
       "source_file": "View\\FrontOffice\\index.php",
       "source_location": "L1",
       "id": "index",
-      "community": 13
+      "community": 14
     },
     {
       "label": "model.js",
@@ -593,7 +641,7 @@
       "source_file": "View\\FrontOffice\\model.js",
       "source_location": "L1",
       "id": "model",
-      "community": 14
+      "community": 15
     },
     {
       "label": "view.js",
@@ -601,7 +649,7 @@
       "source_file": "View\\FrontOffice\\view.js",
       "source_location": "L1",
       "id": "view",
-      "community": 15
+      "community": 16
     }
   ],
   "links": [
@@ -1299,6 +1347,102 @@
       "_tgt": "user_user_toarray",
       "source": "user_user",
       "target": "user_user_toarray",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_src": "glass_animations",
+      "_tgt": "glass_animations_interactiveui",
+      "source": "glass_animations",
+      "target": "glass_animations_interactiveui",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_src": "glass_animations_interactiveui",
+      "_tgt": "glass_animations_interactiveui_constructor",
+      "source": "glass_animations_interactiveui",
+      "target": "glass_animations_interactiveui_constructor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L18",
+      "weight": 1.0,
+      "_src": "glass_animations_interactiveui",
+      "_tgt": "glass_animations_interactiveui_initreveal",
+      "source": "glass_animations_interactiveui",
+      "target": "glass_animations_interactiveui_initreveal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L50",
+      "weight": 1.0,
+      "_src": "glass_animations_interactiveui",
+      "_tgt": "glass_animations_interactiveui_initcursortracking",
+      "source": "glass_animations_interactiveui",
+      "target": "glass_animations_interactiveui_initcursortracking",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L73",
+      "weight": 1.0,
+      "_src": "glass_animations_interactiveui",
+      "_tgt": "glass_animations_interactiveui_observedom",
+      "source": "glass_animations_interactiveui",
+      "target": "glass_animations_interactiveui_observedom",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_src": "glass_animations_interactiveui_constructor",
+      "_tgt": "glass_animations_interactiveui_initreveal",
+      "source": "glass_animations_interactiveui_constructor",
+      "target": "glass_animations_interactiveui_initreveal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_src": "glass_animations_interactiveui_constructor",
+      "_tgt": "glass_animations_interactiveui_initcursortracking",
+      "source": "glass_animations_interactiveui_constructor",
+      "target": "glass_animations_interactiveui_initcursortracking",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_src": "glass_animations_interactiveui_constructor",
+      "_tgt": "glass_animations_interactiveui_observedom",
+      "source": "glass_animations_interactiveui_constructor",
+      "target": "glass_animations_interactiveui_observedom",
       "confidence_score": 1.0
     },
     {

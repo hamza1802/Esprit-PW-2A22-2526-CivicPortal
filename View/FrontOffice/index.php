@@ -13,6 +13,7 @@ AppModel::init();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CivicPortal | Citizen Services</title>
     <meta name="description" content="Access municipal services, programs, and submit requests online through CivicPortal.">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
@@ -25,8 +26,13 @@ AppModel::init();
     <!-- Main Content Area -->
     <main id="app">
         <!-- Dynamic content injected here -->
-        <div style="padding: 100px; text-align: center;">
-            <p>Loading CivicPortal Front Office...</p>
+        <div class="uv-loader-wrapper">
+            <div class="uv-loader">
+                <div class="uv-loader-orbit"></div>
+                <div class="uv-loader-orbit"></div>
+                <div class="uv-loader-orbit"></div>
+            </div>
+            <p class="uv-loader-text">Loading CivicPortal</p>
         </div>
     </main>
 
@@ -35,5 +41,6 @@ AppModel::init();
 
     <!-- Scripts -->
     <script type="module" src="app.js"></script>
+    <script src="../assets/js/glass-animations.js"></script>
 </body>
 </html>

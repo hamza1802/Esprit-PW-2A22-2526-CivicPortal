@@ -1,11 +1,11 @@
-# Graph Report - .  (2026-04-14)
+# Graph Report - .  (2026-04-17)
 
 ## Corpus Check
-- 21 files · ~153,899 words
+- 22 files · ~159,217 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 75 nodes · 59 edges · 16 communities detected
+- 81 nodes · 67 edges · 17 communities detected
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
@@ -14,8 +14,9 @@
 2. `Program` - 11 edges
 3. `User` - 10 edges
 4. `ServiceRequest` - 9 edges
-5. `Database` - 4 edges
-6. `MainController` - 3 edges
+5. `InteractiveUI` - 5 edges
+6. `Database` - 4 edges
+7. `MainController` - 3 edges
 
 ## Surprising Connections (you probably didn't know these)
 - None detected - all connections are within the same source files.
@@ -39,16 +40,16 @@ Cohesion: 0.2
 Nodes (1): ServiceRequest
 
 ### Community 4 - "Community 4"
+Cohesion: 0.53
+Nodes (1): InteractiveUI
+
+### Community 5 - "Community 5"
 Cohesion: 0.4
 Nodes (1): Database
 
-### Community 5 - "Community 5"
+### Community 6 - "Community 6"
 Cohesion: 0.5
 Nodes (1): MainController
-
-### Community 6 - "Community 6"
-Cohesion: 1.0
-Nodes (0): 
 
 ### Community 7 - "Community 7"
 Cohesion: 1.0
@@ -86,26 +87,30 @@ Nodes (0):
 Cohesion: 1.0
 Nodes (0): 
 
+### Community 16 - "Community 16"
+Cohesion: 1.0
+Nodes (0): 
+
 ## Knowledge Gaps
-- **Thin community `Community 6`** (2 nodes): `DbSetup.php`, `setupDatabase()`
+- **Thin community `Community 7`** (2 nodes): `DbSetup.php`, `setupDatabase()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 7`** (2 nodes): `app.js`, `setupScrollAnimations()`
+- **Thin community `Community 8`** (2 nodes): `app.js`, `setupScrollAnimations()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 8`** (1 nodes): `debug_api_root.php`
+- **Thin community `Community 9`** (1 nodes): `debug_api_root.php`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 9`** (1 nodes): `migrate_v2.php`
+- **Thin community `Community 10`** (1 nodes): `migrate_v2.php`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 10`** (1 nodes): `Verification.php`
+- **Thin community `Community 11`** (1 nodes): `Verification.php`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 11`** (1 nodes): `debug_api.php`
+- **Thin community `Community 12`** (1 nodes): `debug_api.php`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 12`** (1 nodes): `controller.js`
+- **Thin community `Community 13`** (1 nodes): `controller.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 13`** (1 nodes): `index.php`
+- **Thin community `Community 14`** (1 nodes): `index.php`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 14`** (1 nodes): `model.js`
+- **Thin community `Community 15`** (1 nodes): `model.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 15`** (1 nodes): `view.js`
+- **Thin community `Community 16`** (1 nodes): `view.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 
 ## Suggested Questions
