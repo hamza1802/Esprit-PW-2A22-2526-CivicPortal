@@ -47,7 +47,7 @@ unset($_SESSION['success'], $_SESSION['errors']);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CivicPortal | Citizen Services</title>
     <meta name="description" content="Access municipal services, programs, and submit requests online through CivicPortal.">
-    <base href="/projweb/">
+    <base href="/proj/">
     <link rel="stylesheet" href="View/assets/css/style.css">
 </head>
 <body>

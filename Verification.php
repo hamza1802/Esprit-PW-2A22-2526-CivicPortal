@@ -9,10 +9,10 @@ session_start();
 header('Content-Type: application/json');
 require_once __DIR__ . '/Controller/MainController.php';
 
-// Security Check: Only Admin can access these APIs
-if (($_SESSION['user_role'] ?? '') !== 'admin') {
+// Security Check: Only logged-in users can access these APIs
+if (empty($_SESSION['user_id'])) {
     http_response_code(403);
-    echo json_encode(['success' => false, 'error' => 'Unauthorized. Admin access required.']);
+    echo json_encode(['success' => false, 'error' => 'Unauthorized. Please log in.']);
     exit;
 }
 

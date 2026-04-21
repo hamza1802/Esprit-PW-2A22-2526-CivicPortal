@@ -19,18 +19,26 @@
                     <th>Name</th>
                     <th>Email</th>
                     <th>Role</th>
+                    <th>Phone</th>
+                    <th>Bio</th>
                     <th>Created</th>
                     <th style="text-align: right;">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($users as $user): ?>
+                <?php foreach ($users as $item): ?>
+                    <?php 
+                        $user = $item['user'];
+                        $profile = $item['profile'];
+                    ?>
                     <tr id="user-row-<?= htmlspecialchars($user->getId()) ?>">
                         <td>#<?= htmlspecialchars($user->getId()) ?></td>
                         <td><strong><?= htmlspecialchars($user->getName()) ?></strong></td>
                         <td><?= htmlspecialchars($user->getEmail()) ?></td>
                         <td><span class="status-badge" style="background: #BCC1C1; color: #1D2A44;"><?= htmlspecialchars($user->getRole()) ?></span></td>
-                        <td style="font-size: 0.9rem;"><?= htmlspecialchars($user->getCreatedAt() ?? '-') ?></td>
+                        <td style="font-size: 0.85rem;"><?= htmlspecialchars($profile['phone'] ?? '-') ?></td>
+                        <td style="font-size: 0.85rem; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><?= htmlspecialchars($profile['bio'] ?? '-') ?></td>
+                        <td style="font-size: 0.8rem;"><?= htmlspecialchars($user->getCreatedAt() ?? '-') ?></td>
                         <td style="text-align: right;">
                             <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
                                 <a class="btn btn-small edit-user-btn" style="font-size: 0.7rem; padding: 0.4rem 0.8rem;" href="#" data-id="<?= htmlspecialchars($user->getId()) ?>">Edit</a>
@@ -78,9 +86,7 @@
                     <select id="role" name="role">
                         <option value="citizen" <?= $roleValue === 'citizen' ? 'selected' : '' ?>>Citizen</option>
                         <option value="agent" <?= $roleValue === 'agent' ? 'selected' : '' ?>>Agent</option>
-                        <?php if ($roleValue === 'admin'): ?>
-                            <option value="admin" selected>Administrator</option>
-                        <?php endif; ?>
+                        <option value="admin" <?= $roleValue === 'admin' ? 'selected' : '' ?>>Administrator</option>
                     </select>
                     <span class="inline-error" id="error-role" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;">
                         <?= $errors['role'] ?? '' ?>

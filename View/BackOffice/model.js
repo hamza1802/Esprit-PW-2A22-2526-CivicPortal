@@ -16,7 +16,7 @@ const model = {
         complaints: [],
         // Placeholder stats properties
         enrollmentsCount: 0,
-        programsCount: 3, 
+        programsCount: 3,
     },
 
     async apiCall(action, data = {}) {
@@ -38,7 +38,7 @@ const model = {
     async sync() {
         const requests = await this.apiCall('get_requests');
         if (requests) this.state.serviceRequests = requests;
-        
+
         const complaints = await this.apiCall('get_complaints');
         if (complaints) this.state.complaints = complaints;
     },
@@ -68,7 +68,7 @@ const model = {
     },
 
     updateUser(data) {
-        if(this.state.currentUser){
+        if (this.state.currentUser) {
             this.state.currentUser.name = data.name;
             this.state.currentUser.email = data.email;
         }

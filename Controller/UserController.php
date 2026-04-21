@@ -9,9 +9,23 @@ class UserController {
 
     public static function getAllUsers(): array {
         $pdo = Database::getInstance();
-        $stmt = $pdo->query('SELECT id, username, email, role, created_at FROM users ORDER BY id');
+        $query = '
+            SELECT u.id, u.username, u.email, u.role, u.created_at,
+                   p.bio, p.phone_number, p.date_of_birth
+            FROM users u
+            LEFT JOIN profile p ON u.id = p.user_id
+            ORDER BY u.id
+        ';
+        $stmt = $pdo->query($query);
         $rows = $stmt->fetchAll();
-        return array_map(fn($row) => User::fromRow($row), $rows);
+        return array_map(fn($row) => [
+            'user' => User::fromRow($row),
+            'profile' => [
+                'bio' => $row['bio'],
+                'phone' => $row['phone_number'],
+                'dob' => $row['date_of_birth']
+            ]
+        ], $rows);
     }
 
     public static function getUserById(int $id): ?User {

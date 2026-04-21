@@ -10,7 +10,7 @@ const controller = {
     async init() {
         await model.sync();
         this.setupEventListeners();
-        this.handleRoleChange('admin', false); 
+        this.handleRoleChange('admin', false);
     },
 
     setupEventListeners() {
@@ -76,7 +76,7 @@ const controller = {
     handleRoleChange(role, triggerRouting = true) {
         model.setCurrentUser(role);
         view.renderNavBar(role);
-        
+
         if (triggerRouting) {
             if (window.location.hash !== '#home' && window.location.hash !== '') {
                 window.location.hash = '#home';
