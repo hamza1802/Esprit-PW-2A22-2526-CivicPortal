@@ -60,7 +60,13 @@ class MainController {
             // --- Stats ---
             case 'get_stats':
                 return AppModel::getStats();
-            // --- Transport & Route CRUD ---
+            // --- Complaints ---
+            case 'get_complaints':
+                return AppModel::getRequests();
+            case 'add_complaint':
+                return AppModel::addRequest($data['subject'] ?? $data['title'] ?? 'Complaint', $data['userId'] ?? 1);
+
+                        // --- Transport & Route CRUD ---
             case 'list_transport_types':
                 return AppModel::listTransportTypes();
             case 'add_transport_type':

@@ -31,7 +31,7 @@ const view = {
             ? `<span class="nav-dot">${enrollmentCounts.pending}</span>` : '';
 
         const links = `
-            <div class="nav-brand" style="color:var(--primary-red);">
+            <div class="nav-brand">
                 CivicPortal Staff
             </div>
             <ul class="nav-links">
@@ -49,7 +49,7 @@ const view = {
                 <li><a href="#profile">profile</a></li>
             </ul>
             <div class="user-controls">
-                <div class="user-role-badge" style="background:var(--primary-red);color:white;">${role}</div>
+                <div class="user-role-badge">${role}</div>
             </div>
         `;
         nav.innerHTML = links;
@@ -287,7 +287,7 @@ const view = {
         this.app.innerHTML = `
             <section class="page-container">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
-                    <h2 class="reveal" style="margin:0; border:none; padding:0;">Parks & Recreation</h2>
+                    <h2 class="reveal" style="margin:0; padding:0;">Parks & Recreation</h2>
                     <div style="display:flex; gap: 1rem; align-items: center;">
                         <span class="reveal" style="font-weight:800; font-size:0.9rem; text-transform:uppercase; letter-spacing:1px;">${totalEnrollments} total enrollments</span>
                         ${role === 'admin' ? '<button class="btn btn-primary reveal" data-action="new-program">+ NEW PROGRAM</button>' : ''}
@@ -333,7 +333,7 @@ const view = {
         this.app.innerHTML = `
             <section class="page-container">
                 <div style="margin-bottom: 2rem;">
-                    <a href="#manage-programs" style="font-weight:800; text-transform:uppercase; text-decoration:none; color:var(--primary-navy); font-size:0.9rem; letter-spacing:1px;">&larr; Back to Programs</a>
+                    <a href="#manage-programs" class="back-link">&larr; Back to Programs</a>
                 </div>
 
                 <div class="program-detail-hero reveal">
@@ -477,7 +477,7 @@ const view = {
         this.app.innerHTML = `
             <section class="page-container">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
-                    <h2 class="reveal" style="margin:0; border:none; padding:0;">Transport Dashboard</h2>
+                    <h2 class="reveal" style="margin:0; padding:0;">Transport Dashboard</h2>
                 </div>
                 <div class="editorial-grid">
                     <div class="editorial-card reveal" style="cursor:pointer;" onclick="window.location.hash='#transport-types'">
@@ -512,7 +512,7 @@ const view = {
                 <td><strong>#${t.idTransportType}</strong></td>
                 <td>
                     <div style="display:flex; align-items:center; gap: 10px;">
-                        ${t.photo_url ? `<img src="../assets/images/${t.photo_url}" style="width:40px; height:40px; border-radius:4px; object-fit:cover;">` : ''}
+                        ${t.photo_url ? `<img src="../assets/images/${t.photo_url}" style="width:42px; height:42px; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,0.1);">` : ''}
                         <span>${t.name}</span>
                     </div>
                 </td>
@@ -527,10 +527,10 @@ const view = {
         this.app.innerHTML = `
             <section class="page-container">
                 <div style="margin-bottom: 2rem;">
-                    <a href="#transport-dashboard" style="font-weight:800; text-transform:uppercase; text-decoration:none; color:var(--primary-navy); font-size:0.9rem; letter-spacing:1px;">&larr; Back to Dashboard</a>
+                    <a href="#transport-dashboard" class="back-link">&larr; Back to Dashboard</a>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
-                    <h2 class="reveal" style="margin:0; border:none; padding:0;">Transport Types</h2>
+                    <h2 class="reveal" style="margin:0; padding:0;">Transport Types</h2>
                     <button class="btn btn-primary reveal" data-action="new-transport-type">+ NEW TYPE</button>
                 </div>
                 <div class="reveal">
@@ -560,7 +560,7 @@ const view = {
         this.app.innerHTML = `
             <section class="page-container">
                 <div style="margin-bottom: 2rem;">
-                    <a href="#transport-types" style="font-weight:800; text-transform:uppercase; text-decoration:none; color:var(--primary-navy); font-size:0.9rem; letter-spacing:1px;">&larr; Back to Types</a>
+                    <a href="#transport-types" class="back-link">&larr; Back to Types</a>
                 </div>
                 <h2 class="reveal">${isEdit ? 'Edit Transport Type' : 'New Transport Type'}</h2>
                 <div class="form-card reveal">
@@ -576,7 +576,7 @@ const view = {
                         </div>
                         <div class="form-group">
                             <label for="photo">Photo / Icon</label>
-                            <input type="file" id="photo" name="image" accept="image/*" ${isEdit ? '' : 'required'}>
+                            <input type="file" id="photo" name="image" accept="image/*">
                             ${isEdit && type.photo_url ? `
                                 <div style="margin-top:1rem;">
                                     <p style="font-size:0.8rem; margin-bottom:5px;">Current Image:</p>
@@ -620,10 +620,10 @@ const view = {
         this.app.innerHTML = `
             <section class="page-container">
                 <div style="margin-bottom: 2rem;">
-                    <a href="#transport-dashboard" style="font-weight:800; text-transform:uppercase; text-decoration:none; color:var(--primary-navy); font-size:0.9rem; letter-spacing:1px;">&larr; Back to Dashboard</a>
+                    <a href="#transport-dashboard" class="back-link">&larr; Back to Dashboard</a>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
-                    <h2 class="reveal" style="margin:0; border:none; padding:0;">Fleet Management</h2>
+                    <h2 class="reveal" style="margin:0; padding:0;">Fleet Management</h2>
                     <button class="btn btn-primary reveal" data-action="new-fleet">+ NEW VEHICLE</button>
                 </div>
                 <div class="reveal">
@@ -660,7 +660,7 @@ const view = {
         this.app.innerHTML = `
             <section class="page-container">
                 <div style="margin-bottom: 2rem;">
-                    <a href="#fleet" style="font-weight:800; text-transform:uppercase; text-decoration:none; color:var(--primary-navy); font-size:0.9rem; letter-spacing:1px;">&larr; Back to Fleet</a>
+                    <a href="#fleet" class="back-link">&larr; Back to Fleet</a>
                 </div>
                 <h2 class="reveal">${isEdit ? 'Edit Vehicle' : 'New Vehicle'}</h2>
                 <div class="form-card reveal">
@@ -734,10 +734,10 @@ const view = {
         this.app.innerHTML = `
             <section class="page-container">
                 <div style="margin-bottom: 2rem;">
-                    <a href="#transport-dashboard" style="font-weight:800; text-transform:uppercase; text-decoration:none; color:var(--primary-navy); font-size:0.9rem; letter-spacing:1px;">&larr; Back to Dashboard</a>
+                    <a href="#transport-dashboard" class="back-link">&larr; Back to Dashboard</a>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
-                    <h2 class="reveal" style="margin:0; border:none; padding:0;">Routes & Schedules</h2>
+                    <h2 class="reveal" style="margin:0; padding:0;">Routes & Schedules</h2>
                     <button class="btn btn-primary reveal" data-action="new-route">+ NEW ROUTE</button>
                 </div>
                 <div class="reveal">
@@ -779,7 +779,7 @@ const view = {
         this.app.innerHTML = `
             <section class="page-container">
                 <div style="margin-bottom: 2rem;">
-                    <a href="#routes" style="font-weight:800; text-transform:uppercase; text-decoration:none; color:var(--primary-navy); font-size:0.9rem; letter-spacing:1px;">&larr; Back to Routes</a>
+                    <a href="#routes" class="back-link">&larr; Back to Routes</a>
                 </div>
                 <h2 class="reveal">${isEdit ? 'Edit Route' : 'New Route'}</h2>
                 <div class="form-card reveal">
@@ -848,10 +848,10 @@ const view = {
         this.app.innerHTML = `
             <section class="page-container">
                 <div style="margin-bottom: 2rem;">
-                    <a href="#transport-dashboard" style="font-weight:800; text-transform:uppercase; text-decoration:none; color:var(--primary-navy); font-size:0.9rem; letter-spacing:1px;">&larr; Back to Dashboard</a>
+                    <a href="#transport-dashboard" class="back-link">&larr; Back to Dashboard</a>
                 </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
-                    <h2 class="reveal" style="margin:0; border:none; padding:0;">Ticketing Management</h2>
+                    <h2 class="reveal" style="margin:0; padding:0;">Ticketing Management</h2>
                 </div>
                 <div class="reveal">
                     <div class="table-responsive">

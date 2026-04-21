@@ -5,42 +5,70 @@
 
 import controller from './controller.js';
 
-// Setup Intersection Observer for Scroll Animations
-const setupScrollAnimations = () => {
-    const observerOptions = {
-        root: null,
-        rootMargin: '0px',
-        threshold: 0.15 // Trigger when 15% of the element is visible
+// ── Cursor-tracking spotlight ────────────────────────────────────────────────
+const initCursorGradient = () => {
+    // Inject the cursor glow div
+    const glow = document.createElement('div');
+    glow.className = 'cursor-glow';
+    document.body.appendChild(glow);
+
+    let rafId = null;
+    let tx = window.innerWidth / 2;
+    let ty = window.innerHeight / 2;
+    let cx = tx, cy = ty;
+
+    document.addEventListener('mousemove', (e) => {
+        tx = e.clientX;
+        ty = e.clientY;
+    });
+
+    const lerp = (a, b, t) => a + (b - a) * t;
+
+    const tick = () => {
+        // Smooth lag follow
+        cx = lerp(cx, tx, 0.08);
+        cy = lerp(cy, ty, 0.08);
+
+        document.documentElement.style.setProperty('--cursor-x', `${cx}px`);
+        document.documentElement.style.setProperty('--cursor-y', `${cy}px`);
+
+        glow.style.left = `${cx}px`;
+        glow.style.top  = `${cy}px`;
+
+        rafId = requestAnimationFrame(tick);
     };
 
-    const observer = new IntersectionObserver((entries, observer) => {
+    tick();
+};
+
+// ── Intersection Observer for reveal animations ──────────────────────────────
+const setupScrollAnimations = () => {
+    const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('active');
             }
         });
-    }, observerOptions);
+    }, { threshold: 0.1 });
 
-    const revealElements = document.querySelectorAll('.reveal');
-    revealElements.forEach(el => observer.observe(el));
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 };
 
-// Make it globally accessible so view.js can re-trigger it
+// Make globally accessible so view.js can re-trigger after DOM injection
 window.initScrollObserver = setupScrollAnimations;
 
+// ── Bootstrap ────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize the controller
+    initCursorGradient();
     controller.init();
 
-    // Link the role switcher (Staff Demo-only logic)
+    // Role switcher (Staff Demo)
     const roleSwitcher = document.getElementById('demo-role-switcher');
     if (roleSwitcher) {
         roleSwitcher.addEventListener('change', (e) => {
-            const newRole = e.target.value;
-            // Trigger role change in controller
-            controller.handleRoleChange(newRole);
+            controller.handleRoleChange(e.target.value);
         });
     }
 
-    console.log('CivicPortal Staff BackOffice Initialized');
+    console.log('%cCivicPortal Staff BackOffice v2 — Glass UI', 'color:#6366f1;font-weight:bold;font-size:12px;');
 });

@@ -18,6 +18,19 @@ AppModel::init();
     <!-- Leaflet CSS & JS for Mapping -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <style>
+        /* Dark-mode Leaflet tile filter */
+        .leaflet-tile { filter: brightness(0.5) invert(1) contrast(1.4) hue-rotate(180deg) saturate(0.6); }
+        .leaflet-container { background: var(--bg-main) !important; border-radius: var(--radius-lg); }
+        .leaflet-popup-content-wrapper {
+            background: rgba(15,15,35,0.95) !important;
+            border: 1px solid rgba(255,255,255,0.12) !important;
+            border-radius: 12px !important;
+            color: #f0f0ff !important;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
+        }
+        .leaflet-popup-tip { background: rgba(15,15,35,0.95) !important; }
+    </style>
 </head>
 <body>
 

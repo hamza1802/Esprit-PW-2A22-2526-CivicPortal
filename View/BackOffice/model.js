@@ -151,21 +151,36 @@ const model = {
 
     // --- Transport API ---
     async getTransportTypes() { return await this.apiCall('list_transport_types'); },
-    async saveTransportType(data) {
-        const id = (data instanceof FormData) ? data.get('idTransportType') : data.idTransportType;
-        return await this.apiCall(id ? 'update_transport_type' : 'add_transport_type', data);
+    async saveTransportType(formData) {
+        // Must send as multipart to support file upload
+        const id = formData.get('idTransportType');
+        formData.set('action', id ? 'update_transport_type' : 'add_transport_type');
+        try {
+            const response = await fetch('../../Verification.php', {
+                method: 'POST',
+                body: formData  // No Content-Type header — browser sets multipart boundary
+            });
+            const result = await response.json();
+            if (!result.success) throw new Error(result.error);
+            return result.data;
+        } catch (error) {
+            console.error('Transport Type Save Error:', error);
+            return null;
+        }
     },
     async deleteTransportType(idTransportType) { return await this.apiCall('delete_transport_type', { idTransportType }); },
 
     async getTransports() { return await this.apiCall('list_transports'); },
-    async saveTransport(data) {
+    async saveTransport(formData) {
+        const data = Object.fromEntries(formData.entries());
         const id = data.idTransport;
         return await this.apiCall(id ? 'update_transport' : 'add_transport', data);
     },
     async deleteTransport(idTransport) { return await this.apiCall('delete_transport', { idTransport }); },
 
     async getTrajets() { return await this.apiCall('list_all_trajets'); },
-    async saveTrajet(data) {
+    async saveTrajet(formData) {
+        const data = Object.fromEntries(formData.entries());
         const id = data.idTrajet;
         return await this.apiCall(id ? 'update_trajet' : 'add_trajet', data);
     },

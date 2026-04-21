@@ -48,7 +48,35 @@ const controller = {
                 this.handleEnrollmentUpdate(id, 'confirmed', progId);
             } else if (action === 'cancel-enroll') {
                 const progId = actionEl.dataset.programId;
-                this.handleEnrollmentUpdate(id, 'cancelled', progId);
+                this.handleEnrollmentUpdate(id, 'cancelled', progId); } else if (action === 'new-transport-type') {
+                view.renderTransportTypeForm();
+            } else if (action === 'edit-transport-type') {
+                model.getTransportTypes().then(types => {
+                    const type = types.find(t => t.idTransportType == id);
+                    view.renderTransportTypeForm(type);
+                });
+            } else if (action === 'delete-transport-type') {
+                if (confirm('Delete this transport type?')) this.handleTransportTypeDelete(id);
+            } else if (action === 'new-fleet') {
+                model.getTransportTypes().then(types => view.renderFleetForm(null, types));
+            } else if (action === 'edit-fleet') {
+                Promise.all([model.getTransports(), model.getTransportTypes()]).then(([fleets, types]) => {
+                    const fleet = fleets.find(f => f.idTransport == id);
+                    view.renderFleetForm(fleet, types);
+                });
+            } else if (action === 'delete-fleet') {
+                if (confirm('Delete this vehicle?')) this.handleFleetDelete(id);
+            } else if (action === 'new-route') {
+                model.getTransports().then(fleets => view.renderRouteForm(null, fleets));
+            } else if (action === 'edit-route') {
+                Promise.all([model.getTrajets(), model.getTransports()]).then(([trajets, fleets]) => {
+                    const route = trajets.find(r => r.idTrajet == id);
+                    view.renderRouteForm(route, fleets);
+                });
+            } else if (action === 'delete-route') {
+                if (confirm('Delete this route?')) this.handleRouteDelete(id);
+            } else if (action === 'cancel-ticket') {
+                if (confirm('Cancel this ticket?')) this.handleTicketCancel(id);
             }
         });
 
@@ -62,6 +90,12 @@ const controller = {
                 this.handleProfileUpdate(new FormData(e.target));
             } else if (e.target.id === 'program-form') {
                 this.handleProgramSave(new FormData(e.target));
+            } else if (e.target.id === 'transport-type-form') {
+                this.handleTransportTypeSave(new FormData(e.target));
+            } else if (e.target.id === 'fleet-form') {
+                this.handleFleetSave(new FormData(e.target));
+            } else if (e.target.id === 'route-form') {
+                this.handleRouteSave(new FormData(e.target));
             }
         });
     },

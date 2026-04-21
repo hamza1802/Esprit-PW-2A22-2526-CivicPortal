@@ -5,31 +5,55 @@
 
 import controller from './controller.js';
 
-// Setup Intersection Observer for Scroll Animations
-const setupScrollAnimations = () => {
-    const observerOptions = {
-        root: null,
-        rootMargin: '0px',
-        threshold: 0.15 // Trigger when 15% of the element is visible
+// ── Cursor-tracking spotlight ────────────────────────────────────────────────
+const initCursorGradient = () => {
+    const glow = document.createElement('div');
+    glow.className = 'cursor-glow';
+    document.body.appendChild(glow);
+
+    let tx = window.innerWidth / 2;
+    let ty = window.innerHeight / 2;
+    let cx = tx, cy = ty;
+
+    document.addEventListener('mousemove', (e) => {
+        tx = e.clientX;
+        ty = e.clientY;
+    });
+
+    const lerp = (a, b, t) => a + (b - a) * t;
+
+    const tick = () => {
+        cx = lerp(cx, tx, 0.07);
+        cy = lerp(cy, ty, 0.07);
+
+        document.documentElement.style.setProperty('--cursor-x', `${cx}px`);
+        document.documentElement.style.setProperty('--cursor-y', `${cy}px`);
+
+        glow.style.left = `${cx}px`;
+        glow.style.top  = `${cy}px`;
+
+        requestAnimationFrame(tick);
     };
 
-    const observer = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('active');
-            }
-        });
-    }, observerOptions);
-
-    const revealElements = document.querySelectorAll('.reveal');
-    revealElements.forEach(el => observer.observe(el));
+    tick();
 };
 
-// Make it globally accessible so view.js can re-trigger it
+// ── Intersection Observer ────────────────────────────────────────────────────
+const setupScrollAnimations = () => {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) entry.target.classList.add('active');
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+};
+
 window.initScrollObserver = setupScrollAnimations;
 
+// ── Bootstrap ────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize the controller
+    initCursorGradient();
     controller.init();
-    console.log('CivicPortal Citizen FrontOffice Initialized');
+    console.log('%cCivicPortal Citizen FrontOffice v2 — Glass UI', 'color:#22d3ee;font-weight:bold;font-size:12px;');
 });
