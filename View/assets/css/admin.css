@@ -88,6 +88,7 @@ nav {
     width: 100%;
     text-align: center;
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: var(--radius-xl) !important;
 }
 
 /* Main Content Area */

@@ -291,7 +291,7 @@ class AppModel {
         $programsCount = $db->query("SELECT COUNT(*) FROM program WHERE status = 'active'")->fetchColumn();
         $requestsCount = $db->query("SELECT COUNT(*) FROM requests")->fetchColumn();
         $enrollmentsCount = $db->query("SELECT COUNT(*) FROM enrollment")->fetchColumn();
-        $complaintsCount = 0; // Assuming complaints table or logic to be added later
+        $complaintsCount = $db->query("SELECT COUNT(*) FROM complaints")->fetchColumn();
 
         return [
             'usersCount' => (int)$usersCount,
@@ -299,6 +299,107 @@ class AppModel {
             'requestsCount' => (int)$requestsCount,
             'enrollmentsCount' => (int)$enrollmentsCount,
             'complaintsCount' => (int)$complaintsCount
+        ];
+    }
+
+    /**
+     * --- Program Categories (Admin-managed) ---
+     */
+
+    public static function getCategories() {
+        $db = self::getDb();
+        $stmt = $db->query("SELECT * FROM program_category ORDER BY name ASC");
+        return $stmt->fetchAll();
+    }
+
+    public static function addCategory($name) {
+        $name = trim($name);
+        if (empty($name) || strlen($name) < 2) {
+            throw new Exception("Category name must be at least 2 characters.");
+        }
+        $name = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
+
+        $db = self::getDb();
+        // Check for duplicate
+        $check = $db->prepare("SELECT COUNT(*) FROM program_category WHERE name = ?");
+        $check->execute([$name]);
+        if ($check->fetchColumn() > 0) {
+            throw new Exception("Category '$name' already exists.");
+        }
+
+        $stmt = $db->prepare("INSERT INTO program_category (name) VALUES (?)");
+        $stmt->execute([$name]);
+        return ['id' => $db->lastInsertId(), 'name' => $name];
+    }
+
+    public static function updateCategory($id, $name) {
+        $name = trim($name);
+        if (empty($name) || strlen($name) < 2) {
+            throw new Exception("Category name must be at least 2 characters.");
+        }
+        $name = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
+
+        $db = self::getDb();
+        // Check for duplicate (exclude self)
+        $check = $db->prepare("SELECT COUNT(*) FROM program_category WHERE name = ? AND id != ?");
+        $check->execute([$name, $id]);
+        if ($check->fetchColumn() > 0) {
+            throw new Exception("Category '$name' already exists.");
+        }
+
+        $stmt = $db->prepare("UPDATE program_category SET name = ? WHERE id = ?");
+        return $stmt->execute([$name, $id]);
+    }
+
+    public static function deleteCategory($id) {
+        $db = self::getDb();
+        // Check if any programs are using this category
+        $cat = $db->prepare("SELECT name FROM program_category WHERE id = ?");
+        $cat->execute([$id]);
+        $catName = $cat->fetchColumn();
+
+        if ($catName) {
+            $check = $db->prepare("SELECT COUNT(*) FROM program WHERE category = ?");
+            $check->execute([$catName]);
+            if ($check->fetchColumn() > 0) {
+                throw new Exception("Cannot delete: category '$catName' is in use by existing programs.");
+            }
+        }
+
+        $stmt = $db->prepare("DELETE FROM program_category WHERE id = ?");
+        return $stmt->execute([$id]);
+    }
+
+    /**
+     * --- Complaints & Feedback ---
+     */
+
+    public static function getComplaints() {
+        $db = self::getDb();
+        $stmt = $db->query("SELECT * FROM complaints ORDER BY created_at DESC");
+        return $stmt->fetchAll();
+    }
+
+    public static function addComplaint($subject, $body, $userId) {
+        $db = self::getDb();
+        $subject = htmlspecialchars(trim($subject), ENT_QUOTES, 'UTF-8');
+        $body = htmlspecialchars(trim($body), ENT_QUOTES, 'UTF-8');
+
+        if (empty($subject) || empty($body)) {
+            throw new Exception("Subject and body are required.");
+        }
+
+        $stmt = $db->prepare("INSERT INTO complaints (user_id, subject, body) VALUES (?, ?, ?)");
+        $stmt->execute([$userId, $subject, $body]);
+        
+        $id = $db->lastInsertId();
+        return [
+            'id' => $id,
+            'subject' => $subject,
+            'body' => $body,
+            'userId' => $userId,
+            'status' => 'open',
+            'date' => date('Y-m-d')
         ];
     }
 }

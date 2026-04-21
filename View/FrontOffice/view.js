@@ -98,14 +98,16 @@ const view = {
                     <div class="card-content">
                         <span class="category-badge">${p.category}</span>
                         <h3>${p.title}</h3>
-                        <p>${p.description}</p>
-                        <button class="btn ${isEnrolled ? 'btn-success' : 'btn-primary'}" 
-                                style="width: 100%"
-                                data-id="${p.id}" 
-                                data-action="enroll"
-                                ${isEnrolled ? 'disabled' : ''}>
-                            ${isEnrolled ? 'ENROLLED' : 'ENROLL'}
-                        </button>
+                        <p class="description-clamp" onclick="this.classList.toggle('expanded')" title="Click to read more">${p.description}</p>
+                        <div style="margin-top: auto; padding-bottom: 5%;">
+                            <button class="btn ${isEnrolled ? 'btn-success' : 'btn-primary'}" 
+                                    style="width: 100%"
+                                    data-id="${p.id}" 
+                                    data-action="enroll"
+                                    ${isEnrolled ? 'disabled' : ''}>
+                                ${isEnrolled ? 'ENROLLED' : 'ENROLL'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;

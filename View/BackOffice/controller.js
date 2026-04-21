@@ -33,10 +33,9 @@ const controller = {
             } else if (action === 'reject') {
                 this.handleStatusUpdate(id, 'rejected');
             } else if (action === 'new-program') {
-                view.renderProgramForm();
+                window.location.hash = '#add-program';
             } else if (action === 'edit-program') {
-                const program = model.getProgram(id);
-                view.renderProgramForm(program);
+                window.location.hash = `#edit-program/${id}`;
             } else if (action === 'delete-program') {
                 if (confirm('Are you sure you want to delete this program?')) {
                     this.handleProgramDelete(id);
@@ -49,6 +48,18 @@ const controller = {
             } else if (action === 'cancel-enroll') {
                 const progId = actionEl.dataset.programId;
                 this.handleEnrollmentUpdate(id, 'cancelled', progId);
+            } else if (action === 'manage-categories') {
+                window.location.hash = '#manage-categories';
+            } else if (action === 'edit-category') {
+                this.toggleCategoryEdit(id, true);
+            } else if (action === 'cancel-edit-category') {
+                this.toggleCategoryEdit(id, false);
+            } else if (action === 'save-category') {
+                this.handleCategorySave(id);
+            } else if (action === 'delete-category') {
+                if (confirm('Are you sure you want to delete this category?')) {
+                    this.handleCategoryDelete(id);
+                }
             }
         });
 
@@ -62,6 +73,8 @@ const controller = {
                 this.handleProfileUpdate(new FormData(e.target));
             } else if (e.target.id === 'program-form') {
                 this.handleProgramSave(new FormData(e.target));
+            } else if (e.target.id === 'category-form') {
+                this.handleCategoryAdd(new FormData(e.target));
             }
         });
     },
@@ -77,9 +90,19 @@ const controller = {
             return;
         }
 
+        if (hash.startsWith('#edit-program/')) {
+            const programId = hash.split('/')[1];
+            const program = model.getProgram(programId);
+            view.renderProgramForm(program, model.getCategories());
+            return;
+        }
+
         switch (hash) {
             case '#home':
                 view.renderHome(user);
+                break;
+            case '#add-program':
+                view.renderProgramForm(null, model.getCategories());
                 break;
             case '#worker-dashboard':
                 if (user.role === 'worker') {
@@ -110,6 +133,14 @@ const controller = {
                 if (user.role === 'admin' || user.role === 'worker') {
                     await model.sync(); // Refresh data
                     view.renderProgramsManager(model.getPrograms(), user.role);
+                } else {
+                    window.location.hash = '#home';
+                }
+                break;
+            case '#manage-categories':
+                if (user.role === 'admin') {
+                    await model.syncCategories();
+                    view.renderCategoryManager(model.getCategories());
                 } else {
                     window.location.hash = '#home';
                 }
@@ -269,6 +300,74 @@ const controller = {
             view.renderNavBar(user.role, counts);
         } else {
             view.renderToast('Failed to update enrollment.', 'error');
+        }
+    },
+
+    /* =========================================================================
+       CATEGORY MANAGEMENT
+       ========================================================================= */
+
+    toggleCategoryEdit(id, editing) {
+        const nameSpan = document.querySelector(`.category-display-name[data-id="${id}"]`);
+        const nameInput = document.querySelector(`.category-edit-input[data-id="${id}"]`);
+        const editBtn = document.querySelector(`[data-action="edit-category"][data-id="${id}"]`);
+        const saveBtn = document.querySelector(`[data-action="save-category"][data-id="${id}"]`);
+        const cancelBtn = document.querySelector(`[data-action="cancel-edit-category"][data-id="${id}"]`);
+
+        if (editing) {
+            nameSpan.style.display = 'none';
+            nameInput.style.display = 'inline-block';
+            nameInput.focus();
+            editBtn.style.display = 'none';
+            saveBtn.style.display = 'inline-flex';
+            cancelBtn.style.display = 'inline-flex';
+        } else {
+            nameSpan.style.display = 'inline';
+            nameInput.style.display = 'none';
+            editBtn.style.display = 'inline-flex';
+            saveBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+        }
+    },
+
+    async handleCategoryAdd(formData) {
+        const name = formData.get('name')?.trim();
+        if (!name || name.length < 2) {
+            view.renderToast('Category name must be at least 2 characters.', 'error');
+            return;
+        }
+        const success = await model.addCategory(name);
+        if (success) {
+            view.renderToast('Category added!');
+            view.renderCategoryManager(model.getCategories());
+        } else {
+            view.renderToast('Failed to add category. It may already exist.', 'error');
+        }
+    },
+
+    async handleCategorySave(id) {
+        const input = document.querySelector(`.category-edit-input[data-id="${id}"]`);
+        const name = input.value.trim();
+        if (!name || name.length < 2) {
+            view.renderToast('Category name must be at least 2 characters.', 'error');
+            return;
+        }
+        const success = await model.updateCategory(id, name);
+        if (success) {
+            view.renderToast('Category updated!');
+            view.renderCategoryManager(model.getCategories());
+        } else {
+            view.renderToast('Failed to update category.', 'error');
+        }
+    },
+
+    async handleCategoryDelete(id) {
+        const success = await model.deleteCategory(id);
+        if (success) {
+            view.renderToast('Category deleted.');
+            view.renderCategoryManager(model.getCategories());
+        } else {
+            view.renderToast('Failed to delete category. It may be in use.', 'error');
         }
     }
 };

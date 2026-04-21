@@ -143,6 +143,7 @@ const view = {
                         </div>
                         <div class="form-group" style="display: flex; gap: 1rem;">
                             <button type="submit" class="btn btn-primary">UPDATE DETAILS</button>
+                            <a href="#home" class="btn" style="text-decoration:none; text-align:center;">CANCEL</a>
                         </div>
                     </form>
                 </div>
@@ -155,8 +156,8 @@ const view = {
         const tableRows = requests.map(r => `
             <tr>
                 <td><strong>#${r.id}</strong></td>
-                <td>${r.type}</td>
-                <td>${r.date}</td>
+                <td>${r.title}</td>
+                <td>${r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</td>
                 <td><span class="status-badge status-${r.status}">${r.status}</span></td>
                 <td>
                     <button class="btn btn-small btn-success" data-action="validate" data-id="${r.id}" style="margin-right: 5px;"><i class="bi bi-check-lg"></i> VALIDATE</button>
@@ -222,7 +223,7 @@ const view = {
         const tableRows = complaints.map(c => `
             <tr>
                 <td><strong>#${c.id}</strong></td>
-                <td>${c.date}</td>
+                <td>${c.created_at ? new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</td>
                 <td>${c.subject}</td>
                 <td>${c.body}</td>
             </tr>
@@ -300,6 +301,7 @@ const view = {
                     <h2 class="reveal" style="margin:0; border:none; padding:0;">Parks & Recreation</h2>
                     <div style="display:flex; gap: 1rem; align-items: center;">
                         <span class="reveal" style="font-weight:800; font-size:0.9rem; text-transform:uppercase; letter-spacing:1px;">${totalEnrollments} total enrollments</span>
+                        ${role === 'admin' ? '<button class="btn reveal" data-action="manage-categories" style="border: 2px solid var(--primary-navy);"><i class="bi bi-tags"></i> CATEGORIES</button>' : ''}
                         ${role === 'admin' ? '<button class="btn btn-primary reveal" data-action="new-program">+ NEW PROGRAM</button>' : ''}
                     </div>
                 </div>
@@ -414,8 +416,12 @@ const view = {
     /* =========================================================================
        PROGRAM FORM — Create / Edit with AI Image Generation
        ========================================================================= */
-    renderProgramForm(program = null) {
+    renderProgramForm(program = null, categories = []) {
         const isEdit = !!program;
+        const categoryOptions = categories.map(c => 
+            `<option value="${c.name}" ${isEdit && program.category === c.name ? 'selected' : ''}>${c.name}</option>`
+        ).join('');
+
         this.app.innerHTML = `
             <section class="page-container">
                 <h2 class="reveal">${isEdit ? 'Edit Program' : 'New Community Program'}</h2>
@@ -430,10 +436,8 @@ const view = {
                             <div class="form-group">
                                 <label for="prog-category">Category</label>
                                 <select id="prog-category" name="category">
-                                    <option value="Arts" ${isEdit && program.category === 'Arts' ? 'selected' : ''}>Arts</option>
-                                    <option value="Sports" ${isEdit && program.category === 'Sports' ? 'selected' : ''}>Sports</option>
-                                    <option value="Environment" ${isEdit && program.category === 'Environment' ? 'selected' : ''}>Environment</option>
-                                    <option value="Education" ${isEdit && program.category === 'Education' ? 'selected' : ''}>Education</option>
+                                    <option value="" disabled ${!isEdit ? 'selected' : ''}>Select a category</option>
+                                    ${categoryOptions}
                                 </select>
                             </div>
                             <div class="form-group">
@@ -471,9 +475,69 @@ const view = {
                         ` : ''}
                         <div style="display:flex; gap: 1rem; margin-top: 1rem;">
                             <button type="submit" class="btn btn-primary" style="flex:1;">${isEdit ? 'UPDATE PROGRAM' : 'CREATE PROGRAM'}</button>
-                            <button type="button" class="btn" style="flex:1;" onclick="window.location.hash='#manage-programs'">CANCEL</button>
+                            <a href="#manage-programs" class="btn" style="flex:1; text-decoration:none; text-align:center; display:flex; align-items:center; justify-content:center;">CANCEL</a>
                         </div>
                     </form>
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    },
+
+    /* =========================================================================
+       CATEGORY MANAGER — Admin only
+       ========================================================================= */
+    renderCategoryManager(categories) {
+        const rows = categories.map(c => `
+            <tr>
+                <td><strong>#${c.id}</strong></td>
+                <td>
+                    <span class="category-display-name" data-id="${c.id}">${c.name}</span>
+                    <input type="text" class="category-edit-input" data-id="${c.id}" value="${c.name}" style="display:none; width: 100%; padding: 0.5rem; border: 2px solid var(--primary-navy); font-weight: 700;">
+                </td>
+                <td>${c.created_at ? new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</td>
+                <td>
+                    <button class="btn btn-small" data-action="edit-category" data-id="${c.id}" style="margin-right: 4px;"><i class="bi bi-pencil-square"></i> EDIT</button>
+                    <button class="btn btn-small btn-success" data-action="save-category" data-id="${c.id}" style="display:none; margin-right: 4px;"><i class="bi bi-check-lg"></i> SAVE</button>
+                    <button class="btn btn-small btn-secondary" data-action="cancel-edit-category" data-id="${c.id}" style="display:none; margin-right: 4px;">CANCEL</button>
+                    <button class="btn btn-small btn-danger" data-action="delete-category" data-id="${c.id}"><i class="bi bi-trash3"></i></button>
+                </td>
+            </tr>
+        `).join('');
+
+        this.app.innerHTML = `
+            <section class="page-container">
+                <div style="margin-bottom: 2rem;">
+                    <a href="#manage-programs" style="font-weight:800; text-transform:uppercase; text-decoration:none; color:var(--primary-navy); font-size:0.9rem; letter-spacing:1px;"><i class="bi bi-arrow-left"></i> Back to Programs</a>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                    <h2 class="reveal" style="margin:0; border:none; padding:0;">Manage Categories</h2>
+                </div>
+                <div class="form-card reveal" style="margin-bottom: 2rem;">
+                    <form id="category-form" style="display: flex; gap: 1rem; align-items: flex-end;">
+                        <div class="form-group" style="flex: 1; margin: 0;">
+                            <label for="new-category-name">New Category Name</label>
+                            <input type="text" id="new-category-name" name="name" placeholder="e.g. Health & Wellness" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="height: fit-content; padding: 0.85rem 2rem;">+ ADD</button>
+                    </form>
+                </div>
+                <div class="reveal">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows.length > 0 ? rows : '<tr><td colspan="4" style="text-align:center; padding: 2rem;">No categories yet. Add one above.</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
         `;

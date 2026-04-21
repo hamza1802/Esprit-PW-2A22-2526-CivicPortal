@@ -61,6 +61,22 @@ class MainController {
             case 'get_stats':
                 return AppModel::getStats();
 
+            // --- Complaints & Feedback ---
+            case 'get_complaints':
+                return AppModel::getComplaints();
+            case 'add_complaint':
+                return AppModel::addComplaint($data['subject'], $data['body'], $data['userId']);
+
+            // --- Program Categories ---
+            case 'get_categories':
+                return AppModel::getCategories();
+            case 'add_category':
+                return AppModel::addCategory($data['name']);
+            case 'update_category':
+                return AppModel::updateCategory($data['id'], $data['name']);
+            case 'delete_category':
+                return AppModel::deleteCategory($data['id']);
+
             default:
                 throw new Exception("Invalid action: " . $action);
         }

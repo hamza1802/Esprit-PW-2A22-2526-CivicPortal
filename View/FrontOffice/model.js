@@ -46,11 +46,11 @@ const model = {
 
     getServiceRequests() {
         // Filter requests for just this user (simulate isolation in UI)
-        return this.state.serviceRequests.filter(r => r.userId === this.state.currentUser.id);
+        return this.state.serviceRequests.filter(r => r.user_id == this.state.currentUser.id);
     },
 
     getEnrollments(userId) {
-        return this.state.enrollments.filter(e => e.userId === userId);
+        return this.state.enrollments.filter(e => e.user_id == userId);
     },
 
     async addServiceRequest(request) {

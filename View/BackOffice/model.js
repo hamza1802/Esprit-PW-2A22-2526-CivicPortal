@@ -15,6 +15,7 @@ const model = {
         serviceRequests: [],
         complaints: [],
         programs: [],
+        categories: [],
         stats: null
     },
 
@@ -55,6 +56,45 @@ const model = {
 
         const programs = await this.apiCall('get_programs');
         if (programs) this.state.programs = programs;
+
+        const categories = await this.apiCall('get_categories');
+        if (categories) this.state.categories = categories;
+    },
+
+    getCategories() {
+        return this.state.categories;
+    },
+
+    async addCategory(name) {
+        const result = await this.apiCall('add_category', { name });
+        if (result) {
+            await this.syncCategories();
+            return true;
+        }
+        return false;
+    },
+
+    async updateCategory(id, name) {
+        const result = await this.apiCall('update_category', { id, name });
+        if (result) {
+            await this.syncCategories();
+            return true;
+        }
+        return false;
+    },
+
+    async deleteCategory(id) {
+        const result = await this.apiCall('delete_category', { id });
+        if (result) {
+            await this.syncCategories();
+            return true;
+        }
+        return false;
+    },
+
+    async syncCategories() {
+        const categories = await this.apiCall('get_categories');
+        if (categories) this.state.categories = categories;
     },
 
     getPrograms() {
