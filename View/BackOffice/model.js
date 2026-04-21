@@ -146,8 +146,7 @@ const model = {
             enrollmentsCount: this.state.enrollmentsCount,
             complaintsCount: this.state.complaints.length
         };
-    }
-};
+    },
 
 
     // --- Transport API ---

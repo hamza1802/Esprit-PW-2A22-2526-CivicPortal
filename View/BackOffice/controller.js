@@ -114,6 +114,21 @@ const controller = {
                     window.location.hash = '#home';
                 }
                 break;
+            case '#transport-dashboard':
+                if (user.role === 'admin') view.renderTransportDashboard(); else window.location.hash = '#home';
+                break;
+            case '#transport-types':
+                if (user.role === 'admin') view.renderTransportTypes(await model.getTransportTypes() || []); else window.location.hash = '#home';
+                break;
+            case '#fleet':
+                if (user.role === 'admin') view.renderFleet(await model.getTransports() || []); else window.location.hash = '#home';
+                break;
+            case '#routes':
+                if (user.role === 'admin') view.renderRoutes(await model.getTrajets() || []); else window.location.hash = '#home';
+                break;
+            case '#admin-tickets':
+                if (user.role === 'admin') view.renderAdminTickets(await model.getTickets() || []); else window.location.hash = '#home';
+                break;
             default:
                 view.renderHome(user);
                 break;
@@ -270,8 +285,7 @@ const controller = {
         } else {
             view.renderToast('Failed to update enrollment.', 'error');
         }
-    }
-};
+    },
 
     async handleTransportTypeSave(formData) {
         const success = await model.saveTransportType(formData);

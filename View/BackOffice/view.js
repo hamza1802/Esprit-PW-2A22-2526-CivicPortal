@@ -468,8 +468,7 @@ const view = {
             </section>
         `;
         this.triggerObserver();
-    }
-};
+    },
 
     /* =========================================================================
        TRANSPORT MANAGEMENT 
