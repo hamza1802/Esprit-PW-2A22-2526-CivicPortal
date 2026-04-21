@@ -20,12 +20,20 @@
       "community": 10
     },
     {
+      "label": "migrate_v3.php",
+      "file_type": "code",
+      "source_file": "migrate_v3.php",
+      "source_location": "L1",
+      "id": "migrate_v3",
+      "community": 11
+    },
+    {
       "label": "Verification.php",
       "file_type": "code",
       "source_file": "Verification.php",
       "source_location": "L1",
       "id": "verification",
-      "community": 11
+      "community": 12
     },
     {
       "label": "MainController.php",
@@ -225,6 +233,54 @@
       "source_file": "Model\\AppModel.php",
       "source_location": "L287",
       "id": "appmodel_appmodel_getstats",
+      "community": 0
+    },
+    {
+      "label": ".getCategories()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L309",
+      "id": "appmodel_appmodel_getcategories",
+      "community": 0
+    },
+    {
+      "label": ".addCategory()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L315",
+      "id": "appmodel_appmodel_addcategory",
+      "community": 0
+    },
+    {
+      "label": ".updateCategory()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L335",
+      "id": "appmodel_appmodel_updatecategory",
+      "community": 0
+    },
+    {
+      "label": ".deleteCategory()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L354",
+      "id": "appmodel_appmodel_deletecategory",
+      "community": 0
+    },
+    {
+      "label": ".getComplaints()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L377",
+      "id": "appmodel_appmodel_getcomplaints",
+      "community": 0
+    },
+    {
+      "label": ".addComplaint()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L383",
+      "id": "appmodel_appmodel_addcomplaint",
       "community": 0
     },
     {
@@ -548,12 +604,68 @@
       "community": 2
     },
     {
+      "label": "check_documents.php",
+      "file_type": "code",
+      "source_file": "scratch\\check_documents.php",
+      "source_location": "L1",
+      "id": "check_documents",
+      "community": 13
+    },
+    {
+      "label": "check_program.php",
+      "file_type": "code",
+      "source_file": "scratch\\check_program.php",
+      "source_location": "L1",
+      "id": "check_program",
+      "community": 14
+    },
+    {
+      "label": "check_tables.php",
+      "file_type": "code",
+      "source_file": "scratch\\check_tables.php",
+      "source_location": "L1",
+      "id": "check_tables",
+      "community": 15
+    },
+    {
+      "label": "check_trajet.php",
+      "file_type": "code",
+      "source_file": "scratch\\check_trajet.php",
+      "source_location": "L1",
+      "id": "check_trajet",
+      "community": 16
+    },
+    {
+      "label": "check_transport.php",
+      "file_type": "code",
+      "source_file": "scratch\\check_transport.php",
+      "source_location": "L1",
+      "id": "check_transport",
+      "community": 17
+    },
+    {
+      "label": "check_users.php",
+      "file_type": "code",
+      "source_file": "scratch\\check_users.php",
+      "source_location": "L1",
+      "id": "check_users",
+      "community": 18
+    },
+    {
       "label": "debug_api.php",
       "file_type": "code",
       "source_file": "scratch\\debug_api.php",
       "source_location": "L1",
       "id": "debug_api",
-      "community": 12
+      "community": 19
+    },
+    {
+      "label": "test.php",
+      "file_type": "code",
+      "source_file": "scratch\\test.php",
+      "source_location": "L1",
+      "id": "test",
+      "community": 20
     },
     {
       "label": "glass-animations.js",
@@ -625,7 +737,7 @@
       "source_file": "View\\FrontOffice\\controller.js",
       "source_location": "L1",
       "id": "controller",
-      "community": 13
+      "community": 21
     },
     {
       "label": "index.php",
@@ -633,7 +745,7 @@
       "source_file": "View\\FrontOffice\\index.php",
       "source_location": "L1",
       "id": "index",
-      "community": 14
+      "community": 22
     },
     {
       "label": "model.js",
@@ -641,7 +753,7 @@
       "source_file": "View\\FrontOffice\\model.js",
       "source_location": "L1",
       "id": "model",
-      "community": 15
+      "community": 23
     },
     {
       "label": "view.js",
@@ -649,7 +761,7 @@
       "source_file": "View\\FrontOffice\\view.js",
       "source_location": "L1",
       "id": "view",
-      "community": 16
+      "community": 24
     }
   ],
   "links": [
@@ -927,6 +1039,78 @@
       "_tgt": "appmodel_appmodel_getstats",
       "source": "appmodel_appmodel",
       "target": "appmodel_appmodel_getstats",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L309",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_getcategories",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_getcategories",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L315",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_addcategory",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_addcategory",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L335",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_updatecategory",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_updatecategory",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L354",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_deletecategory",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_deletecategory",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L377",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_getcomplaints",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_getcomplaints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L383",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_addcomplaint",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_addcomplaint",
       "confidence_score": 1.0
     },
     {

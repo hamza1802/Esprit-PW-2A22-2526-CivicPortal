@@ -313,7 +313,8 @@ nav {
     border-radius: var(--radius-lg);
     display: flex;
     flex-direction: column;
-    height: 600px; /* Enforce same size */
+    height: 600px;
+    /* Enforce same size */
     background-color: var(--bg-neutral);
     transition: var(--transition-fast);
 }
@@ -439,7 +440,8 @@ nav {
 
 .description-clamp {
     display: -webkit-box;
-    -webkit-line-clamp: 2; /* Max 2 lines */
+    -webkit-line-clamp: 2;
+    /* Max 2 lines */
     -webkit-box-orient: vertical;
     overflow: hidden;
     cursor: pointer;
@@ -727,7 +729,8 @@ nav {
     background: var(--bg-neutral);
     display: flex;
     flex-direction: column;
-    height: 520px; /* Enforce same size */
+    height: 520px;
+    /* Enforce same size */
     transition: var(--transition-fast);
     position: relative;
     overflow: hidden;
@@ -1971,8 +1974,7 @@ input[type="radio"]:checked::after {
     padding-right: 30px !important;
 }
 
-nt;
-}
+
 
 /* ==========================================================================
    DESIGN-TOKEN UTILITY CLASSES
