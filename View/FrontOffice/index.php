@@ -13,7 +13,7 @@ AppModel::init();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CivicPortal | Citizen Services</title>
     <meta name="description" content="Access municipal services, programs, and submit requests online through CivicPortal.">
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css?v=2.0">
     
     <!-- Leaflet CSS & JS for Mapping -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />

@@ -13,7 +13,7 @@ AppModel::init();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CivicPortal | Staff Portal</title>
     <meta name="description" content="Administrative and Worker functionalities for CivicPortal.">
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css?v=2.0">
     <style>
         /* Quick override for staff portal header styling if needed */
         .nav-brand { color: var(--primary-red); }
