@@ -17,12 +17,12 @@ $transportTypes = MainController::listTransportTypes();
                 <input type="hidden" name="action" value="addTransport">
                 <div class="form-group">
                     <label for="name">Vehicle Name / Label</label>
-                    <input type="text" id="name" name="name" placeholder="e.g. Bus #001" required>
+                    <input type="text" id="name" name="name" placeholder="e.g. Bus #001">
                 </div>
                 <div style="display:flex; gap:2rem; flex-wrap:wrap;">
                     <div class="form-group" style="flex:1; min-width:200px;">
                         <label for="idTransportType">Type</label>
-                        <select id="idTransportType" name="idTransportType" required>
+                        <select id="idTransportType" name="idTransportType">
                             <option value="">Select type</option>
                             <?php foreach ($transportTypes as $tt): ?>
                                 <option value="<?= $tt['idTransportType'] ?>"><?= htmlspecialchars($tt['name']) ?></option>
@@ -33,12 +33,12 @@ $transportTypes = MainController::listTransportTypes();
                     </div>
                     <div class="form-group" style="flex:1; min-width:200px;">
                         <label for="capacity">Capacity (seats)</label>
-                        <input type="number" id="capacity" name="capacity" min="1" max="500" placeholder="e.g. 50" required>
+                        <input type="number" id="capacity" name="capacity" placeholder="e.g. 50">
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="status">Status</label>
-                    <select id="status" name="status" required>
+                    <select id="status" name="status">
                         <option value="Active">Active</option>
                         <option value="Maintenance">Maintenance</option>
                         <option value="Retired">Retired</option>
@@ -52,6 +52,7 @@ $transportTypes = MainController::listTransportTypes();
         </div>
     </section>
 </main>
+<script src="validate.js"></script>
 <script>
 // Sync hidden type field with transport type name
 document.getElementById('idTransportType').addEventListener('change', function() {

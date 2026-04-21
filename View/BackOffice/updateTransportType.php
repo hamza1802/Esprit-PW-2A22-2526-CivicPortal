@@ -22,7 +22,7 @@ if (!$t) { echo "Transport Type not found"; exit; }
                 <input type="hidden" name="idTransportType" value="<?= $t['idTransportType'] ?>">
                 <div class="form-group">
                     <label for="name">Type Name</label>
-                    <input type="text" id="name" name="name" value="<?= htmlspecialchars($t['name']) ?>" required>
+                    <input type="text" id="name" name="name" value="<?= htmlspecialchars($t['name']) ?>">
                 </div>
                 <div class="form-group">
                     <label for="description">Description</label>
@@ -36,7 +36,7 @@ if (!$t) { echo "Transport Type not found"; exit; }
                 <?php endif; ?>
                 <div class="form-group">
                     <label for="photo">Replace Photo (optional)</label>
-                    <input type="file" id="photo" name="photo" accept="image/jpeg,image/png,image/gif,image/webp" style="border:none; padding:1rem 0;">
+                    <input type="file" id="photo" name="photo" style="border:none; padding:1rem 0;">
                 </div>
                 <div style="margin-top:25px; display:flex; gap:15px;">
                     <a href="showTransportType.php" class="btn">Cancel</a>
@@ -46,5 +46,6 @@ if (!$t) { echo "Transport Type not found"; exit; }
         </div>
     </section>
 </main>
+<script src="validate.js"></script>
 </body>
 </html>

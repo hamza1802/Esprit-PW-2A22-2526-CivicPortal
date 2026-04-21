@@ -39,12 +39,12 @@ $transports = MainController::listTransports();
                 <div style="display:flex; gap:2rem; flex-wrap:wrap;">
                     <div class="form-group" style="flex:1; min-width:200px; position:relative;">
                         <label for="departure">From (Departure)</label>
-                        <input type="text" id="departure" name="departure" value="<?= htmlspecialchars($trajet['departure']) ?>" required autocomplete="off">
+                        <input type="text" id="departure" name="departure" value="<?= htmlspecialchars($trajet['departure']) ?>" autocomplete="off">
                         <div id="depSuggestions" class="autocomplete-list" style="display:none;"></div>
                     </div>
                     <div class="form-group" style="flex:1; min-width:200px; position:relative;">
                         <label for="destination">To (Destination)</label>
-                        <input type="text" id="destination" name="destination" value="<?= htmlspecialchars($trajet['destination']) ?>" required autocomplete="off">
+                        <input type="text" id="destination" name="destination" value="<?= htmlspecialchars($trajet['destination']) ?>" autocomplete="off">
                         <div id="destSuggestions" class="autocomplete-list" style="display:none;"></div>
                     </div>
                 </div>
@@ -59,7 +59,7 @@ $transports = MainController::listTransports();
                 <div style="display:flex; gap:2rem; flex-wrap:wrap;">
                     <div class="form-group" style="flex:1; min-width:200px;">
                         <label for="idTransport">Assign Vehicle</label>
-                        <select id="idTransport" name="idTransport" required>
+                        <select id="idTransport" name="idTransport">
                             <option value="">Select vehicle</option>
                             <?php foreach ($transports as $t): ?>
                                 <?php if ($t['status'] === 'Active'): ?>
@@ -70,12 +70,12 @@ $transports = MainController::listTransports();
                     </div>
                     <div class="form-group" style="flex:1; min-width:200px;">
                         <label for="departureTime">Departure Time</label>
-                        <input type="datetime-local" id="departureTime" name="departureTime" value="<?= date('Y-m-d\TH:i', strtotime($trajet['departureTime'])) ?>" required>
+                        <input type="datetime-local" id="departureTime" name="departureTime" value="<?= date('Y-m-d\TH:i', strtotime($trajet['departureTime'])) ?>">
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="price">Price (TND)</label>
-                    <input type="number" id="price" name="price" min="0" step="0.1" value="<?= htmlspecialchars($trajet['price']) ?>" required>
+                    <input type="number" id="price" name="price" value="<?= htmlspecialchars($trajet['price']) ?>">
                 </div>
                 <div style="margin-top:25px; display:flex; gap:15px;">
                     <a href="showTrajet.php" class="btn">Cancel</a>
@@ -86,6 +86,7 @@ $transports = MainController::listTransports();
     </section>
 </main>
 
+<script src="validate.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 let map, depMarker, destMarker, routeLine;

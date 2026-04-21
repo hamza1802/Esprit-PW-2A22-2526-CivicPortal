@@ -13,7 +13,7 @@
                 <input type="hidden" name="action" value="addTransportType">
                 <div class="form-group">
                     <label for="name">Type Name</label>
-                    <input type="text" id="name" name="name" placeholder="e.g. Bus, Plane, Ferry" required>
+                    <input type="text" id="name" name="name" placeholder="e.g. Bus, Plane, Ferry">
                 </div>
                 <div class="form-group">
                     <label for="description">Description</label>
@@ -21,7 +21,7 @@
                 </div>
                 <div class="form-group">
                     <label for="photo">Photo</label>
-                    <input type="file" id="photo" name="photo" accept="image/jpeg,image/png,image/gif,image/webp" style="border:none; padding:1rem 0;">
+                    <input type="file" id="photo" name="photo" style="border:none; padding:1rem 0;">
                     <p style="font-size:0.8rem; color:var(--secondary-grey); margin-top:4px;">Accepted: JPG, PNG, GIF, WebP</p>
                 </div>
                 <div style="margin-top:25px; display:flex; gap:15px;">
@@ -32,5 +32,6 @@
         </div>
     </section>
 </main>
+<script src="validate.js"></script>
 </body>
 </html>

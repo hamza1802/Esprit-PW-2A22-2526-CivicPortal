@@ -23,12 +23,12 @@ $transportTypes = MainController::listTransportTypes();
                 <input type="hidden" name="idTransport" value="<?= $t['idTransport'] ?>">
                 <div class="form-group">
                     <label for="name">Vehicle Name / Label</label>
-                    <input type="text" id="name" name="name" value="<?= htmlspecialchars($t['name']) ?>" required>
+                    <input type="text" id="name" name="name" value="<?= htmlspecialchars($t['name']) ?>">
                 </div>
                 <div style="display:flex; gap:2rem; flex-wrap:wrap;">
                     <div class="form-group" style="flex:1; min-width:200px;">
                         <label for="idTransportType">Type</label>
-                        <select id="idTransportType" name="idTransportType" required>
+                        <select id="idTransportType" name="idTransportType">
                             <option value="">Select type</option>
                             <?php foreach ($transportTypes as $tt): ?>
                                 <option value="<?= $tt['idTransportType'] ?>" <?= ($t['idTransportType'] == $tt['idTransportType']) ? 'selected' : '' ?>><?= htmlspecialchars($tt['name']) ?></option>
@@ -38,12 +38,12 @@ $transportTypes = MainController::listTransportTypes();
                     </div>
                     <div class="form-group" style="flex:1; min-width:200px;">
                         <label for="capacity">Capacity (seats)</label>
-                        <input type="number" id="capacity" name="capacity" min="1" max="500" value="<?= htmlspecialchars($t['capacity']) ?>" required>
+                        <input type="number" id="capacity" name="capacity" value="<?= htmlspecialchars($t['capacity']) ?>">
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="status">Status</label>
-                    <select id="status" name="status" required>
+                    <select id="status" name="status">
                         <option value="Active" <?= $t['status'] === 'Active' ? 'selected' : '' ?>>Active</option>
                         <option value="Maintenance" <?= $t['status'] === 'Maintenance' ? 'selected' : '' ?>>Maintenance</option>
                         <option value="Retired" <?= $t['status'] === 'Retired' ? 'selected' : '' ?>>Retired</option>
@@ -57,6 +57,7 @@ $transportTypes = MainController::listTransportTypes();
         </div>
     </section>
 </main>
+<script src="validate.js"></script>
 <script>
 document.getElementById('idTransportType').addEventListener('change', function() {
     document.getElementById('type').value = this.options[this.selectedIndex].text;
