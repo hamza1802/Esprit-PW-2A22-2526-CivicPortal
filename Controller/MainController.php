@@ -60,6 +60,63 @@ class MainController {
             // --- Stats ---
             case 'get_stats':
                 return AppModel::getStats();
+            // --- Transport & Route CRUD ---
+            case 'list_transport_types':
+                return AppModel::listTransportTypes();
+            case 'add_transport_type':
+                return AppModel::addTransportType($data, $data['image_file'] ?? null);
+            case 'update_transport_type':
+                return AppModel::updateTransportType($data['idTransportType'], $data, $data['image_file'] ?? null);
+            case 'delete_transport_type':
+                return AppModel::deleteTransportType($data['idTransportType']);
+
+            case 'list_transports':
+                return AppModel::listTransports();
+            case 'add_transport':
+                return AppModel::addTransport($data);
+            case 'update_transport':
+                return AppModel::updateTransport($data['idTransport'], $data);
+            case 'delete_transport':
+                return AppModel::deleteTransport($data['idTransport']);
+
+            case 'list_all_trajets':
+                $trajets = AppModel::listTrajets();
+                $enriched = [];
+                foreach ($trajets as $t) {
+                    $occ = AppModel::getOccupancy($t['idTrajet']);
+                    $enriched[] = array_merge($t, ['capacity' => $occ['capacity'], 'sold' => $occ['sold']]);
+                }
+                return $enriched;
+            case 'list_trajets':
+                $type = $data['type'] ?? 'Bus';
+                $sortBy = $data['sortBy'] ?? 'departure';
+                $order = $data['order'] ?? 'ASC';
+                $trajets = AppModel::listTrajetsByTypeAndSort($type, $sortBy, $order);
+                $enriched = [];
+                foreach ($trajets as $t) {
+                    $occ = AppModel::getOccupancy($t['idTrajet']);
+                    $enriched[] = array_merge($t, ['capacity' => $occ['capacity'], 'sold' => $occ['sold']]);
+                }
+                return $enriched;
+            case 'add_trajet':
+                return AppModel::addTrajet($data);
+            case 'update_trajet':
+                return AppModel::updateTrajet($data['idTrajet'], $data);
+            case 'delete_trajet':
+                return AppModel::deleteTrajet($data['idTrajet']);
+
+            case 'list_tickets':
+                return AppModel::listTickets();
+            case 'list_tickets_enriched':
+                return AppModel::listTicketsEnriched();
+            case 'book_ticket':
+                $occ = AppModel::getOccupancy($data['idTrajet']);
+                if ($occ['capacity'] > 0 && $occ['sold'] >= $occ['capacity']) {
+                    throw new Exception('Route is sold out.');
+                }
+                return AppModel::addTicket($data);
+            case 'cancel_ticket':
+                return AppModel::cancelTicket($data['idTicket']);
 
             default:
                 throw new Exception("Invalid action: " . $action);
@@ -67,3 +124,4 @@ class MainController {
     }
 }
 ?>
+

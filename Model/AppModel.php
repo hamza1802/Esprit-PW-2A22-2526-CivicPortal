@@ -301,5 +301,280 @@ class AppModel {
             'complaintsCount' => (int)$complaintsCount
         ];
     }
+    // ============================================
+    // TRANSPORT TYPE MANAGEMENT
+    // ============================================
+
+    public static function listTransportTypes() {
+        $sql = "SELECT * FROM transport_type ORDER BY name ASC";
+        $db = self::getDb();
+        return $db->query($sql)->fetchAll();
+    }
+
+    public static function showTransportType($id) {
+        $sql = "SELECT * FROM transport_type WHERE idTransportType = ?";
+        $db = self::getDb();
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$id]);
+        return $stmt->fetch();
+    }
+
+    public static function addTransportType($data, $imageFile = null) {
+        $photoUrl = self::handleTypePhotoUpload($imageFile);
+        $sql = "INSERT INTO transport_type (name, description, photo_url) VALUES (?, ?, ?)";
+        $db = self::getDb();
+        $stmt = $db->prepare($sql);
+        return $stmt->execute([
+            $data['name'],
+            $data['description'],
+            $photoUrl
+        ]);
+    }
+
+    public static function updateTransportType($id, $data, $imageFile = null) {
+        $db = self::getDb();
+        $photoUrl = self::handleTypePhotoUpload($imageFile);
+        
+        if ($photoUrl) {
+            $sql = "UPDATE transport_type SET name = ?, description = ?, photo_url = ? WHERE idTransportType = ?";
+            $stmt = $db->prepare($sql);
+            $stmt->execute([$data['name'], $data['description'], $photoUrl, $id]);
+        } else {
+            $sql = "UPDATE transport_type SET name = ?, description = ? WHERE idTransportType = ?";
+            $stmt = $db->prepare($sql);
+            $stmt->execute([$data['name'], $data['description'], $id]);
+        }
+        return true;
+    }
+
+    public static function deleteTransportType($id) {
+        $db = self::getDb();
+        // 1. Fetch the record to get the photo path before deletion
+        $existing = self::showTransportType($id);
+
+        // 2. Delete the database row
+        $sql = "DELETE FROM transport_type WHERE idTransportType = ?";
+        $req = $db->prepare($sql);
+        $req->execute([$id]);
+
+        // 3. Cleanup: remove the associated photo file from disk
+        if ($existing && !empty($existing['photo_url'])) {
+            $filePath = __DIR__ . '/../View/assets/images/' . $existing['photo_url'];
+            if (file_exists($filePath)) {
+                @unlink($filePath);
+            }
+        }
+        return true;
+    }
+
+    private static function handleTypePhotoUpload($file) {
+        if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
+            return null;
+        }
+
+        $uploadDir = __DIR__ . '/../View/assets/images/types/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+        $fileName = 'type_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $extension;
+        $targetPath = $uploadDir . $fileName;
+
+        if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+            return 'types/' . $fileName;
+        }
+
+        return null;
+    }
+
+    // ============================================
+    // TRANSPORT FLEET LOGIC
+    // ============================================
+
+    public static function listTransports() {
+        $sql = "SELECT t.*, tt.name as typeName FROM transport t LEFT JOIN transport_type tt ON t.idTransportType = tt.idTransportType";
+        $db = self::getDb();
+        return $db->query($sql)->fetchAll();
+    }
+
+    public static function addTransport($data) {
+        $sql = "INSERT INTO transport (name, type, capacity, status, idTransportType) VALUES (?, ?, ?, ?, ?)";
+        $db = self::getDb();
+        $stmt = $db->prepare($sql);
+        return $stmt->execute([
+            $data['name'],
+            $data['type'] ?? '',
+            (int)$data['capacity'],
+            $data['status'],
+            isset($data['idTransportType']) ? (int)$data['idTransportType'] : null
+        ]);
+    }
+
+    public static function updateTransport($id, $data) {
+        $sql = "UPDATE transport SET name = ?, type = ?, capacity = ?, status = ?, idTransportType = ? WHERE idTransport = ?";
+        $db = self::getDb();
+        $stmt = $db->prepare($sql);
+        return $stmt->execute([
+            $data['name'],
+            $data['type'] ?? '',
+            (int)$data['capacity'],
+            $data['status'],
+            isset($data['idTransportType']) ? (int)$data['idTransportType'] : null,
+            $id
+        ]);
+    }
+
+    public static function deleteTransport($idTransport) {
+        $sql = "DELETE FROM transport WHERE idTransport = ?";
+        $db = self::getDb();
+        $stmt = $db->prepare($sql);
+        return $stmt->execute([$idTransport]);
+    }
+
+    public static function showTransport($idTransport) {
+        $sql = "SELECT t.*, tt.name as typeName FROM transport t LEFT JOIN transport_type tt ON t.idTransportType = tt.idTransportType WHERE t.idTransport = ?";
+        $db = self::getDb();
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$idTransport]);
+        return $stmt->fetch();
+    }
+
+    // ============================================
+    // TRAJET ROUTING LOGIC
+    // ============================================
+
+    public static function listTrajets() {
+        $sql = "SELECT t.*, tr.name as transportName, tr.capacity as transportCapacity, tr.type as transportType FROM trajet t LEFT JOIN transport tr ON t.idTransport = tr.idTransport";
+        $db = self::getDb();
+        return $db->query($sql)->fetchAll();
+    }
+
+    public static function listTrajetsByTypeAndSort($type, $sortBy = 'departure', $order = 'ASC') {
+        $allowedSorts = ['departure', 'destination', 'departureTime', 'price'];
+        $sortBy = in_array($sortBy, $allowedSorts) ? $sortBy : 'departure';
+        $order = strtoupper($order) === 'DESC' ? 'DESC' : 'ASC';
+
+        $sql = "SELECT t.*, tr.name as transportName, tr.capacity as transportCapacity FROM trajet t JOIN transport tr ON t.idTransport = tr.idTransport WHERE tr.type = ? ORDER BY t.$sortBy $order";
+        $db = self::getDb();
+        $query = $db->prepare($sql);
+        $query->execute([$type]);
+        return $query->fetchAll();
+    }
+
+    public static function addTrajet($data) {
+        $sql = "INSERT INTO trajet (departure, destination, idTransport, departureTime, price, depLat, depLng, depAddress, destLat, destLng, destAddress) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $db = self::getDb();
+        $stmt = $db->prepare($sql);
+        return $stmt->execute([
+            $data['departure'],
+            $data['destination'],
+            $data['idTransport'],
+            $data['departureTime'],
+            $data['price'],
+            $data['depLat'] ?? null,
+            $data['depLng'] ?? null,
+            $data['depAddress'] ?? null,
+            $data['destLat'] ?? null,
+            $data['destLng'] ?? null,
+            $data['destAddress'] ?? null
+        ]);
+    }
+
+    public static function updateTrajet($id, $data) {
+        $sql = "UPDATE trajet SET departure = ?, destination = ?, idTransport = ?, departureTime = ?, price = ?, depLat = ?, depLng = ?, depAddress = ?, destLat = ?, destLng = ?, destAddress = ? WHERE idTrajet = ?";
+        $db = self::getDb();
+        $stmt = $db->prepare($sql);
+        return $stmt->execute([
+            $data['departure'],
+            $data['destination'],
+            $data['idTransport'],
+            $data['departureTime'],
+            $data['price'],
+            $data['depLat'] ?? null,
+            $data['depLng'] ?? null,
+            $data['depAddress'] ?? null,
+            $data['destLat'] ?? null,
+            $data['destLng'] ?? null,
+            $data['destAddress'] ?? null,
+            $id
+        ]);
+    }
+
+    public static function deleteTrajet($idTrajet) {
+        $sql = "DELETE FROM trajet WHERE idTrajet = ?";
+        $db = self::getDb();
+        $req = $db->prepare($sql);
+        return $req->execute([$idTrajet]);
+    }
+
+    public static function getOccupancy($idTrajet) {
+        $db = self::getDb();
+        $sql = "SELECT tr.capacity FROM trajet t JOIN transport tr ON t.idTransport = tr.idTransport WHERE t.idTrajet = ?";
+        $query = $db->prepare($sql);
+        $query->execute([$idTrajet]);
+        $capacity = ($result = $query->fetch()) ? (int)$result['capacity'] : 0;
+
+        $sql2 = "SELECT COUNT(*) as sold FROM ticket WHERE idTrajet = ? AND status = 'Valid'";
+        $query2 = $db->prepare($sql2);
+        $query2->execute([$idTrajet]);
+        $sold = (int)$query2->fetch()['sold'];
+
+        return ['sold' => $sold, 'capacity' => $capacity, 'pct' => $capacity > 0 ? round(($sold / $capacity) * 100) : 0];
+    }
+
+    // ============================================
+    // TICKET LOGIC
+    // ============================================
+
+    public static function listTickets() {
+        $sql = "SELECT tk.*, t.departure, t.destination FROM ticket tk LEFT JOIN trajet t ON tk.idTrajet = t.idTrajet ORDER BY tk.issuedAt DESC";
+        $db = self::getDb();
+        return $db->query($sql)->fetchAll();
+    }
+
+    public static function listTicketsEnriched() {
+        $sql = "SELECT tk.*, t.departure, t.destination, t.departureTime, t.price, t.depLat, t.depLng, t.depAddress, t.destLat, t.destLng, t.destAddress,
+                       tr.name as transportName, tr.capacity,
+                       tt.name as typeName, tt.photo_url as typePhoto, tt.description as typeDescription
+                FROM ticket tk
+                LEFT JOIN trajet t ON tk.idTrajet = t.idTrajet
+                LEFT JOIN transport tr ON t.idTransport = tr.idTransport
+                LEFT JOIN transport_type tt ON tr.idTransportType = tt.idTransportType
+                ORDER BY tk.issuedAt DESC";
+        $db = self::getDb();
+        return $db->query($sql)->fetchAll();
+    }
+
+    public static function addTicket($data) {
+        $sql = "INSERT INTO ticket (user_id, ref, citizenName, idTrajet, issuedAt, status) VALUES (?, ?, ?, ?, NOW(), 'Valid')";
+        $db = self::getDb();
+        $query = $db->prepare($sql);
+        return $query->execute([
+            $data['idUser'],
+            self::generateRef(),
+            $data['citizenName'],
+            $data['idTrajet']
+        ]);
+    }
+
+    public static function cancelTicket($idTicket) {
+        $sql = "UPDATE ticket SET status = 'Cancelled' WHERE idTicket = ?";
+        $db = self::getDb();
+        $query = $db->prepare($sql);
+        return $query->execute([$idTicket]);
+    }
+
+    public static function deleteTicket($idTicket) {
+        $sql = "DELETE FROM ticket WHERE idTicket = ?";
+        $db = self::getDb();
+        $req = $db->prepare($sql);
+        return $req->execute([$idTicket]);
+    }
+
+    public static function generateRef() {
+        return 'CIV-' . rand(1000, 9999);
+    }
 }
 ?>
+

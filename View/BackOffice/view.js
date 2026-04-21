@@ -43,6 +43,7 @@ const view = {
                 ${role === 'admin' ? `
                     <li><a href="#admin-stats">statistics</a></li>
                     <li><a href="#manage-programs" style="position:relative;">programs ${totalBadge}</a></li>
+                    <li><a href="#transport-dashboard">transport</a></li>
                     <li><a href="#admin-inbox">inbox</a></li>
                 ` : ''}
                 <li><a href="#profile">profile</a></li>
@@ -101,6 +102,11 @@ const view = {
                         <h3>Parks & Recreation</h3>
                         <p>Manage community programs, workshops, and facilities. Ensure civic engagement is vibrant and accessible.</p>
                         <a href="#manage-programs" class="btn" style="align-self: flex-start; margin-top: auto;">Manage Programs</a>
+                    </div>
+                    <div class="editorial-card reveal">
+                        <h3>Transport Network</h3>
+                        <p>Manage fleet, update routes, handle digital boarding passes, and oversee city-wide transportation operations.</p>
+                        <a href="#transport-dashboard" class="btn" style="align-self: flex-start; margin-top: auto;">Manage Transport</a>
                     </div>
                 </div>
             </section>
@@ -465,4 +471,413 @@ const view = {
     }
 };
 
+    /* =========================================================================
+       TRANSPORT MANAGEMENT 
+       ========================================================================= */
+    renderTransportDashboard() {
+        this.app.innerHTML = `
+            <section class="page-container">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+                    <h2 class="reveal" style="margin:0; border:none; padding:0;">Transport Dashboard</h2>
+                </div>
+                <div class="editorial-grid">
+                    <div class="editorial-card reveal" style="cursor:pointer;" onclick="window.location.hash='#transport-types'">
+                        <h3>Transport Types</h3>
+                        <p>Manage transport categories (e.g., Bus, Metro, Tram) and their display images.</p>
+                        <a href="#transport-types" class="btn btn-primary" style="align-self: flex-start; margin-top: auto;">Manage Types</a>
+                    </div>
+                    <div class="editorial-card reveal" style="cursor:pointer;" onclick="window.location.hash='#fleet'">
+                        <h3>Fleet Management</h3>
+                        <p>Register and manage individual vehicles, tracking their capacity and operational status.</p>
+                        <a href="#fleet" class="btn" style="align-self: flex-start; margin-top: auto;">Manage Fleet</a>
+                    </div>
+                    <div class="editorial-card reveal" style="cursor:pointer;" onclick="window.location.hash='#routes'">
+                        <h3>Routes & Schedules</h3>
+                        <p>Plan routes, set departure times and pricing, and monitor active trajets.</p>
+                        <a href="#routes" class="btn" style="align-self: flex-start; margin-top: auto;">Manage Routes</a>
+                    </div>
+                    <div class="editorial-card reveal" style="cursor:pointer;" onclick="window.location.hash='#admin-tickets'">
+                        <h3>Ticketing</h3>
+                        <p>Monitor citizen ticket purchases, view active boarding passes, and handle cancellations.</p>
+                        <a href="#admin-tickets" class="btn" style="align-self: flex-start; margin-top: auto;">View Tickets</a>
+                    </div>
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    },
+
+    renderTransportTypes(types) {
+        const rows = types.map(t => `
+            <tr>
+                <td><strong>#${t.idTransportType}</strong></td>
+                <td>
+                    <div style="display:flex; align-items:center; gap: 10px;">
+                        ${t.photo_url ? `<img src="../assets/images/${t.photo_url}" style="width:40px; height:40px; border-radius:4px; object-fit:cover;">` : ''}
+                        <span>${t.name}</span>
+                    </div>
+                </td>
+                <td>${t.description}</td>
+                <td>
+                    <button class="btn btn-small btn-primary" data-action="edit-transport-type" data-id="${t.idTransportType}" style="margin-right:4px;">EDIT</button>
+                    <button class="btn btn-small btn-danger" data-action="delete-transport-type" data-id="${t.idTransportType}">DELETE</button>
+                </td>
+            </tr>
+        `).join('');
+
+        this.app.innerHTML = `
+            <section class="page-container">
+                <div style="margin-bottom: 2rem;">
+                    <a href="#transport-dashboard" style="font-weight:800; text-transform:uppercase; text-decoration:none; color:var(--primary-navy); font-size:0.9rem; letter-spacing:1px;">&larr; Back to Dashboard</a>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+                    <h2 class="reveal" style="margin:0; border:none; padding:0;">Transport Types</h2>
+                    <button class="btn btn-primary reveal" data-action="new-transport-type">+ NEW TYPE</button>
+                </div>
+                <div class="reveal">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows.length > 0 ? rows : '<tr><td colspan="4" style="text-align:center; padding:2rem;">No transport types found.</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    },
+
+    renderTransportTypeForm(type = null) {
+        const isEdit = !!type;
+        this.app.innerHTML = `
+            <section class="page-container">
+                <div style="margin-bottom: 2rem;">
+                    <a href="#transport-types" style="font-weight:800; text-transform:uppercase; text-decoration:none; color:var(--primary-navy); font-size:0.9rem; letter-spacing:1px;">&larr; Back to Types</a>
+                </div>
+                <h2 class="reveal">${isEdit ? 'Edit Transport Type' : 'New Transport Type'}</h2>
+                <div class="form-card reveal">
+                    <form id="transport-type-form">
+                        ${isEdit ? `<input type="hidden" name="idTransportType" value="${type.idTransportType}">` : ''}
+                        <div class="form-group">
+                            <label for="name">Type Name (e.g. Bus)</label>
+                            <input type="text" id="name" name="name" value="${isEdit ? type.name : ''}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea id="description" name="description" rows="3" required>${isEdit ? type.description : ''}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="photo">Photo / Icon</label>
+                            <input type="file" id="photo" name="image" accept="image/*" ${isEdit ? '' : 'required'}>
+                            ${isEdit && type.photo_url ? `
+                                <div style="margin-top:1rem;">
+                                    <p style="font-size:0.8rem; margin-bottom:5px;">Current Image:</p>
+                                    <img src="../assets/images/${type.photo_url}" style="height:100px; border-radius:4px; border: var(--border-main);">
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div style="display:flex; gap: 1rem; margin-top: 1rem;">
+                            <button type="submit" class="btn btn-primary" style="flex:1;">${isEdit ? 'UPDATE TYPE' : 'CREATE TYPE'}</button>
+                            <button type="button" class="btn" style="flex:1;" onclick="window.location.hash='#transport-types'">CANCEL</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+        
+        if (window.Validator && window.Validator.attachLiveValidation) {
+            window.Validator.attachLiveValidation(document.getElementById('transport-type-form'), [
+                { field: '#name', validate: (el) => window.Validator.required(el.value, 'Name') },
+                { field: '#description', validate: (el) => window.Validator.required(el.value, 'Description') }
+            ]);
+        }
+    },
+
+    renderFleet(transports) {
+        const rows = transports.map(t => `
+            <tr>
+                <td><strong>#${t.idTransport}</strong></td>
+                <td>${t.name}</td>
+                <td><span class="category-badge">${t.typeName || t.type}</span></td>
+                <td>${t.capacity} seats</td>
+                <td><span class="status-badge status-${t.status.toLowerCase()}">${t.status}</span></td>
+                <td>
+                    <button class="btn btn-small btn-primary" data-action="edit-fleet" data-id="${t.idTransport}" style="margin-right:4px;">EDIT</button>
+                    <button class="btn btn-small btn-danger" data-action="delete-fleet" data-id="${t.idTransport}">DELETE</button>
+                </td>
+            </tr>
+        `).join('');
+
+        this.app.innerHTML = `
+            <section class="page-container">
+                <div style="margin-bottom: 2rem;">
+                    <a href="#transport-dashboard" style="font-weight:800; text-transform:uppercase; text-decoration:none; color:var(--primary-navy); font-size:0.9rem; letter-spacing:1px;">&larr; Back to Dashboard</a>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+                    <h2 class="reveal" style="margin:0; border:none; padding:0;">Fleet Management</h2>
+                    <button class="btn btn-primary reveal" data-action="new-fleet">+ NEW VEHICLE</button>
+                </div>
+                <div class="reveal">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Vehicle Name</th>
+                                    <th>Type</th>
+                                    <th>Capacity</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows.length > 0 ? rows : '<tr><td colspan="6" style="text-align:center; padding:2rem;">No vehicles found.</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    },
+
+    renderFleetForm(transport = null, types = []) {
+        const isEdit = !!transport;
+        
+        const typeOptions = types.map(t => 
+            `<option value="${t.idTransportType}" ${isEdit && transport.idTransportType == t.idTransportType ? 'selected' : ''}>${t.name}</option>`
+        ).join('');
+
+        this.app.innerHTML = `
+            <section class="page-container">
+                <div style="margin-bottom: 2rem;">
+                    <a href="#fleet" style="font-weight:800; text-transform:uppercase; text-decoration:none; color:var(--primary-navy); font-size:0.9rem; letter-spacing:1px;">&larr; Back to Fleet</a>
+                </div>
+                <h2 class="reveal">${isEdit ? 'Edit Vehicle' : 'New Vehicle'}</h2>
+                <div class="form-card reveal">
+                    <form id="fleet-form">
+                        ${isEdit ? `<input type="hidden" name="idTransport" value="${transport.idTransport}">` : ''}
+                        <div class="form-group">
+                            <label for="name">Vehicle Name (e.g. City Bus A)</label>
+                            <input type="text" id="name" name="name" value="${isEdit ? transport.name : ''}" required>
+                        </div>
+                        <div class="form-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label for="idTransportType">Transport Type</label>
+                                <select id="idTransportType" name="idTransportType" required>
+                                    <option value="">-- Select Type --</option>
+                                    ${typeOptions}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="capacity">Passenger Capacity</label>
+                                <input type="number" id="capacity" name="capacity" value="${isEdit ? transport.capacity : '50'}" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="status">Status</label>
+                            <select id="status" name="status" required>
+                                <option value="Active" ${isEdit && transport.status === 'Active' ? 'selected' : ''}>Active</option>
+                                <option value="Maintenance" ${isEdit && transport.status === 'Maintenance' ? 'selected' : ''}>Maintenance</option>
+                                <option value="Retired" ${isEdit && transport.status === 'Retired' ? 'selected' : ''}>Retired</option>
+                            </select>
+                        </div>
+                        <div style="display:flex; gap: 1rem; margin-top: 1rem;">
+                            <button type="submit" class="btn btn-primary" style="flex:1;">${isEdit ? 'UPDATE VEHICLE' : 'REGISTER VEHICLE'}</button>
+                            <button type="button" class="btn" style="flex:1;" onclick="window.location.hash='#fleet'">CANCEL</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    },
+
+    renderRoutes(trajets) {
+        const rows = trajets.map(t => {
+            const pct = t.capacity > 0 ? Math.round((t.sold / t.capacity) * 100) : 0;
+            const depTime = new Date(t.departureTime);
+            
+            return `
+            <tr>
+                <td><strong>#${t.idTrajet}</strong></td>
+                <td>
+                    <div style="font-weight:700;">${t.departure} &rarr; ${t.destination}</div>
+                    <div style="font-size:0.8rem; opacity:0.7;">${depTime.toLocaleString()}</div>
+                </td>
+                <td>
+                    <div>${t.transportName} <span class="category-badge">${t.transportType}</span></div>
+                </td>
+                <td>$${parseFloat(t.price).toFixed(2)}</td>
+                <td>
+                    <div class="capacity-track" style="width:100px; height:8px; margin-bottom:4px; background:var(--bg-light); border-radius:4px; overflow:hidden;">
+                        <div class="capacity-fill${pct >= 100 ? ' full' : ''}" style="width: ${Math.min(pct, 100)}%; height:100%; background:var(--primary-red);"></div>
+                    </div>
+                    <div style="font-size:0.8rem;">${t.sold} / ${t.capacity} sold (${pct}%)</div>
+                </td>
+                <td>
+                    <button class="btn btn-small btn-primary" data-action="edit-route" data-id="${t.idTrajet}" style="margin-right:4px;">EDIT</button>
+                    <button class="btn btn-small btn-danger" data-action="delete-route" data-id="${t.idTrajet}">DELETE</button>
+                </td>
+            </tr>
+        `}).join('');
+
+        this.app.innerHTML = `
+            <section class="page-container">
+                <div style="margin-bottom: 2rem;">
+                    <a href="#transport-dashboard" style="font-weight:800; text-transform:uppercase; text-decoration:none; color:var(--primary-navy); font-size:0.9rem; letter-spacing:1px;">&larr; Back to Dashboard</a>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+                    <h2 class="reveal" style="margin:0; border:none; padding:0;">Routes & Schedules</h2>
+                    <button class="btn btn-primary reveal" data-action="new-route">+ NEW ROUTE</button>
+                </div>
+                <div class="reveal">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Route Details</th>
+                                    <th>Vehicle Assigned</th>
+                                    <th>Price</th>
+                                    <th>Occupancy</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows.length > 0 ? rows : '<tr><td colspan="6" style="text-align:center; padding:2rem;">No routes found.</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    },
+
+    renderRouteForm(trajet = null, fleets = []) {
+        const isEdit = !!trajet;
+        
+        const vehicleOptions = fleets.map(f => 
+            `<option value="${f.idTransport}" ${isEdit && trajet.idTransport == f.idTransport ? 'selected' : ''}>${f.name} (${f.capacity} seats)</option>`
+        ).join('');
+
+        let defaultTime = '';
+        if (isEdit && trajet.departureTime) {
+            defaultTime = trajet.departureTime.replace(' ', 'T').substring(0, 16);
+        }
+
+        this.app.innerHTML = `
+            <section class="page-container">
+                <div style="margin-bottom: 2rem;">
+                    <a href="#routes" style="font-weight:800; text-transform:uppercase; text-decoration:none; color:var(--primary-navy); font-size:0.9rem; letter-spacing:1px;">&larr; Back to Routes</a>
+                </div>
+                <h2 class="reveal">${isEdit ? 'Edit Route' : 'New Route'}</h2>
+                <div class="form-card reveal">
+                    <form id="route-form">
+                        ${isEdit ? `<input type="hidden" name="idTrajet" value="${trajet.idTrajet}">` : ''}
+                        
+                        <div class="form-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label for="departure">Departure</label>
+                                <input type="text" id="departure" name="departure" value="${isEdit ? trajet.departure : ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="destination">Destination</label>
+                                <input type="text" id="destination" name="destination" value="${isEdit ? trajet.destination : ''}" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="idTransport">Assign Vehicle</label>
+                            <select id="idTransport" name="idTransport" required>
+                                <option value="">-- Select Active Vehicle --</option>
+                                ${vehicleOptions}
+                            </select>
+                        </div>
+
+                        <div class="form-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label for="departureTime">Departure Time</label>
+                                <input type="datetime-local" id="departureTime" name="departureTime" value="${defaultTime}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="price">Ticket Price ($)</label>
+                                <input type="number" id="price" name="price" step="0.01" value="${isEdit ? trajet.price : '0.00'}" required>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap: 1rem; margin-top: 1.5rem;">
+                            <button type="submit" class="btn btn-primary" style="flex:1;">${isEdit ? 'UPDATE ROUTE' : 'CREATE ROUTE'}</button>
+                            <button type="button" class="btn" style="flex:1;" onclick="window.location.hash='#routes'">CANCEL</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    },
+
+    renderAdminTickets(tickets) {
+        const rows = tickets.map(t => `
+            <tr>
+                <td><strong>${t.ref}</strong></td>
+                <td>${t.citizenName}</td>
+                <td><span class="category-badge" style="background:#eee;color:#333;">${t.typeName}</span> ${t.departure} &rarr; ${t.destination}</td>
+                <td>${new Date(t.issuedAt).toLocaleString()}</td>
+                <td>
+                    ${t.status === 'Valid' 
+                        ? '<span class="status-badge" style="background:var(--success);color:white;">Valid</span>'
+                        : '<span class="status-badge" style="background:var(--primary-red);color:white;">Cancelled</span>'}
+                </td>
+                <td>
+                    ${t.status === 'Valid' ? `<button class="btn btn-small btn-danger" data-action="cancel-ticket" data-id="${t.idTicket}">CANCEL</button>` : '-'}
+                </td>
+            </tr>
+        `).join('');
+
+        this.app.innerHTML = `
+            <section class="page-container">
+                <div style="margin-bottom: 2rem;">
+                    <a href="#transport-dashboard" style="font-weight:800; text-transform:uppercase; text-decoration:none; color:var(--primary-navy); font-size:0.9rem; letter-spacing:1px;">&larr; Back to Dashboard</a>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+                    <h2 class="reveal" style="margin:0; border:none; padding:0;">Ticketing Management</h2>
+                </div>
+                <div class="reveal">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Ref</th>
+                                    <th>Passenger</th>
+                                    <th>Route</th>
+                                    <th>Issued</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows.length > 0 ? rows : '<tr><td colspan="6" style="text-align:center; padding:2rem;">No tickets sold yet.</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    }
+
+};
 export default view;
+

@@ -273,4 +273,65 @@ const controller = {
     }
 };
 
+    async handleTransportTypeSave(formData) {
+        const success = await model.saveTransportType(formData);
+        if (success) {
+            view.renderToast(formData.get('idTransportType') ? 'Type updated!' : 'Type created!');
+            window.location.hash = '#transport-types';
+        } else {
+            view.renderToast('Failed to save transport type.', 'error');
+        }
+    },
+    async handleTransportTypeDelete(id) {
+        const success = await model.deleteTransportType(id);
+        if (success) {
+            view.renderToast('Type deleted.');
+            window.location.hash = '#transport-types';
+            view.renderTransportTypes(await model.getTransportTypes());
+        } else view.renderToast('Failed to delete.', 'error');
+    },
+
+    async handleFleetSave(formData) {
+        const data = Object.fromEntries(formData.entries());
+        const success = await model.saveTransport(data);
+        if (success) {
+            view.renderToast(data.idTransport ? 'Vehicle updated!' : 'Vehicle added!');
+            window.location.hash = '#fleet';
+        } else view.renderToast('Failed to save vehicle.', 'error');
+    },
+    async handleFleetDelete(id) {
+        const success = await model.deleteTransport(id);
+        if (success) {
+            view.renderToast('Vehicle deleted.');
+            window.location.hash = '#fleet';
+            view.renderFleet(await model.getTransports());
+        } else view.renderToast('Failed to delete.', 'error');
+    },
+
+    async handleRouteSave(formData) {
+        const data = Object.fromEntries(formData.entries());
+        const success = await model.saveTrajet(data);
+        if (success) {
+            view.renderToast(data.idTrajet ? 'Route updated!' : 'Route created!');
+            window.location.hash = '#routes';
+        } else view.renderToast('Failed to save route.', 'error');
+    },
+    async handleRouteDelete(id) {
+        const success = await model.deleteTrajet(id);
+        if (success) {
+            view.renderToast('Route deleted.');
+            window.location.hash = '#routes';
+            view.renderRoutes(await model.getTrajets());
+        } else view.renderToast('Failed to delete.', 'error');
+    },
+
+    async handleTicketCancel(id) {
+        const success = await model.cancelTicket(id);
+        if (success) {
+            view.renderToast('Ticket cancelled.');
+            view.renderAdminTickets(await model.getTickets());
+        } else view.renderToast('Failed to cancel.', 'error');
+    }
+};
 export default controller;
+

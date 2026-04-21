@@ -24,6 +24,9 @@ const controller = {
                 const user = model.getCurrentUser();
                 this.handleEnrollment(user.id, parseInt(id));
             }
+            if (action === 'cancel-ticket') {
+                this.handleCancelTicket(id);
+            }
         });
 
         document.addEventListener('input', (e) => {
@@ -50,6 +53,16 @@ const controller = {
                 this.handleProfileUpdate(new FormData(e.target));
             } else if (e.target.id === 'complaint-form') {
                 await this.handleComplaintSubmission(new FormData(e.target));
+            } else if (e.target.id === 'sort-transport-form') {
+                const type = e.target.dataset.type;
+                const formData = new FormData(e.target);
+                const sort = formData.get('sort');
+                const order = formData.get('order');
+                window.location.hash = `#transport_list?type=${type}&sort=${sort}&order=${order}`;
+            } else if (e.target.classList.contains('book-transport-form')) {
+                const idTrajet = e.target.dataset.id;
+                const currentUser = model.getCurrentUser();
+                await this.handleTicketBooking(idTrajet, currentUser.name, currentUser.id);
             }
         });
     },
@@ -74,8 +87,24 @@ const controller = {
             case '#complaints':
                 view.renderComplaintForm();
                 break;
+            case '#transport':
+                view.renderTransport(model.getTransportTypes());
+                break;
+            case '#my-tickets':
+                const tickets = await model.getMyTickets();
+                view.renderMyTickets(tickets, user);
+                break;
             default:
-                view.renderHome(user);
+                if (hash.startsWith('#transport_list')) {
+                    const urlParams = new URLSearchParams(hash.split('?')[1]);
+                    const type = urlParams.get('type') || 'Bus';
+                    const sortBy = urlParams.get('sort') || 'departure';
+                    const order = urlParams.get('order') || 'ASC';
+                    const trajets = await model.getTrajetsByTypeAndSort(type, sortBy, order);
+                    view.renderTransportList(type, trajets, sortBy, order);
+                } else {
+                    view.renderHome(user);
+                }
                 break;
         }
     },
@@ -135,6 +164,28 @@ const controller = {
         await model.addComplaint(subject, body, user.id);
         view.renderToast('Grievance logged in PHP session.');
         window.location.hash = '#home';
+    },
+
+    async handleTicketBooking(idTrajet, citizenName, idUser) {
+        const result = await model.bookTicket(idTrajet, citizenName, idUser);
+        if (result) {
+            view.renderToast('Ticket successfully booked!');
+            window.location.hash = '#my-tickets';
+        } else {
+            view.renderToast('Failed to book ticket.', 'error');
+        }
+    },
+
+    async handleCancelTicket(idTicket) {
+        if (!confirm('Cancel this ticket?')) return;
+        const result = await model.cancelTicket(idTicket);
+        if (result) {
+            view.renderToast('Ticket cancelled.');
+            const tickets = await model.getMyTickets();
+            view.renderMyTickets(tickets, model.getCurrentUser());
+        } else {
+            view.renderToast('Failed to cancel ticket.', 'error');
+        }
     }
 };
 

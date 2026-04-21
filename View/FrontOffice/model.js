@@ -10,7 +10,9 @@ const model = {
         programs: [],
         serviceRequests: [],
         enrollments: [],
-        complaints: []
+        complaints: [],
+        transportTypes: [],
+        myTickets: []
     },
 
     async apiCall(action, data = {}) {
@@ -38,6 +40,9 @@ const model = {
 
         const enrollments = await this.apiCall('get_enrollments', { userId: this.state.currentUser.id });
         if (enrollments) this.state.enrollments = enrollments;
+
+        const types = await this.apiCall('list_transport_types');
+        if (types) this.state.transportTypes = types;
     },
 
     getPrograms() {
@@ -89,6 +94,27 @@ const model = {
 
     deleteUser() {
         this.state.currentUser = null;
+    },
+
+    // --- Transport API Methods ---
+    getTransportTypes() {
+        return this.state.transportTypes;
+    },
+
+    async getTrajetsByTypeAndSort(type, sortBy, order) {
+        return await this.apiCall('list_trajets', { type, sortBy, order });
+    },
+
+    async bookTicket(idTrajet, citizenName, idUser) {
+        return await this.apiCall('book_ticket', { idTrajet, citizenName, idUser });
+    },
+
+    async getMyTickets() {
+        return await this.apiCall('list_tickets_enriched');
+    },
+
+    async cancelTicket(idTicket) {
+        return await this.apiCall('cancel_ticket', { idTicket });
     }
 };
 

@@ -149,4 +149,32 @@ const model = {
     }
 };
 
+
+    // --- Transport API ---
+    async getTransportTypes() { return await this.apiCall('list_transport_types'); },
+    async saveTransportType(data) {
+        const id = (data instanceof FormData) ? data.get('idTransportType') : data.idTransportType;
+        return await this.apiCall(id ? 'update_transport_type' : 'add_transport_type', data);
+    },
+    async deleteTransportType(idTransportType) { return await this.apiCall('delete_transport_type', { idTransportType }); },
+
+    async getTransports() { return await this.apiCall('list_transports'); },
+    async saveTransport(data) {
+        const id = data.idTransport;
+        return await this.apiCall(id ? 'update_transport' : 'add_transport', data);
+    },
+    async deleteTransport(idTransport) { return await this.apiCall('delete_transport', { idTransport }); },
+
+    async getTrajets() { return await this.apiCall('list_all_trajets'); },
+    async saveTrajet(data) {
+        const id = data.idTrajet;
+        return await this.apiCall(id ? 'update_trajet' : 'add_trajet', data);
+    },
+    async deleteTrajet(idTrajet) { return await this.apiCall('delete_trajet', { idTrajet }); },
+
+    async getTickets() { return await this.apiCall('list_tickets_enriched'); },
+    async cancelTicket(idTicket) { return await this.apiCall('cancel_ticket', { idTicket }); }
+};
+
 export default model;
+
