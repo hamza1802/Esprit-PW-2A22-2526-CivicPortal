@@ -39,12 +39,13 @@ AppModel::init();
 
     <!-- Inject PHP Session State into JS Environment -->
     <script>
-        window.SERVER_USER = <?= json_encode([
-            'id'    => $_SESSION['user_id'],
-            'name'  => $_SESSION['user_name'] ?? 'Staff',
-            'email' => $_SESSION['user_email'] ?? '',
-            'role'  => $_SESSION['user_role'] ?? 'agent',
-        ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+        window.SERVER_USER = {
+            id: <?= json_encode($_SESSION['user_id'] ?? null) ?>,
+            name: <?= json_encode($_SESSION['user_name'] ?? 'Staff') ?>,
+            email: <?= json_encode($_SESSION['user_email'] ?? '') ?>,
+            role: <?= json_encode($_SESSION['user_role'] ?? '') ?>
+        };
+        console.log("Staff Session Initialized:", window.SERVER_USER);
     </script>
 
     <!-- Header & Navigation -->

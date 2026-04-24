@@ -155,8 +155,9 @@ const model = {
     },
 
     setCurrentUser(role) {
-        // User is set from PHP session via window.SERVER_USER at init
-        // This is kept for API compatibility but no longer mutates state
+        if (this.state.currentUser) {
+            this.state.currentUser.role = role;
+        }
     },
 
     getCurrentUser() {

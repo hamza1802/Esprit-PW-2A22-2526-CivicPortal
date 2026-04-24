@@ -68,6 +68,7 @@ const view = {
     },
 
     renderHome(user) {
+        console.log("Rendering Home for role:", user.role);
         let content = `
             <div class="hero-container reveal">
                 <section class="hero-section">
@@ -114,6 +115,8 @@ const view = {
                 </div>
             </section>
             `;
+        } else {
+            console.warn("Unknown role detected in renderHome:", user.role);
         }
 
         this.app.innerHTML = content;
@@ -206,6 +209,33 @@ const view = {
                         <i class="bi bi-person-check" style="font-size: 2rem; margin-bottom: 0.5rem; display: block; color: inherit;"></i><h3>Enrollments</h3>
                         <p class="stats-number">${stats.enrollmentsCount}</p>
                     </div>
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    },
+
+    renderAdminInbox(complaints) {
+        const rows = complaints.map(c => `
+            <tr>
+                <td><strong>#${c.id}</strong></td>
+                <td>${c.subject}</td>
+                <td>${new Date(c.created_at).toLocaleDateString()}</td>
+                <td><span class="status-badge status-${c.status}">${c.status}</span></td>
+                <td><button class="btn btn-small">VIEW</button></td>
+            </tr>
+        `).join('');
+
+        this.app.innerHTML = `
+            <section class="page-container">
+                <h2 class="reveal">Citizen Complaints</h2>
+                <div class="table-responsive reveal">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>ID</th><th>Subject</th><th>Date</th><th>Status</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody>${rows || '<tr><td colspan="5">No complaints.</td></tr>'}</tbody>
+                    </table>
                 </div>
             </section>
         `;
