@@ -330,19 +330,4 @@ h2.reveal {
     border-color: var(--accent-blue) !important;
 }
 
-/* Role Switcher adjustments for sidebar layout */
-.role-switcher-container {
-    bottom: 20px;
-    right: 30px;
-    border-radius: var(--radius-md);
-    background: var(--white);
-    color: var(--text-dark);
-    border: 1px solid var(--secondary-grey);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-}
 
-.role-switcher-container select {
-    background: rgba(255, 255, 255, 0.6);
-    color: var(--text-dark);
-    border: 1px solid var(--secondary-grey);
-}

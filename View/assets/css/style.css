@@ -688,31 +688,6 @@ nav {
     opacity: 1;
 }
 
-/* ==========================================================================
-   Role Switcher (Demo Only) - Keep discreet
-   ========================================================================== */
-.role-switcher-container {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: var(--primary-navy);
-    padding: 1rem;
-    color: var(--bg-neutral);
-    z-index: 2000;
-    border: var(--border-main);
-    border-radius: var(--radius-lg);
-}
-
-.role-switcher-container select {
-    margin-top: 0.5rem;
-    padding: 0.5rem;
-    width: 100%;
-    background: var(--bg-neutral);
-    border: none;
-    border-radius: var(--radius-sm);
-    font-family: inherit;
-    font-weight: bold;
-}
 
 /* ==========================================================================
    Programs Management — Premium Card Grid
@@ -1269,8 +1244,7 @@ nav {
 /* Badges & Modals/Toasts */
 .category-badge,
 .status-badge,
-.user-role-badge,
-.role-switcher-container {
+.user-role-badge {
     border-radius: var(--radius-xl);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -1965,14 +1939,7 @@ input[type="radio"]:checked::after {
     }
 }
 
-/* 6. Toggle / Select custom dropdown styling */
-.role-switcher-container select {
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%231D2A44' class='bi bi-chevron-down' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E") !important;
-    background-repeat: no-repeat !important;
-    background-position: right 10px center !important;
-    padding-right: 30px !important;
-}
+
 
 
 

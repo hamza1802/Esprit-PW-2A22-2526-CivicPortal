@@ -32,15 +32,5 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize the controller
     controller.init();
 
-    // Link the role switcher (Staff Demo-only logic)
-    const roleSwitcher = document.getElementById('demo-role-switcher');
-    if (roleSwitcher) {
-        roleSwitcher.addEventListener('change', (e) => {
-            const newRole = e.target.value;
-            // Trigger role change in controller
-            controller.handleRoleChange(newRole);
-        });
-    }
-
     console.log('CivicPortal Staff BackOffice Initialized');
 });

@@ -3,6 +3,20 @@
  * BackOffice/index.php
  * Main entry point for CivicPortal Staff Portal
  */
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Guard: Only admin and agent roles can access BackOffice
+if (!isset($_SESSION['user_id'])) {
+    header('Location: ../FrontOffice/login.php');
+    exit;
+}
+if (!in_array($_SESSION['user_role'] ?? '', ['agent', 'admin'])) {
+    header('Location: ../FrontOffice/index.php');
+    exit;
+}
+
 require_once '../../Model/AppModel.php';
 AppModel::init();
 ?>
@@ -22,6 +36,16 @@ AppModel::init();
     </style>
 </head>
 <body>
+
+    <!-- Inject PHP Session State into JS Environment -->
+    <script>
+        window.SERVER_USER = <?= json_encode([
+            'id'    => $_SESSION['user_id'],
+            'name'  => $_SESSION['user_name'] ?? 'Staff',
+            'email' => $_SESSION['user_email'] ?? '',
+            'role'  => $_SESSION['user_role'] ?? 'agent',
+        ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+    </script>
 
     <!-- Header & Navigation -->
     <nav>
@@ -44,15 +68,6 @@ AppModel::init();
     <!-- Toast Notifications Container -->
     <div id="toast-container" class="toast-container"></div>
 
-    <!-- Role Switcher (For Staff Demonstration Purposes) -->
-    <div class="role-switcher-container">
-        <label for="demo-role-switcher">Switch Staff Role:</label>
-        <select id="demo-role-switcher">
-            <option value="worker" selected>Worker (Staff)</option>
-            <option value="admin">Admin</option>
-        </select>
-        <small style="display: block; margin-top: 5px; opacity: 0.8; font-size: 0.6rem;">*Staff MVC Testing Mode</small>
-    </div>
 
     <!-- Scripts -->
     <script src="https://js.puter.com/v2/"></script>

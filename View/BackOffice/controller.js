@@ -10,7 +10,8 @@ const controller = {
     async init() {
         await model.sync();
         this.setupEventListeners();
-        this.handleRoleChange('worker', false); 
+        const user = model.getCurrentUser();
+        this.handleRoleChange(user.role, false); 
     },
 
     setupEventListeners() {
@@ -105,7 +106,7 @@ const controller = {
                 view.renderProgramForm(null, model.getCategories());
                 break;
             case '#worker-dashboard':
-                if (user.role === 'worker') {
+                if (user.role === 'agent') {
                     view.renderWorkerDashboard(model.getServiceRequests());
                 } else {
                     window.location.hash = '#home';
@@ -130,7 +131,7 @@ const controller = {
                 }
                 break;
             case '#manage-programs':
-                if (user.role === 'admin' || user.role === 'worker') {
+                if (user.role === 'admin' || user.role === 'agent') {
                     await model.sync(); // Refresh data
                     view.renderProgramsManager(model.getPrograms(), user.role);
                 } else {

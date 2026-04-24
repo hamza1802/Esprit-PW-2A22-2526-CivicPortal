@@ -7,11 +7,7 @@
 const model = {
     // Current state mirror
     state: {
-        currentUser: null,
-        users: [
-            { id: 2, name: 'Alice Worker', role: 'worker', email: 'alice@cityhall.gov' },
-            { id: 3, name: 'Admin User', role: 'admin', email: 'admin@cityhall.gov' }
-        ],
+        currentUser: window.SERVER_USER || null,
         serviceRequests: [],
         complaints: [],
         programs: [],
@@ -159,7 +155,8 @@ const model = {
     },
 
     setCurrentUser(role) {
-        this.state.currentUser = this.state.users.find(u => u.role === role);
+        // User is set from PHP session via window.SERVER_USER at init
+        // This is kept for API compatibility but no longer mutates state
     },
 
     getCurrentUser() {

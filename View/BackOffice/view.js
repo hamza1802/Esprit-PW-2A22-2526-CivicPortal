@@ -36,19 +36,16 @@ const view = {
             </div>
             <ul class="nav-links">
                 <li><a href="#home"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
-                ${role === 'worker' ? `
+                ${role === 'agent' ? `
                     <li><a href="#worker-dashboard"><i class="bi bi-clipboard2-check"></i> Service Queue</a></li>
                     <li><a href="#manage-programs"><i class="bi bi-tree"></i> Programs ${totalBadge}</a></li>
                 ` : ''}
                 ${role === 'admin' ? `
                     <li><a href="#admin-stats"><i class="bi bi-bar-chart-line"></i> Statistics</a></li>
                     <li><a href="#manage-programs"><i class="bi bi-tree"></i> Programs ${totalBadge}</a></li>
-                    <li><a href="#admin-inbox"><i class="bi bi-envelope-open"></i> Inbox</a></li>
+
                 ` : ''}
                 <li><a href="#profile"><i class="bi bi-person-circle"></i> Profile</a></li>
-                <li style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
-                    <a href="../FrontOffice/index.php" style="opacity:0.6;"><i class="bi bi-box-arrow-left"></i> Front Office</a>
-                </li>
             </ul>
             <div class="user-controls">
                 <div class="user-role-badge">${role}</div>
@@ -80,7 +77,7 @@ const view = {
             </div>
         `;
 
-        if (user.role === 'worker') {
+        if (user.role === 'agent') {
              content += `
             <section class="page-container">
                 <h2 class="reveal">Operations Console</h2>
@@ -108,11 +105,7 @@ const view = {
                         <p>View real-time aggregated data across all civic modules to monitor system health and engagement.</p>
                         <a href="#admin-stats" class="btn btn-primary" style="align-self: flex-start; margin-top: auto;">View Stats</a>
                     </div>
-                    <div class="editorial-card reveal">
-                        <h3>Grievance Inbox</h3>
-                        <p>Review and process citizen feedback securely routed to the administrative branch.</p>
-                        <a href="#admin-inbox" class="btn" style="align-self: flex-start; margin-top: auto;">Open Inbox</a>
-                    </div>
+
                     <div class="editorial-card reveal">
                         <h3>Parks & Recreation</h3>
                         <p>Manage community programs, workshops, and facilities. Ensure civic engagement is vibrant and accessible.</p>
@@ -219,40 +212,7 @@ const view = {
         this.triggerObserver();
     },
 
-    renderAdminInbox(complaints) {
-        const tableRows = complaints.map(c => `
-            <tr>
-                <td><strong>#${c.id}</strong></td>
-                <td>${c.created_at ? new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</td>
-                <td>${c.subject}</td>
-                <td>${c.body}</td>
-            </tr>
-        `).join('');
 
-        this.app.innerHTML = `
-            <section class="page-container">
-                <h2 class="reveal">Grievance Inbox</h2>
-                <div class="reveal">
-                    <div class="table-responsive">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Ref ID</th>
-                                    <th>Date</th>
-                                    <th>Subject</th>
-                                    <th>Details</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${tableRows.length > 0 ? tableRows : '<tr><td colspan="4" style="text-align:center;">inbox is empty</td></tr>'}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-        `;
-        this.triggerObserver();
-    },
 
     /* =========================================================================
        PROGRAMS MANAGER — Premium Card Grid with Notification Dots
