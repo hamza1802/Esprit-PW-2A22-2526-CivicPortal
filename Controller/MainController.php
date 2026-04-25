@@ -77,6 +77,8 @@ class MainController {
             'create_slot'          => 'admin',
             'delete_slot'          => 'admin',
             'get_all_slots'        => 'admin',
+            'add_transport_type'   => 'admin',
+            'delete_transport_type'=> 'admin',
         ];
 
         $required = $map[$action] ?? 'admin';
@@ -226,6 +228,34 @@ class MainController {
                 return ['success' => 'Slot deleted.'];
             case 'get_all_slots':
                 return AppModel::getAllSlots();
+
+            // --- Transport Type Management (Admin) ---
+            case 'add_transport_type': {
+                $name = trim($data['name'] ?? '');
+                $desc = trim($data['description'] ?? '');
+                if ($name === '') throw new Exception('Transport type name is required.');
+                $db   = Database::getInstance()->getConnection();
+                $file = $data['type_image_file'] ?? null;
+                if ($file && isset($file['error']) && $file['error'] === UPLOAD_ERR_OK) {
+                    [$blob, $mime] = AppModel::readImageUpload($file);
+                    $stmt = $db->prepare(
+                        "INSERT INTO transport_type (name, description, type_image, type_image_mime) VALUES (?,?,?,?)"
+                    );
+                    $stmt->bindValue(1, $name);
+                    $stmt->bindValue(2, $desc);
+                    $stmt->bindValue(3, $blob, PDO::PARAM_LOB);
+                    $stmt->bindValue(4, $mime);
+                    $stmt->execute();
+                } else {
+                    $db->prepare("INSERT INTO transport_type (name, description) VALUES (?,?)")->execute([$name, $desc]);
+                }
+                return ['id' => (int)$db->lastInsertId()];
+            }
+            case 'delete_transport_type': {
+                $db = Database::getInstance()->getConnection();
+                $db->prepare("DELETE FROM transport_type WHERE idTransportType = ?")->execute([(int)$data['id']]);
+                return ['success' => 'Type deleted.'];
+            }
 
             // --- Notifications ---
             case 'get_notifications':

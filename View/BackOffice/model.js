@@ -219,10 +219,13 @@ const model = {
         return { types: types || [], vehicles: vehicles || [], trajets: trajets || [] };
     },
 
-    async addVehicle(data)   { return await this.transportApi('add_transport',   data); },
-    async deleteVehicle(id)  { return await this.transportApi('delete_transport', { idTransport: id }); },
-    async addTrajet(data)    { return await this.transportApi('add_trajet',       data); },
-    async deleteTrajet(id)   { return await this.transportApi('delete_trajet',    { idTrajet: id }); },
+    async addVehicle(data)          { return await this.transportApi('add_transport',   data); },
+    async deleteVehicle(id)         { return await this.transportApi('delete_transport', { idTransport: id }); },
+    async addTrajet(data)           { return await this.transportApi('add_trajet',       data); },
+    async deleteTrajet(id)          { return await this.transportApi('delete_trajet',    { idTrajet: id }); },
+
+    async addTransportType(formData) { return await this.apiCall('add_transport_type',    formData); },
+    async deleteTransportType(id)    { return await this.apiCall('delete_transport_type', { id }); },
 
     // -------------------------------------------------------------------------
     // Extended user admin actions

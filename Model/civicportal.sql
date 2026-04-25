@@ -202,7 +202,9 @@ CREATE TABLE `transport_type` (
   `idTransportType` int(11) NOT NULL,
   `name`            varchar(100) NOT NULL,
   `description`     text DEFAULT NULL,
-  `photo_url`       varchar(500) DEFAULT NULL
+  `photo_url`       varchar(500) DEFAULT NULL,
+  `type_image`      mediumblob DEFAULT NULL,
+  `type_image_mime` varchar(50) DEFAULT 'image/jpeg'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------

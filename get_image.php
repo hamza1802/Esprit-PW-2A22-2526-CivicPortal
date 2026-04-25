@@ -44,6 +44,12 @@ $typeMap = [
         'mime_col'   => 'vehicle_image_mime',
         'id_col'     => 'idTransport',
     ],
+    'transport_type' => [
+        'table'      => 'transport_type',
+        'blob_col'   => 'type_image',
+        'mime_col'   => 'type_image_mime',
+        'id_col'     => 'idTransportType',
+    ],
     'program' => [
         'table'      => 'program',
         'blob_col'   => 'program_image',

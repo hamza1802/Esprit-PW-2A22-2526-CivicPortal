@@ -80,6 +80,16 @@ const controller = {
                     break;
 
                 // Transport actions (admin)
+                case 'toggle-add-type':
+                    document.getElementById('add-type-panel')?.style.setProperty('display',
+                        document.getElementById('add-type-panel').style.display === 'none' ? 'block' : 'none');
+                    break;
+                case 'delete-transport-type':
+                    if (confirm('Delete this transport type? Vehicles using it will lose their type association.')) {
+                        this.handleTransportTypeDelete(parseInt(id));
+                    }
+                    break;
+
                 case 'toggle-add-vehicle':
                     document.getElementById('add-vehicle-panel')?.style.setProperty('display',
                         document.getElementById('add-vehicle-panel').style.display === 'none' ? 'block' : 'none');
@@ -163,6 +173,8 @@ const controller = {
                 this.handleSlotCreate(new FormData(e.target));
             } else if (e.target.id === 'create-user-form') {
                 this.handleUserCreate(new FormData(e.target));
+            } else if (e.target.id === 'add-type-form') {
+                this.handleTransportTypeAdd(new FormData(e.target));
             } else if (e.target.id === 'add-vehicle-form') {
                 this.handleVehicleAdd(new FormData(e.target));
             } else if (e.target.id === 'add-trajet-form') {
@@ -446,6 +458,31 @@ const controller = {
     async _refreshTransport() {
         const overview = await model.getTransportOverview();
         view.renderTransportManagement(overview);
+    },
+
+    async handleTransportTypeAdd(formData) {
+        const name = formData.get('name')?.trim();
+        if (!name) {
+            view.renderToast('Type name is required.', 'error');
+            return;
+        }
+        const result = await model.addTransportType(formData);
+        if (result) {
+            view.renderToast(`Transport type "${name}" added.`);
+            await this._refreshTransport();
+        } else {
+            view.renderToast('Failed to add transport type.', 'error');
+        }
+    },
+
+    async handleTransportTypeDelete(id) {
+        const result = await model.deleteTransportType(id);
+        if (result !== null) {
+            view.renderToast('Transport type deleted.');
+            await this._refreshTransport();
+        } else {
+            view.renderToast('Failed to delete type. It may be in use by vehicles.', 'error');
+        }
     },
 
     async handleVehicleAdd(formData) {

@@ -642,6 +642,22 @@ const view = {
        TRANSPORT MANAGEMENT (admin only)
        ========================================================================= */
     renderTransportManagement({ types, vehicles, trajets }) {
+        // ── Transport Type cards ──────────────────────────────────────────────
+        const typeCards = types.map(t => `
+            <div style="display:flex;align-items:center;gap:1rem;padding:1rem;border:var(--border-main);background:var(--white);">
+                <img src="../../get_image.php?type=transport_type&id=${t.idTransportType}"
+                     style="width:64px;height:48px;object-fit:cover;border:var(--border-main);flex-shrink:0;"
+                     onerror="this.style.display='none'">
+                <div style="flex:1;min-width:0;">
+                    <strong style="display:block;font-size:0.95rem;">${t.name}</strong>
+                    ${t.description ? `<span style="font-size:0.82rem;opacity:0.65;">${t.description}</span>` : ''}
+                </div>
+                <button class="btn btn-small btn-danger" data-action="delete-transport-type" data-id="${t.idTransportType}">
+                    <i class="bi bi-trash3"></i>
+                </button>
+            </div>
+        `).join('');
+
         const typeOptions = types.map(t =>
             `<option value="${t.idTransportType}">${t.name}</option>`
         ).join('');
@@ -700,6 +716,40 @@ const view = {
         this.app.innerHTML = `
             <section class="page-container">
                 <h2 class="reveal">Transport Management</h2>
+
+                <!-- TRANSPORT TYPES -->
+                <div style="display:flex;justify-content:space-between;align-items:center;margin:0 0 1rem;flex-wrap:wrap;gap:0.5rem;">
+                    <h3 class="reveal" style="margin:0;font-size:1.2rem;text-transform:uppercase;letter-spacing:1px;">
+                        <i class="bi bi-tag"></i> Transport Types — ${types.length}
+                    </h3>
+                    <button class="btn reveal" data-action="toggle-add-type" style="border:2px solid var(--primary-navy);">+ ADD TYPE</button>
+                </div>
+
+                <div id="add-type-panel" style="display:none;margin-bottom:1.5rem;">
+                    <div class="form-card">
+                        <form id="add-type-form" enctype="multipart/form-data">
+                            <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                                <div class="form-group">
+                                    <label>Type Name</label>
+                                    <input type="text" name="name" placeholder="e.g. Bus, Train, Metro" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Description</label>
+                                    <input type="text" name="description" placeholder="Optional description">
+                                </div>
+                                <div class="form-group" style="grid-column:1/-1;">
+                                    <label>Icon / Photo (optional, max 2MB)</label>
+                                    <input type="file" name="type_image" accept="image/*">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="margin-top:0.5rem;">ADD TYPE</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="reveal" style="display:flex;flex-direction:column;gap:0.5rem;margin-bottom:3rem;">
+                    ${typeCards || '<p style="opacity:0.6;padding:1rem 0;">No transport types yet.</p>'}
+                </div>
 
                 <!-- VEHICLES -->
                 <div style="display:flex;justify-content:space-between;align-items:center;margin:2rem 0 1rem;flex-wrap:wrap;gap:0.5rem;">

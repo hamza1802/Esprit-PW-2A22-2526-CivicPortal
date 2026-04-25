@@ -506,7 +506,7 @@ const view = {
             ? transportTypes.map((tt, i) => {
                 const highlight = i === 0 ? 'editorial-highlight' : '';
                 const imgHtml   = `<div style="width:100%;height:140px;overflow:hidden;border-radius:8px;margin-bottom:1rem;background:rgba(29,42,68,0.06);">
-                    <img src="../../get_image.php?type=transport&id=${tt.idTransportType}" alt="${tt.name}"
+                    <img src="../../get_image.php?type=transport_type&id=${tt.idTransportType}" alt="${tt.name}"
                          style="width:100%;height:100%;object-fit:cover;"
                          onerror="this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;\\' ><i class=\\'bi bi-bus-front\\' style=\\'font-size:3rem;opacity:0.3;\\'></i></div>';">
                 </div>`;
