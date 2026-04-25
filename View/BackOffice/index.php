@@ -45,7 +45,6 @@ AppModel::init();
             email: <?= json_encode($_SESSION['user_email'] ?? '') ?>,
             role: <?= json_encode($_SESSION['user_role'] ?? '') ?>
         };
-        console.log("Staff Session Initialized:", window.SERVER_USER);
     </script>
 
     <!-- Header & Navigation -->

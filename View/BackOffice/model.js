@@ -1,90 +1,74 @@
 /**
- * model.js 
+ * model.js
  * Client-side Model for CivicPortal BackOffice
- * Syncs with PHP backend API
  */
 
 const model = {
-    // Current state mirror
     state: {
-        currentUser: window.SERVER_USER || null,
+        currentUser:     window.SERVER_USER || null,
         serviceRequests: [],
-        complaints: [],
-        programs: [],
-        categories: [],
-        stats: null
+        programs:        [],
+        categories:      [],
+        users:           [],
+        stats:           null
     },
 
     async apiCall(action, data = {}) {
         try {
-            let options = {
-                method: 'POST',
-                body: null
-            };
+            let options = { method: 'POST', body: null };
 
-            // Handle Multipart (File uploads)
             if (data instanceof FormData) {
-                // Browser sets boundary automatically for FormData
                 data.append('action', action);
                 options.body = data;
             } else {
-                // Standard JSON
                 options.headers = { 'Content-Type': 'application/json' };
                 options.body = JSON.stringify({ action, data });
             }
 
             const response = await fetch('../../Verification.php', options);
-            const result = await response.json();
+            const result   = await response.json();
             if (!result.success) throw new Error(result.error);
             return result.data;
         } catch (error) {
-            console.error("API Error:", error);
+            console.error('API Error:', error);
             return null;
         }
     },
 
+    // -------------------------------------------------------------------------
+    // Sync: parallelized initial data load
+    // -------------------------------------------------------------------------
     async sync() {
-        const requests = await this.apiCall('get_requests');
-        if (requests) this.state.serviceRequests = requests;
-        
-        const complaints = await this.apiCall('get_complaints');
-        if (complaints) this.state.complaints = complaints;
-
-        const programs = await this.apiCall('get_programs');
-        if (programs) this.state.programs = programs;
-
-        const categories = await this.apiCall('get_categories');
-        if (categories) this.state.categories = categories;
+        const [requests, programs, categories] = await Promise.all([
+            this.apiCall('get_requests'),
+            this.apiCall('get_programs'),
+            this.apiCall('get_categories'),
+        ]);
+        if (requests)   this.state.serviceRequests = requests;
+        if (programs)   this.state.programs        = programs;
+        if (categories) this.state.categories      = categories;
     },
 
-    getCategories() {
-        return this.state.categories;
-    },
+    // -------------------------------------------------------------------------
+    // Categories
+    // -------------------------------------------------------------------------
+    getCategories() { return this.state.categories; },
 
     async addCategory(name) {
         const result = await this.apiCall('add_category', { name });
-        if (result) {
-            await this.syncCategories();
-            return true;
-        }
+        if (result) { await this.syncCategories(); return true; }
         return false;
     },
 
     async updateCategory(id, name) {
         const result = await this.apiCall('update_category', { id, name });
-        if (result) {
-            await this.syncCategories();
-            return true;
-        }
+        if (result) { await this.syncCategories(); return true; }
         return false;
     },
 
     async deleteCategory(id) {
         const result = await this.apiCall('delete_category', { id });
-        if (result) {
-            await this.syncCategories();
-            return true;
-        }
+        if (result) { await this.syncCategories(); return true; }
         return false;
     },
 
@@ -93,31 +77,23 @@ const model = {
         if (categories) this.state.categories = categories;
     },
 
-    getPrograms() {
-        return this.state.programs;
-    },
-
-    getProgram(id) {
-        return this.state.programs.find(p => p.id == id);
-    },
+    // -------------------------------------------------------------------------
+    // Programs
+    // -------------------------------------------------------------------------
+    getPrograms() { return this.state.programs; },
+    getProgram(id) { return this.state.programs.find(p => p.id == id); },
 
     async saveProgram(data) {
-        const id = (data instanceof FormData) ? data.get('id') : data.id;
+        const id     = (data instanceof FormData) ? data.get('id') : data.id;
         const action = id ? 'update_program' : 'add_program';
         const result = await this.apiCall(action, data);
-        if (result) {
-            await this.sync(); // Refresh list after change
-            return true;
-        }
+        if (result) { await this.sync(); return true; }
         return false;
     },
 
     async deleteProgram(id) {
         const result = await this.apiCall('delete_program', { id });
-        if (result) {
-            await this.sync();
-            return true;
-        }
+        if (result) { await this.sync(); return true; }
         return false;
     },
 
@@ -142,47 +118,148 @@ const model = {
         return !!result;
     },
 
-    getServiceRequests() {
-        return this.state.serviceRequests;
-    },
+    // -------------------------------------------------------------------------
+    // Service Requests
+    // -------------------------------------------------------------------------
+    getServiceRequests() { return this.state.serviceRequests; },
 
     async updateRequestStatus(requestId, status) {
         const response = await this.apiCall('update_status', { id: requestId, status });
-        if (response) {
-            const request = this.state.serviceRequests.find(r => r.id === requestId);
-            if (request) request.status = status;
+        if (response !== null) {
+            const req = this.state.serviceRequests.find(r => r.id === requestId);
+            if (req) req.status = status;
         }
     },
 
+    async assignRequest(requestId, agentId) {
+        return await this.apiCall('assign_request', { id: requestId, agent_id: agentId });
+    },
+
+    async getAgents() {
+        return await this.apiCall('get_agents');
+    },
+
+    // -------------------------------------------------------------------------
+    // User Management (admin only)
+    // -------------------------------------------------------------------------
+    async getUsers() {
+        const data = await this.apiCall('get_users');
+        if (data) this.state.users = data;
+        return data;
+    },
+
+    getStoredUsers() { return this.state.users; },
+
+    async toggleUserActive(userId, active) {
+        return await this.apiCall('toggle_user_active', { id: userId, active });
+    },
+
+    // -------------------------------------------------------------------------
+    // Appointments
+    // -------------------------------------------------------------------------
+    async getAgentAppointments() {
+        return await this.apiCall('get_agent_appointments');
+    },
+
+    async getAllAppointments() {
+        return await this.apiCall('get_all_appointments');
+    },
+
+    async updateAppointmentStatus(id, status, extra = {}) {
+        return await this.apiCall('update_appointment_status', { id, status, ...extra });
+    },
+
+    // -------------------------------------------------------------------------
+    // Appointment Slots (admin only)
+    // -------------------------------------------------------------------------
+    async getSlots() {
+        return await this.apiCall('get_all_slots');
+    },
+
+    async createSlot(data) {
+        return await this.apiCall('create_slot', data);
+    },
+
+    async deleteSlot(id) {
+        return await this.apiCall('delete_slot', { id });
+    },
+
+    getServiceTypes() {
+        return [
+            'Birth Certificate', 'ID Card Renewal', 'Residence Certificate',
+            'Building Permit', 'General Inquiry', 'Document Verification'
+        ];
+    },
+
+    // -------------------------------------------------------------------------
+    // Transport management (admin) — routes to api_transport.php
+    // -------------------------------------------------------------------------
+    async transportApi(action, data = {}) {
+        try {
+            const response = await fetch('../../api_transport.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, ...data })
+            });
+            const result = await response.json();
+            if (!result.success) throw new Error(result.error);
+            return result.data;
+        } catch (error) {
+            console.error('Transport API Error:', error);
+            return null;
+        }
+    },
+
+    async getTransportOverview() {
+        const [types, vehicles, trajets] = await Promise.all([
+            this.transportApi('list_transport_types'),
+            this.transportApi('list_transports'),
+            this.transportApi('list_all_trajets'),
+        ]);
+        return { types: types || [], vehicles: vehicles || [], trajets: trajets || [] };
+    },
+
+    async addVehicle(data)   { return await this.transportApi('add_transport',   data); },
+    async deleteVehicle(id)  { return await this.transportApi('delete_transport', { idTransport: id }); },
+    async addTrajet(data)    { return await this.transportApi('add_trajet',       data); },
+    async deleteTrajet(id)   { return await this.transportApi('delete_trajet',    { idTrajet: id }); },
+
+    // -------------------------------------------------------------------------
+    // Extended user admin actions
+    // -------------------------------------------------------------------------
+    async createUser(data)                   { return await this.apiCall('create_user', data); },
+    async deleteUser(id)                     { return await this.apiCall('delete_user', { id }); },
+    async updateUserRole(id, role, name, email) {
+        return await this.apiCall('update_user', { id, name, email, role });
+    },
+
+    // -------------------------------------------------------------------------
+    // Profile / auth helpers
+    // -------------------------------------------------------------------------
     setCurrentUser(role) {
-        if (this.state.currentUser) {
-            this.state.currentUser.role = role;
-        }
+        if (this.state.currentUser) this.state.currentUser.role = role;
     },
 
-    getCurrentUser() {
-        return this.state.currentUser;
-    },
-
-    getComplaints() {
-        return this.state.complaints;
-    },
+    getCurrentUser() { return this.state.currentUser; },
 
     updateUser(data) {
-        if(this.state.currentUser){
-            this.state.currentUser.name = data.name;
+        if (this.state.currentUser) {
+            this.state.currentUser.name  = data.name;
             this.state.currentUser.email = data.email;
         }
     },
 
+    // -------------------------------------------------------------------------
+    // Stats
+    // -------------------------------------------------------------------------
     async getStats() {
         const stats = await this.apiCall('get_stats');
         return stats || {
-            usersCount: 3, // Total simulation
-            programsCount: this.state.programs.length,
-            requestsCount: this.state.serviceRequests.length,
-            enrollmentsCount: 0, // Fallback since we don't track all enrollments globally
-            complaintsCount: this.state.complaints.length
+            usersCount:        0,
+            programsCount:     this.state.programs.length,
+            requestsCount:     this.state.serviceRequests.length,
+            enrollmentsCount:  0,
+            appointmentsCount: 0
         };
     }
 };

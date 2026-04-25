@@ -31,6 +31,4 @@ window.initScrollObserver = setupScrollAnimations;
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize the controller
     controller.init();
-
-    console.log('CivicPortal Staff BackOffice Initialized');
 });

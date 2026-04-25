@@ -1,7 +1,8 @@
 <?php
 /**
  * Profile.php — Model/Profile.php
- * Entité représentant les informations de profil utilisateur.
+ * Entity representing user profile information.
+ * Updated: avatar_url removed (profile pics now stored as BLOB on users table).
  */
 
 class Profile {
@@ -9,16 +10,17 @@ class Profile {
     private ?string $firstName;
     private ?string $lastName;
     private ?string $bio;
-    private ?string $avatarUrl;
     private ?string $phoneNumber;
     private ?string $dateOfBirth;
 
-    public function __construct(int $userId, ?string $firstName = null, ?string $lastName = null, ?string $bio = null, ?string $avatarUrl = null, ?string $phoneNumber = null, ?string $dateOfBirth = null) {
+    public function __construct(
+        int $userId, ?string $firstName = null, ?string $lastName = null,
+        ?string $bio = null, ?string $phoneNumber = null, ?string $dateOfBirth = null
+    ) {
         $this->userId = $userId;
         $this->firstName = $firstName;
         $this->lastName = $lastName;
         $this->bio = $bio;
-        $this->avatarUrl = $avatarUrl;
         $this->phoneNumber = $phoneNumber;
         $this->dateOfBirth = $dateOfBirth;
     }
@@ -30,12 +32,6 @@ class Profile {
         return trim(($this->firstName ?? '') . ' ' . ($this->lastName ?? '')) ?: '';
     }
     public function getBio(): ?string { return $this->bio; }
-    public function getAvatarUrl(): ?string { 
-        if ($this->avatarUrl && strpos($this->avatarUrl, '$2y$10$') === 0) {
-            return base64_decode(substr($this->avatarUrl, 7));
-        }
-        return $this->avatarUrl; 
-    }
     public function getPhoneNumber(): ?string { return $this->phoneNumber; }
     public function getDateOfBirth(): ?string { return $this->dateOfBirth; }
 
@@ -45,10 +41,8 @@ class Profile {
             $row['first_name'] ?? null,
             $row['last_name'] ?? null,
             $row['bio'] ?? null,
-            $row['avatar_url'] ?? null,
             $row['phone_number'] ?? null,
             $row['date_of_birth'] ?? null
         );
     }
 }
-

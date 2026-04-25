@@ -1,18 +1,29 @@
 /**
- * model.js 
- * Client-side Model for CivicPortal FrontOffice
- * Syncs with PHP backend API
+ * model.js
+ * Client-side Model for CivicPortal FrontOffice.
+ * Modules: Programs, Service Requests, Transport, Appointments, Notifications.
+ * Complaints/Grievances REMOVED.
  */
 
 const model = {
     state: {
-        currentUser: { id: 1, name: 'John Citizen', role: 'citizen', email: 'john@example.com' },
+        currentUser: window.SERVER_USER ?? {
+            id: 0, name: 'Citizen', role: 'citizen', email: '',
+            bio: '', phoneNumber: '', dateOfBirth: ''
+        },
         programs: [],
         serviceRequests: [],
         enrollments: [],
-        complaints: []
+        transportTypes: [],
+        myTickets: [],
+        myAppointments: [],
+        notifications: [],
+        serviceTypes: []
     },
 
+    // -------------------------------------------------------------------------
+    // Core API helper — routes through Verification.php
+    // -------------------------------------------------------------------------
     async apiCall(action, data = {}) {
         try {
             const response = await fetch('../../Verification.php', {
@@ -24,71 +35,179 @@ const model = {
             if (!result.success) throw new Error(result.error);
             return result.data;
         } catch (error) {
-            console.error("API Error:", error);
+            console.error('API Error:', error);
             return null;
         }
     },
 
-    async sync() {
-        const requests = await this.apiCall('get_requests');
-        if (requests) this.state.serviceRequests = requests;
-
-        const programs = await this.apiCall('get_programs');
-        if (programs) this.state.programs = programs;
-
-        const enrollments = await this.apiCall('get_enrollments', { userId: this.state.currentUser.id });
-        if (enrollments) this.state.enrollments = enrollments;
-    },
-
-    getPrograms() {
-        return this.state.programs;
-    },
-
-    getServiceRequests() {
-        // Filter requests for just this user (simulate isolation in UI)
-        return this.state.serviceRequests.filter(r => r.user_id == this.state.currentUser.id);
-    },
-
-    getEnrollments(userId) {
-        return this.state.enrollments.filter(e => e.user_id == userId);
-    },
-
-    async addServiceRequest(request) {
-        const response = await this.apiCall('add_request', request);
-        if (response) {
-            this.state.serviceRequests.push(response);
-            return response;
+    /**
+     * Multipart API call for file uploads.
+     */
+    async apiUpload(action, formData) {
+        try {
+            formData.append('action', action);
+            const response = await fetch('../../Verification.php', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            if (!result.success) throw new Error(result.error);
+            return result.data;
+        } catch (error) {
+            console.error('Upload Error:', error);
+            return null;
         }
     },
+
+    // -------------------------------------------------------------------------
+    // Transport API helper
+    // -------------------------------------------------------------------------
+    async transportApi(action, data = {}) {
+        try {
+            const response = await fetch('../../api_transport.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, ...data })
+            });
+            const result = await response.json();
+            if (!result.success) throw new Error(result.error);
+            return result.data;
+        } catch (error) {
+            console.error('Transport API Error:', error);
+            return null;
+        }
+    },
+
+    // -------------------------------------------------------------------------
+    // Sync: fetch all data the front-office needs on load
+    // -------------------------------------------------------------------------
+    async sync() {
+        const [requests, programs, enrollments, types, svcTypes] = await Promise.all([
+            this.apiCall('get_my_requests'),
+            this.apiCall('get_programs'),
+            this.apiCall('get_enrollments', { userId: this.state.currentUser.id }),
+            this.transportApi('list_transport_types'),
+            this.apiCall('get_service_types'),
+        ]);
+        if (requests) this.state.serviceRequests = requests;
+        if (programs) this.state.programs = programs;
+        if (enrollments) this.state.enrollments = enrollments;
+        if (types) this.state.transportTypes = types;
+        if (svcTypes) this.state.serviceTypes = svcTypes;
+    },
+
+    // -------------------------------------------------------------------------
+    // Programs
+    // -------------------------------------------------------------------------
+    getPrograms() { return this.state.programs; },
+    getEnrollments(userId) { return this.state.enrollments.filter(e => e.user_id == userId); },
 
     async addEnrollment(userId, programId) {
         const result = await this.apiCall('enroll_user', { userId, programId });
-        if (result) {
-            this.state.enrollments.push({ user_id: userId, program_id: programId });
-            return true;
-        }
+        if (result) { this.state.enrollments.push({ user_id: userId, program_id: programId }); return true; }
         return false;
     },
 
-    getCurrentUser() {
-        return this.state.currentUser;
+    // -------------------------------------------------------------------------
+    // Service Requests
+    // -------------------------------------------------------------------------
+    getServiceRequests() { return this.state.serviceRequests; },
+
+    async addServiceRequest(formData) {
+        const result = await this.apiUpload('add_request', formData);
+        if (result) { this.state.serviceRequests.unshift(result); return result; }
+        return null;
     },
 
-    async addComplaint(subject, body, userId) {
-        const response = await this.apiCall('add_complaint', { subject, body, userId });
-        if (response) {
-            this.state.complaints.push(response);
-            return response;
-        }
+    async getMyRequests() {
+        const data = await this.apiCall('get_my_requests');
+        if (data) this.state.serviceRequests = data;
+        return data;
     },
 
-    updateUser(data) {
-        this.state.currentUser.name = data.name;
-        this.state.currentUser.email = data.email;
+    // -------------------------------------------------------------------------
+    // Profile
+    // -------------------------------------------------------------------------
+    getCurrentUser() { return this.state.currentUser; },
+    updateUser(data) { Object.assign(this.state.currentUser, data); },
+
+    async uploadProfilePic(file) {
+        const fd = new FormData();
+        fd.append('profile_pic', file);
+        return await this.apiUpload('upload_profile_pic', fd);
     },
 
-    deleteUser() {
-        this.state.currentUser = null;
+    async updatePassword(data) {
+        return await this.apiCall('update_profile', data);
+    },
+
+    // -------------------------------------------------------------------------
+    // Transport
+    // -------------------------------------------------------------------------
+    getTransportTypes() { return this.state.transportTypes; },
+
+    async getTrajetsByTypeAndSort(type, sortBy, order) {
+        return await this.transportApi('list_trajets', { type, sortBy, order });
+    },
+
+    async getMyTickets() {
+        return await this.transportApi('list_tickets_enriched');
+    },
+
+    async bookTicket(idTrajet, citizenName) {
+        try {
+            const response = await fetch('../../api_transport.php', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'book_ticket', idTrajet, citizenName })
+            });
+            return await response.json();
+        } catch (error) { return { success: false, error: 'Network error.' }; }
+    },
+
+    async cancelTicket(idTicket) {
+        try {
+            const response = await fetch('../../api_transport.php', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'cancel_ticket', idTicket })
+            });
+            return await response.json();
+        } catch (error) { return { success: false, error: 'Network error.' }; }
+    },
+
+    // -------------------------------------------------------------------------
+    // Appointments
+    // -------------------------------------------------------------------------
+    async bookAppointment(data) {
+        return await this.apiCall('book_appointment', data);
+    },
+
+    async getMyAppointments() {
+        const data = await this.apiCall('get_my_appointments');
+        if (data) this.state.myAppointments = data;
+        return data;
+    },
+
+    async cancelAppointment(id) {
+        return await this.apiCall('cancel_appointment', { id });
+    },
+
+    async getAvailableSlots(serviceType, date) {
+        return await this.apiCall('get_available_slots', { service_type: serviceType, date });
+    },
+
+    getServiceTypes() { return this.state.serviceTypes; },
+
+    // -------------------------------------------------------------------------
+    // Notifications
+    // -------------------------------------------------------------------------
+    async getNotifications() {
+        const data = await this.apiCall('get_notifications');
+        if (data) this.state.notifications = data;
+        return data;
+    },
+
+    async markNotificationRead(id) {
+        return await this.apiCall('mark_notification_read', { id });
     }
 };
 

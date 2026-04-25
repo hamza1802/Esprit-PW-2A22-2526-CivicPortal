@@ -939,6 +939,36 @@ nav {
     border-color: var(--secondary-grey);
 }
 
+.status-completed {
+    background-color: #0d6efd;
+    color: var(--white);
+    border-color: #0d6efd;
+}
+
+.status-rescheduled {
+    background-color: #fd7e14;
+    color: var(--white);
+    border-color: #fd7e14;
+}
+
+.status-in_progress {
+    background-color: #6f42c1;
+    color: var(--white);
+    border-color: #6f42c1;
+}
+
+.status-approved {
+    background-color: var(--success);
+    color: var(--white);
+    border-color: var(--success);
+}
+
+.status-resolved {
+    background-color: #20c997;
+    color: var(--white);
+    border-color: #20c997;
+}
+
 .status-full {
     background-color: var(--danger);
     color: var(--white);

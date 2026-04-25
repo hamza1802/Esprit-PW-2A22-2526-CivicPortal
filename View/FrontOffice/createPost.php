@@ -1,0 +1,146 @@
+<?php
+/**
+ * createPost.php — View/FrontOffice/createPost.php
+ * Create a new forum post with full input validation.
+ * Auth-guarded: redirects to login if no session.
+ * Re-skinned for Parks & Recreation UI.
+ */
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Auth guard — must be logged in to create a post
+if (empty($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
+require_once __DIR__ . '/../../Controller/ForumPostController.php';
+require_once __DIR__ . '/../../Model/ForumPost.php';
+
+$errors       = [];
+$title        = '';
+$content      = '';
+$category     = '';
+$allowedCats  = ['Infrastructure', 'Health', 'Education'];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $title    = trim($_POST['title'] ?? '');
+    $content  = trim($_POST['content'] ?? '');
+    $category = trim($_POST['category'] ?? '');
+
+    // Validation
+    if (empty($title)) {
+        $errors[] = 'Title is required.';
+    } elseif (strlen($title) > 255) {
+        $errors[] = 'Title must not exceed 255 characters.';
+    }
+
+    if (empty($content)) {
+        $errors[] = 'Content is required.';
+    } elseif (strlen($content) < 10) {
+        $errors[] = 'Content must be at least 10 characters.';
+    }
+
+    if (empty($category)) {
+        $errors[] = 'Category is required.';
+    } elseif (!in_array($category, $allowedCats)) {
+        $errors[] = 'Invalid category selected.';
+    }
+
+    if (empty($errors)) {
+        // Sanitize
+        $title    = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
+        $content  = htmlspecialchars($content, ENT_QUOTES, 'UTF-8');
+
+        // Create object from Model (Blueprint pattern)
+        $post = new ForumPost(null, $_SESSION['user_id'], $title, $content, $category);
+
+        // Pass to Controller
+        $newId = ForumPostController::createPost($post);
+        header("Location: viewPost.php?id=$newId&success=Post+created+successfully");
+        exit;
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Post | Citizens Forum</title>
+    <meta name="description" content="Start a new discussion on the Citizens Forum.">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/forum.css">
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-brand">
+            <i class="bi bi-building"></i> CivicPortal
+        </div>
+        <ul class="nav-links">
+            <li><a href="index.php">home</a></li>
+            <li><a href="forum.php" style="text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px;">forum</a></li>
+        </ul>
+        <div class="user-controls" style="display:flex; align-items:center; gap:1rem;">
+            <div class="user-role-badge"><?= htmlspecialchars($_SESSION['user_role'] ?? 'citizen') ?></div>
+            <span style="font-weight:700; color: var(--primary-navy);"><?= htmlspecialchars($_SESSION['user_name'] ?? 'User') ?></span>
+        </div>
+    </nav>
+
+    <main>
+        <section class="page-container">
+            <div style="margin-bottom: 2rem;">
+                <a href="forum.php" class="forum-back-link"><i class="bi bi-arrow-left"></i> Back to Forum</a>
+            </div>
+
+            <div style="max-width: 800px; margin: 0 auto;">
+                <h2>New Post</h2>
+                <p style="margin-bottom: 2rem;">Share a topic with the community.</p>
+
+                <?php if (!empty($errors)): ?>
+                    <div class="forum-alert forum-alert-danger" style="margin-bottom: 2rem;">
+                        <?php foreach ($errors as $err): ?>
+                            <div><i class="bi bi-exclamation-triangle"></i> <?= htmlspecialchars($err) ?></div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+
+                <form method="POST" class="form-card">
+                    <div class="form-group">
+                        <label for="post-title">Title</label>
+                        <input type="text" id="post-title" name="title" maxlength="255" required
+                               value="<?= htmlspecialchars($title) ?>"
+                               placeholder="Enter a descriptive title...">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="post-category">Category</label>
+                        <select id="post-category" name="category" required>
+                            <option value="">Select a category</option>
+                            <?php foreach ($allowedCats as $cat): ?>
+                                <option value="<?= $cat ?>" <?= $category === $cat ? 'selected' : '' ?>>
+                                    <?= $cat ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="post-content">Content</label>
+                        <textarea id="post-content" name="content" required minlength="10" rows="8"
+                                  placeholder="Describe your topic in detail (minimum 10 characters)..."><?= htmlspecialchars($content) ?></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width:100%;">Publish Post</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <script src="../assets/js/glass-animations.js"></script>
+</body>
+</html>

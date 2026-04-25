@@ -1,0 +1,11 @@
+# CivicPortal Ignore
+scratch/
+graphify-out/cache/
+ts
+helpProgram.txt
+debug_api_root.php
+migrate_v*.php
+TEST_CREDENTIALS.md
+.gemini/
+*.log
+

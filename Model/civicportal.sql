@@ -1,4 +1,4 @@
-﻿-- phpMyAdmin SQL Dump
+-- phpMyAdmin SQL Dump
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
@@ -46,7 +46,7 @@ CREATE TABLE `enrollment` (
   `user_id` int(11) NOT NULL,
   `program_id` int(11) NOT NULL,
   `enrolled_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `status` enum('confirmed','waitlisted','cancelled') NOT NULL DEFAULT 'confirmed'
+  `status` enum('pending','confirmed','waitlisted','cancelled') NOT NULL DEFAULT 'pending'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -111,6 +111,8 @@ CREATE TABLE `program` (
   `start_date` date DEFAULT NULL,
   `end_date` date DEFAULT NULL,
   `location` varchar(255) DEFAULT NULL,
+  `program_image` mediumblob DEFAULT NULL,
+  `program_image_mime` varchar(50) DEFAULT 'image/jpeg',
   `status` enum('active','cancelled','full') NOT NULL DEFAULT 'active'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -125,7 +127,12 @@ CREATE TABLE `requests` (
   `user_id` int(11) NOT NULL,
   `title` varchar(200) NOT NULL,
   `description` text DEFAULT NULL,
-  `status` enum('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+  `category` varchar(100) DEFAULT NULL,
+  `attachment` mediumblob DEFAULT NULL,
+  `attachment_mime` varchar(50) DEFAULT NULL,
+  `assigned_to` int(11) DEFAULT NULL,
+  `status` enum('pending','in_progress','approved','rejected','validated','resolved') NOT NULL DEFAULT 'pending',
+  `status_updated_at` datetime DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -137,12 +144,13 @@ CREATE TABLE `requests` (
 --
 
 CREATE TABLE `ticket` (
-  `idTicket` int(11) NOT NULL,
-  `ref` varchar(50) NOT NULL,
-  `user_id` int(11) NOT NULL,
-  `idTrajet` int(11) NOT NULL,
-  `issuedAt` datetime NOT NULL DEFAULT current_timestamp(),
-  `status` varchar(50) NOT NULL DEFAULT 'Valid'
+  `idTicket`    int(11) NOT NULL,
+  `ref`         varchar(50) NOT NULL,
+  `user_id`     int(11) NOT NULL,
+  `citizenName` varchar(255) NOT NULL DEFAULT '',
+  `idTrajet`    int(11) NOT NULL,
+  `issuedAt`    datetime NOT NULL DEFAULT current_timestamp(),
+  `status`      varchar(50) NOT NULL DEFAULT 'Valid'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -152,12 +160,18 @@ CREATE TABLE `ticket` (
 --
 
 CREATE TABLE `trajet` (
-  `idTrajet` int(11) NOT NULL,
-  `departure` varchar(255) NOT NULL,
-  `destination` varchar(255) NOT NULL,
-  `idTransport` int(11) NOT NULL,
+  `idTrajet`      int(11) NOT NULL,
+  `departure`     varchar(255) NOT NULL,
+  `destination`   varchar(255) NOT NULL,
+  `idTransport`   int(11) NOT NULL,
   `departureTime` datetime NOT NULL,
-  `price` decimal(10,3) NOT NULL DEFAULT 0.000
+  `price`         decimal(10,3) NOT NULL DEFAULT 0.000,
+  `depLat`        decimal(10,7) DEFAULT NULL,
+  `depLng`        decimal(10,7) DEFAULT NULL,
+  `depAddress`    varchar(500) DEFAULT NULL,
+  `destLat`       decimal(10,7) DEFAULT NULL,
+  `destLng`       decimal(10,7) DEFAULT NULL,
+  `destAddress`   varchar(500) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -167,12 +181,28 @@ CREATE TABLE `trajet` (
 --
 
 CREATE TABLE `transport` (
-  `idTransport` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `type` varchar(100) NOT NULL,
-  `capacity` int(11) NOT NULL,
-  `plateNumber` varchar(255) DEFAULT NULL,
-  `status` varchar(100) NOT NULL DEFAULT 'Active'
+  `idTransport`     int(11) NOT NULL,
+  `name`            varchar(255) NOT NULL,
+  `type`            varchar(100) NOT NULL,
+  `capacity`        int(11) NOT NULL,
+  `plateNumber`     varchar(255) DEFAULT NULL,
+  `status`          varchar(100) NOT NULL DEFAULT 'Active',
+  `vehicle_image`   mediumblob DEFAULT NULL,
+  `vehicle_image_mime` varchar(50) DEFAULT 'image/jpeg',
+  `idTransportType` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `transport_type`
+--
+
+CREATE TABLE `transport_type` (
+  `idTransportType` int(11) NOT NULL,
+  `name`            varchar(100) NOT NULL,
+  `description`     text DEFAULT NULL,
+  `photo_url`       varchar(500) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -187,7 +217,77 @@ CREATE TABLE `users` (
   `email` varchar(100) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
   `role` enum('citizen','agent','admin') NOT NULL DEFAULT 'citizen',
+  `profile_pic` mediumblob DEFAULT NULL,
+  `profile_pic_mime` varchar(50) DEFAULT 'image/jpeg',
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `appointments`
+--
+
+CREATE TABLE `appointments` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `service_type` varchar(100) NOT NULL,
+  `preferred_date` date NOT NULL,
+  `preferred_time` time NOT NULL,
+  `notes` text DEFAULT NULL,
+  `status` enum('pending','confirmed','rescheduled','cancelled','completed') NOT NULL DEFAULT 'pending',
+  `assigned_to` int(11) DEFAULT NULL,
+  `reschedule_reason` text DEFAULT NULL,
+  `new_date` date DEFAULT NULL,
+  `new_time` time DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `appointment_slots`
+--
+
+CREATE TABLE `appointment_slots` (
+  `id` int(11) NOT NULL,
+  `agent_id` int(11) NOT NULL,
+  `service_type` varchar(100) NOT NULL,
+  `day_of_week` tinyint(1) NOT NULL COMMENT '0=Sun,1=Mon,...,6=Sat',
+  `start_time` time NOT NULL,
+  `end_time` time NOT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `notifications`
+--
+
+CREATE TABLE `notifications` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `body` text DEFAULT NULL,
+  `type` enum('appointment','request','system','info') NOT NULL DEFAULT 'info',
+  `is_read` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `program_category`
+--
+
+CREATE TABLE `program_category` (
+  `id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -263,7 +363,14 @@ ALTER TABLE `trajet`
 -- Indexes for table `transport`
 --
 ALTER TABLE `transport`
-  ADD PRIMARY KEY (`idTransport`);
+  ADD PRIMARY KEY (`idTransport`),
+  ADD KEY `idTransportType` (`idTransportType`);
+
+--
+-- Indexes for table `transport_type`
+--
+ALTER TABLE `transport_type`
+  ADD PRIMARY KEY (`idTransportType`);
 
 --
 -- Indexes for table `users`
@@ -272,6 +379,35 @@ ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `username` (`username`),
   ADD UNIQUE KEY `email` (`email`);
+
+--
+-- Indexes for table `appointments`
+--
+ALTER TABLE `appointments`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `assigned_to` (`assigned_to`);
+
+--
+-- Indexes for table `appointment_slots`
+--
+ALTER TABLE `appointment_slots`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `agent_id` (`agent_id`);
+
+--
+-- Indexes for table `notifications`
+--
+ALTER TABLE `notifications`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Indexes for table `program_category`
+--
+ALTER TABLE `program_category`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_cat_name` (`name`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -338,9 +474,39 @@ ALTER TABLE `transport`
   MODIFY `idTransport` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `transport_type`
+--
+ALTER TABLE `transport_type`
+  MODIFY `idTransportType` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `appointments`
+--
+ALTER TABLE `appointments`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `appointment_slots`
+--
+ALTER TABLE `appointment_slots`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `notifications`
+--
+ALTER TABLE `notifications`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `program_category`
+--
+ALTER TABLE `program_category`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
@@ -397,6 +563,38 @@ ALTER TABLE `ticket`
 --
 ALTER TABLE `trajet`
   ADD CONSTRAINT `trajet_ibfk_1` FOREIGN KEY (`idTransport`) REFERENCES `transport` (`idTransport`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `transport`
+--
+ALTER TABLE `transport`
+  ADD CONSTRAINT `transport_ibfk_1` FOREIGN KEY (`idTransportType`) REFERENCES `transport_type` (`idTransportType`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `appointments`
+--
+ALTER TABLE `appointments`
+  ADD CONSTRAINT `appointments_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `appointments_ibfk_2` FOREIGN KEY (`assigned_to`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `appointment_slots`
+--
+ALTER TABLE `appointment_slots`
+  ADD CONSTRAINT `slots_ibfk_1` FOREIGN KEY (`agent_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `notifications`
+--
+ALTER TABLE `notifications`
+  ADD CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `requests`
+--
+ALTER TABLE `requests`
+  ADD CONSTRAINT `requests_assigned_fk` FOREIGN KEY (`assigned_to`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -1,43 +1,37 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+/**
+ * FrontOffice/login.php
+ * Login form — editorial design from user branch, logic via Verification.php API
+ */
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+if (!empty($_SESSION['user_id'])) {
+    header('Location: index.php');
+    exit;
 }
+
+// Flash messages from session (e.g. after registration redirect)
+$success = $_SESSION['success'] ?? '';
+$errors = $_SESSION['errors'] ?? [];
+$old = $_SESSION['old'] ?? [];
+unset($_SESSION['success'], $_SESSION['errors'], $_SESSION['old']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CivicPortal - Login</title>
+    <title>CivicPortal — Login</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
     <style>
-        :root {
-            --primary-navy: #1D2A44;
-            --bg-neutral: #F0EADC;
-            --white: #ffffff;
-            --border-main: 3px solid #1D2A44;
-            --shadow-editorial: 15px 15px 0px 0px rgba(29, 42, 68, 0.1);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body {
-            font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
-            background-color: var(--bg-neutral);
-            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            color: var(--primary-navy);
+            min-height: 100vh;
+            background-color: var(--bg-neutral, #F0EADC);
+            margin: 0;
         }
-
-        .top-logo {
-            padding: 2.5rem 4rem;
-        }
-
-        .top-logo img {
-            height: 100px;
-            width: auto;
-        }
-
+        .top-logo { padding: 2.5rem 4rem; }
+        .top-logo img { height: 100px; width: auto; }
         .login-wrapper {
             flex: 1;
             display: flex;
@@ -46,29 +40,25 @@ if (session_status() === PHP_SESSION_NONE) {
             padding: 2rem;
             margin-top: -60px;
         }
-
         .login-container {
-            background: var(--white);
-            border: var(--border-main);
-            box-shadow: var(--shadow-editorial);
+            background: var(--white, #fff);
+            border: var(--border-main, 3px solid #1D2A44);
+            box-shadow: var(--shadow-editorial, 15px 15px 0px 0px rgba(29, 42, 68, 0.1));
             width: 100%;
             max-width: 360px;
             padding: 2.22rem;
             animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
-
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(40px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
         .login-header {
             text-align: left;
             margin-bottom: 2.5rem;
-            border-bottom: var(--border-main);
+            border-bottom: var(--border-main, 3px solid #1D2A44);
             padding-bottom: 1.5rem;
         }
-
         .login-header h1 {
             font-size: 2.5rem;
             font-weight: 900;
@@ -76,8 +66,8 @@ if (session_status() === PHP_SESSION_NONE) {
             line-height: 0.9;
             letter-spacing: -2px;
             margin-bottom: 0.5rem;
+            color: var(--primary-navy, #1D2A44);
         }
-
         .login-header p {
             font-size: 0.9rem;
             font-weight: 700;
@@ -85,11 +75,7 @@ if (session_status() === PHP_SESSION_NONE) {
             letter-spacing: 1px;
             opacity: 0.7;
         }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
+        .form-group { margin-bottom: 1.5rem; }
         .form-group label {
             display: block;
             font-size: 0.75rem;
@@ -98,30 +84,28 @@ if (session_status() === PHP_SESSION_NONE) {
             letter-spacing: 1px;
             margin-bottom: 0.5rem;
         }
-
         .form-group input {
             width: 100%;
             padding: 1rem;
-            border: 2px solid var(--primary-navy);
+            border: 2px solid var(--primary-navy, #1D2A44);
             background: transparent;
             font-family: inherit;
             font-size: 1rem;
             font-weight: 600;
-            color: var(--primary-navy);
+            color: var(--primary-navy, #1D2A44);
             transition: all 0.2s ease;
+            box-sizing: border-box;
         }
-
         .form-group input:focus {
             outline: none;
             background-color: #f8f6f0;
-            box-shadow: 6px 6px 0px 0px var(--primary-navy);
+            box-shadow: 6px 6px 0px 0px var(--primary-navy, #1D2A44);
         }
-
         .submit-btn {
             width: 100%;
             padding: 1.2rem;
-            background-color: var(--primary-navy);
-            color: var(--white);
+            background-color: var(--primary-navy, #1D2A44);
+            color: var(--white, #fff);
             border: none;
             font-size: 1.1rem;
             font-weight: 900;
@@ -131,12 +115,10 @@ if (session_status() === PHP_SESSION_NONE) {
             transition: all 0.2s ease;
             margin-top: 1rem;
         }
-
         .submit-btn:hover {
             transform: translate(-4px, -4px);
             box-shadow: 6px 6px 0px 0px rgba(29, 42, 68, 0.3);
         }
-
         .message {
             padding: 1rem;
             border: 2px solid currentColor;
@@ -145,34 +127,27 @@ if (session_status() === PHP_SESSION_NONE) {
             font-size: 0.85rem;
             text-transform: uppercase;
         }
-
-        .message.error {
-            color: #A4161A;
-            background: #FFB3B3;
-        }
-
-        .message.success {
-            color: #2D6A4F;
-            background: #D8F3DC;
-        }
-
+        .message.error { color: #A4161A; background: #FFB3B3; }
+        .message.success { color: #2D6A4F; background: #D8F3DC; }
         .signup-link {
             text-align: center;
             margin-top: 2.5rem;
             padding-top: 1.5rem;
-            border-top: 2px solid var(--bg-neutral);
+            border-top: 2px solid var(--bg-neutral, #F0EADC);
             font-size: 0.85rem;
             font-weight: 700;
             text-transform: uppercase;
         }
-
         .signup-link a {
-            color: var(--primary-navy);
+            color: var(--primary-navy, #1D2A44);
             text-decoration: underline;
             text-decoration-thickness: 2px;
             margin-left: 0.5rem;
         }
-
+        .inline-error {
+            color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem;
+            display: block; font-weight: 700; text-transform: uppercase;
+        }
         @media (max-width: 500px) {
             .top-logo { padding: 2rem; }
             .login-container { padding: 2rem; }
@@ -182,7 +157,7 @@ if (session_status() === PHP_SESSION_NONE) {
 <body>
 
 <div class="top-logo">
-    <img src="View/assets/images/logo.png" alt="CivicPortal">
+    <img src="../assets/images/logo.png" alt="CivicPortal" onerror="this.style.display='none'">
 </div>
 
 <div class="login-wrapper">
@@ -193,23 +168,14 @@ if (session_status() === PHP_SESSION_NONE) {
         </div>
 
         <?php if (!empty($success)): ?>
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const toast = document.createElement('div');
-                    toast.className = 'custom-backoffice-toast visible';
-                    toast.textContent = <?= json_encode(strtoupper($success)) ?>;
-                    document.body.appendChild(toast);
-                    setTimeout(() => {
-                        toast.classList.remove('visible');
-                        setTimeout(() => toast.remove(), 500);
-                    }, 4000);
-                });
-            </script>
+            <div class="message success"><?= htmlspecialchars($success) ?></div>
         <?php endif; ?>
+
+        <div id="error-message" class="message error" style="display:none;"></div>
 
         <?php if (!empty($errors)): ?>
             <div class="message error">
-                <ul style="list-style:none">
+                <ul style="list-style:none; padding:0; margin:0;">
                     <?php foreach ($errors as $error): ?>
                         <li><?= htmlspecialchars($error) ?></li>
                     <?php endforeach; ?>
@@ -217,34 +183,61 @@ if (session_status() === PHP_SESSION_NONE) {
             </div>
         <?php endif; ?>
 
-        <form method="post" action="index.php?page=front_login" novalidate>
-            <input type="hidden" name="action" value="login">
-
+        <form id="login-form" novalidate>
             <div class="form-group">
                 <label for="email">Email</label>
                 <input id="email" name="email" type="text" placeholder="YOUR@EMAIL.COM" value="<?= htmlspecialchars($old['email'] ?? '') ?>">
-                <?php if (isset($errors['email'])): ?>
-                    <span class="inline-error" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"><?= htmlspecialchars($errors['email']) ?></span>
-                <?php endif; ?>
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
                 <input id="password" name="password" type="password" placeholder="••••••••">
-                <?php if (isset($errors['password'])): ?>
-                    <span class="inline-error" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"><?= htmlspecialchars($errors['password']) ?></span>
-                <?php endif; ?>
             </div>
 
             <button class="submit-btn" type="submit">Sign In</button>
         </form>
 
         <div class="signup-link">
-            No account? <a href="index.php?page=front_register">Register</a>
+            No account? <a href="register.php">Register</a>
         </div>
     </div>
 </div>
 
+<script>
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const errorMsg = document.getElementById('error-message');
+        errorMsg.style.display = 'none';
+
+        try {
+            const res = await fetch('../../Verification.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'login', data: { email, password } })
+            });
+            const result = await res.json();
+
+            if (result.success && !result.data.errors) {
+                const userRole = result.data.user.role;
+                if (userRole === 'admin' || userRole === 'agent') {
+                    window.location.href = '../BackOffice/index.php';
+                } else {
+                    window.location.href = 'index.php';
+                }
+            } else {
+                errorMsg.style.display = 'block';
+                errorMsg.textContent = result.data.errors
+                    ? Object.values(result.data.errors)[0]
+                    : 'Login failed';
+            }
+        } catch (err) {
+            errorMsg.style.display = 'block';
+            errorMsg.textContent = 'A network error occurred';
+        }
+    });
+</script>
+
 </body>
 </html>
-<?php require_once __DIR__ . '/../../includes/footer.php'; ?>
