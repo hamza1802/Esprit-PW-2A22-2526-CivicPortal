@@ -26,26 +26,17 @@ if (!defined('_CIVICPORTAL_BOOTSTRAP_')) {
     </div>
     <ul class="nav-links">
         <li><a href="index.php"<?= $activeNav === 'index.php' ? ' aria-current="page"' : '' ?>>home</a></li>
-        <li><a href="forum.php"<?= $activeNav === 'forum.php' ? ' style="text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px;" aria-current="page"' : '' ?>>forum</a></li>
+        <li><a href="forum.php"<?= $activeNav === 'forum.php' ? ' class="active" aria-current="page"' : '' ?>>forum</a></li>
         <?php if ($isLoggedIn): ?>
             <li><a href="index.php#request-service">requests</a></li>
             <li><a href="index.php#transport">transport</a></li>
         <?php endif; ?>
     </ul>
-    <div class="user-controls" style="display:flex;align-items:center;gap:1rem;">
+    <div class="user-controls">
         <?php if ($isLoggedIn): ?>
             <div class="user-role-badge"><?= htmlspecialchars($_SESSION['user_role'] ?? 'citizen') ?></div>
-            <span style="font-weight:700;color:var(--primary-navy);">
-                <?= htmlspecialchars($_SESSION['user_name'] ?? 'User') ?>
-            </span>
-            <a href="#" onclick="
-                event.preventDefault();
-                fetch('../../Verification.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'logout' })
-                }).then(() => window.location.href = 'login.php');"
-               style="color:var(--danger);font-weight:600;text-decoration:none;font-size:0.9rem;">
+            <a href="#" onclick="event.preventDefault();fetch('../../Verification.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'logout'})}).then(()=>window.location.href='login.php')"
+               class="logout-link">
                 <i class="bi bi-box-arrow-right"></i> Logout
             </a>
         <?php else: ?>

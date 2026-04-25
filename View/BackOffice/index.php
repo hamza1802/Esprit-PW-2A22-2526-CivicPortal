@@ -33,6 +33,14 @@ AppModel::init();
 </head>
 <body>
 
+    <!-- Mobile: hamburger toggle -->
+    <button id="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Mobile: backdrop overlay (closes sidebar on tap) -->
+    <div class="backdrop" id="sidebar-backdrop"></div>
+
     <!-- Inject PHP Session State into JS Environment -->
     <script>
         window.SERVER_USER = {
@@ -69,5 +77,6 @@ AppModel::init();
     <script src="https://js.puter.com/v2/"></script>
     <script type="module" src="app.js"></script>
     <script src="../assets/js/glass-animations.js"></script>
+    <script src="../assets/js/sidebar.js" defer></script>
 </body>
 </html>

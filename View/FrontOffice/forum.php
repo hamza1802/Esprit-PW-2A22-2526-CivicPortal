@@ -41,15 +41,18 @@ $successMsg = isset($_GET['success']) ? htmlspecialchars($_GET['success']) : '';
         <div class="nav-brand">
             <i class="bi bi-building"></i> CivicPortal
         </div>
+        <div class="nav-backdrop"></div>
+        <button class="nav-hamburger" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
         <ul class="nav-links">
             <li><a href="index.php">home</a></li>
-            <li><a href="forum.php" style="text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px;">forum</a></li>
+            <li><a href="forum.php" class="active">forum</a></li>
         </ul>
-        <div class="user-controls" style="display:flex; align-items:center; gap:1rem;">
+        <div class="user-controls">
             <?php if ($isLoggedIn): ?>
                 <div class="user-role-badge"><?= htmlspecialchars($_SESSION['user_role'] ?? 'citizen') ?></div>
-                <span style="font-weight:700; color: var(--primary-navy);"><?= htmlspecialchars($_SESSION['user_name'] ?? 'User') ?></span>
-                <a href="#" onclick="event.preventDefault(); fetch('../../Verification.php', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action: 'logout'}) }).then(() => window.location.href='login.php')" style="color: var(--danger); font-weight: 600; text-decoration: none; font-size: 0.9rem;"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                <a href="#" onclick="event.preventDefault(); fetch('../../Verification.php', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action: 'logout'}) }).then(() => window.location.href='login.php')" class="logout-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
             <?php else: ?>
                 <a href="login.php" class="btn btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.9rem;">Login</a>
             <?php endif; ?>
@@ -136,6 +139,22 @@ $successMsg = isset($_GET['success']) ? htmlspecialchars($_GET['success']) : '';
         </section>
     </main>
 
+    <script>
+    // Hamburger nav toggle
+    (function() {
+        const nav = document.querySelector('nav');
+        const hamburger = nav.querySelector('.nav-hamburger');
+        const backdrop = nav.querySelector('.nav-backdrop');
+        if (hamburger) {
+            const toggle = () => nav.classList.toggle('nav-open');
+            hamburger.addEventListener('click', toggle);
+            if (backdrop) backdrop.addEventListener('click', toggle);
+            nav.querySelectorAll('.nav-links a').forEach(a => {
+                a.addEventListener('click', () => nav.classList.remove('nav-open'));
+            });
+        }
+    })();
+    </script>
     <script src="../assets/js/glass-animations.js"></script>
 </body>
 </html>

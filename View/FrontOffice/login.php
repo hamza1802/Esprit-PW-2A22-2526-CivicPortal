@@ -30,23 +30,23 @@ unset($_SESSION['success'], $_SESSION['errors'], $_SESSION['old']);
             background-color: var(--bg-neutral, #F0EADC);
             margin: 0;
         }
-        .top-logo { padding: 2.5rem 4rem; }
-        .top-logo img { height: 100px; width: auto; }
+        .top-logo { padding: 2rem 4%; }
+        .top-logo img { height: 80px; width: auto; }
         .login-wrapper {
             flex: 1;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 2rem;
-            margin-top: -60px;
         }
         .login-container {
             background: var(--white, #fff);
             border: var(--border-main, 3px solid #1D2A44);
-            box-shadow: var(--shadow-editorial, 15px 15px 0px 0px rgba(29, 42, 68, 0.1));
+            border-radius: var(--radius-lg, 24px);
+            box-shadow: 0 20px 60px rgba(29, 42, 68, 0.12);
             width: 100%;
-            max-width: 360px;
-            padding: 2.22rem;
+            max-width: 400px;
+            padding: 2.5rem;
             animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
         @keyframes slideUp {
@@ -60,7 +60,7 @@ unset($_SESSION['success'], $_SESSION['errors'], $_SESSION['old']);
             padding-bottom: 1.5rem;
         }
         .login-header h1 {
-            font-size: 2.5rem;
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
             font-weight: 900;
             text-transform: uppercase;
             line-height: 0.9;
@@ -88,6 +88,7 @@ unset($_SESSION['success'], $_SESSION['errors'], $_SESSION['old']);
             width: 100%;
             padding: 1rem;
             border: 2px solid var(--primary-navy, #1D2A44);
+            border-radius: var(--radius-sm, 12px);
             background: transparent;
             font-family: inherit;
             font-size: 1rem;
@@ -99,7 +100,7 @@ unset($_SESSION['success'], $_SESSION['errors'], $_SESSION['old']);
         .form-group input:focus {
             outline: none;
             background-color: #f8f6f0;
-            box-shadow: 6px 6px 0px 0px var(--primary-navy, #1D2A44);
+            box-shadow: 0 0 0 3px rgba(58, 134, 255, 0.2);
         }
         .submit-btn {
             width: 100%;
@@ -107,6 +108,7 @@ unset($_SESSION['success'], $_SESSION['errors'], $_SESSION['old']);
             background-color: var(--primary-navy, #1D2A44);
             color: var(--white, #fff);
             border: none;
+            border-radius: var(--radius-sm, 12px);
             font-size: 1.1rem;
             font-weight: 900;
             text-transform: uppercase;
@@ -116,12 +118,13 @@ unset($_SESSION['success'], $_SESSION['errors'], $_SESSION['old']);
             margin-top: 1rem;
         }
         .submit-btn:hover {
-            transform: translate(-4px, -4px);
-            box-shadow: 6px 6px 0px 0px rgba(29, 42, 68, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(29, 42, 68, 0.25);
         }
         .message {
             padding: 1rem;
             border: 2px solid currentColor;
+            border-radius: var(--radius-sm, 12px);
             margin-bottom: 1.5rem;
             font-weight: 700;
             font-size: 0.85rem;
@@ -149,8 +152,10 @@ unset($_SESSION['success'], $_SESSION['errors'], $_SESSION['old']);
             display: block; font-weight: 700; text-transform: uppercase;
         }
         @media (max-width: 500px) {
-            .top-logo { padding: 2rem; }
-            .login-container { padding: 2rem; }
+            .top-logo { padding: 1.5rem; }
+            .top-logo img { height: 60px; }
+            .login-container { padding: 1.5rem; border-radius: var(--radius-md, 16px); }
+            .login-wrapper { padding: 1rem; }
         }
     </style>
 </head>

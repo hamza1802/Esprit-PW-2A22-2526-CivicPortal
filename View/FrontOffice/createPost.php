@@ -81,13 +81,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="nav-brand">
             <i class="bi bi-building"></i> CivicPortal
         </div>
+        <div class="nav-backdrop"></div>
+        <button class="nav-hamburger" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
         <ul class="nav-links">
             <li><a href="index.php">home</a></li>
-            <li><a href="forum.php" style="text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px;">forum</a></li>
+            <li><a href="forum.php" class="active">forum</a></li>
         </ul>
-        <div class="user-controls" style="display:flex; align-items:center; gap:1rem;">
+        <div class="user-controls">
             <div class="user-role-badge"><?= htmlspecialchars($_SESSION['user_role'] ?? 'citizen') ?></div>
-            <span style="font-weight:700; color: var(--primary-navy);"><?= htmlspecialchars($_SESSION['user_name'] ?? 'User') ?></span>
         </div>
     </nav>
 
@@ -141,6 +144,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </section>
     </main>
 
+    <script>
+    (function() {
+        const nav = document.querySelector('nav');
+        const hamburger = nav.querySelector('.nav-hamburger');
+        const backdrop = nav.querySelector('.nav-backdrop');
+        if (hamburger) {
+            const toggle = () => nav.classList.toggle('nav-open');
+            hamburger.addEventListener('click', toggle);
+            if (backdrop) backdrop.addEventListener('click', toggle);
+            nav.querySelectorAll('.nav-links a').forEach(a => {
+                a.addEventListener('click', () => nav.classList.remove('nav-open'));
+            });
+        }
+    })();
+    </script>
     <script src="../assets/js/glass-animations.js"></script>
 </body>
 </html>

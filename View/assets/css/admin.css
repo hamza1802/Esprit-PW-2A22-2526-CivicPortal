@@ -15,13 +15,13 @@ body {
 
 /* Sidebar Navigation */
 nav {
-    width: 260px;
+    width: 240px;
     flex-shrink: 0;
     position: static !important;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: var(--space-32);
+    padding: 24px 16px;
     background: var(--primary-navy) !important;
     border-radius: 0 var(--radius-lg) var(--radius-lg) 0 !important;
     margin: var(--space-16) 0 var(--space-16) var(--space-16) !important;
@@ -91,23 +91,23 @@ nav {
 }
 
 .nav-links a {
-    color: rgba(255, 255, 255, 0.7) !important;
+    color: rgba(255, 255, 255, 0.6) !important;
     display: flex;
     align-items: center;
-    padding: 0.8rem 1rem;
+    padding: 9px 12px;
     border-radius: var(--radius-md);
     transition: var(--transition-fast);
     text-transform: uppercase;
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     font-weight: 800;
-    letter-spacing: 1px;
+    letter-spacing: 0.8px;
 }
 
 .nav-links a:hover, .nav-links a.active {
     background: rgba(255, 255, 255, 0.1);
     color: var(--white) !important;
     text-decoration: none;
-    padding-left: 1.5rem;
+    padding-left: 18px;
 }
 
 .nav-dot {
@@ -381,4 +381,145 @@ h2.reveal {
     border-color: var(--accent-blue) !important;
 }
 
+/* ==========================================================================
+   MOBILE RESPONSIVE — Sidebar Overlay
+   ========================================================================== */
 
+/* Hamburger toggle button (hidden on desktop) */
+#menu-toggle {
+    display: none;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-navy);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    z-index: 1001;
+    font-size: 1.25rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+#menu-toggle:focus-visible {
+    outline: 3px solid var(--accent-blue);
+    outline-offset: 2px;
+}
+
+/* Backdrop overlay (hidden on desktop) */
+.backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 220ms ease;
+    z-index: 999;
+}
+
+.backdrop.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ── Mobile: <768px ──────────────────────────────────────────── */
+@media (max-width: 767px) {
+
+    /* Body: release fixed viewport constraints */
+    body {
+        display: block !important;
+        height: auto !important;
+        min-height: 100vh;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+    }
+
+    /* Sidebar: off-screen by default, slides in from left */
+    nav {
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        height: 100vh !important;
+        width: 280px !important;
+        transform: translateX(-100%) !important;
+        transition: transform 220ms ease, box-shadow 220ms ease !important;
+        margin: 0 !important;
+        border-radius: 0 var(--radius-lg) var(--radius-lg) 0 !important;
+        box-shadow: none !important;
+        z-index: 1000 !important;
+        overflow-y: auto !important;
+    }
+
+    nav.open {
+        transform: translateX(0) !important;
+        box-shadow: 6px 0 28px rgba(0, 0, 0, 0.35) !important;
+    }
+
+    /* Main: full width, top padding clears the hamburger button */
+    main#app {
+        flex: none;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 4.5rem 1.25rem 2rem !important;
+        border-radius: 0 !important;
+        min-height: 100vh;
+        overflow-y: unset !important;
+    }
+
+    /* Touch targets: 44px minimum height */
+    .nav-links a {
+        min-height: 44px;
+        padding: 0.85rem 1rem !important;
+        font-size: 14px !important;
+        letter-spacing: 0.5px !important;
+        align-items: center;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+        padding-left: 1.35rem !important;
+    }
+
+    /* Smaller brand on mobile */
+    .nav-brand {
+        font-size: 1.1rem;
+        margin-bottom: 1.75rem;
+    }
+
+    /* Show hamburger button */
+    #menu-toggle {
+        display: flex;
+    }
+
+    /* Show backdrop */
+    .backdrop {
+        display: block;
+    }
+}
+
+/* ── Desktop: ≥768px ─────────────────────────────────────────── */
+@media (min-width: 768px) {
+
+    #menu-toggle {
+        display: none !important;
+    }
+
+    .backdrop {
+        display: none !important;
+    }
+
+    /* Ensure no residual transform from mobile */
+    nav {
+        transform: none !important;
+        transition: none !important;
+    }
+}

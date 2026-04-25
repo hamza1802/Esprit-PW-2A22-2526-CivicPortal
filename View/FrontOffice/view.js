@@ -36,6 +36,10 @@ const view = {
 
         nav.innerHTML = `
             <div class="nav-brand"><i class="bi bi-building"></i> CivicPortal</div>
+            <div class="nav-backdrop"></div>
+            <button class="nav-hamburger" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
             <ul class="nav-links">
                 <li><a href="#home">home</a></li>
                 <li><a href="#programs">programs</a></li>
@@ -46,16 +50,38 @@ const view = {
                 <li><a href="#my-tickets">my tickets</a></li>
                 <li><a href="#profile">profile</a></li>
             </ul>
-            <div class="user-controls" style="display:flex;align-items:center;gap:1rem;">
+            <div class="user-controls">
                 ${roleBadge}
                 <a href="#"
                    onclick="event.preventDefault();fetch('../../Verification.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'logout'})}).then(()=>window.location.href='login.php')"
-                   class="logout-link"
-                   style="color:var(--danger);font-weight:600;text-decoration:none;font-family:var(--font-primary);font-size:0.9rem;">
+                   class="logout-link">
                     <i class="bi bi-box-arrow-right"></i> Logout
                 </a>
             </div>
         `;
+
+        // Hamburger toggle
+        const hamburger = nav.querySelector('.nav-hamburger');
+        const backdrop = nav.querySelector('.nav-backdrop');
+        const toggle = () => nav.classList.toggle('nav-open');
+        hamburger.addEventListener('click', toggle);
+        backdrop.addEventListener('click', toggle);
+
+        // Close on link click (mobile)
+        nav.querySelectorAll('.nav-links a').forEach(a => {
+            a.addEventListener('click', () => nav.classList.remove('nav-open'));
+        });
+
+        // Active-link highlighting
+        const markActive = () => {
+            const hash = window.location.hash || '#home';
+            nav.querySelectorAll('.nav-links a').forEach(a => {
+                const href = a.getAttribute('href');
+                a.classList.toggle('active', href && hash.startsWith(href) && href !== '#');
+            });
+        };
+        markActive();
+        window.addEventListener('hashchange', markActive);
     },
 
     // -------------------------------------------------------------------------
@@ -336,9 +362,8 @@ const view = {
             : appointments.map(a => {
                 const s = statusStyles[a.status] || statusStyles.pending;
                 return `
-                <div style="border:var(--border-main);border-radius:16px;overflow:hidden;margin-bottom:1rem;">
-                    <div style="background:var(--primary-navy);color:#fff;padding:16px 20px;
-                                display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+                <div class="appt-card">
+                    <div class="appt-header">
                         <div>
                             <div style="font-weight:800;font-size:1.1rem;">${a.service_type}</div>
                             <div style="font-size:0.85rem;opacity:0.7;margin-top:2px;">
@@ -350,21 +375,21 @@ const view = {
                             ${a.status.toUpperCase()}
                         </span>
                     </div>
-                    <div style="padding:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;">
+                    <div class="appt-body">
                         <div>
-                            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;opacity:0.5;margin-bottom:4px;">Date</div>
-                            <div style="font-weight:700;">${a.preferred_date}</div>
+                            <div class="appt-detail-label">Date</div>
+                            <div class="appt-detail-value">${a.preferred_date}</div>
                         </div>
                         <div>
-                            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;opacity:0.5;margin-bottom:4px;">Time</div>
-                            <div style="font-weight:700;">${a.preferred_time?.substring(0,5) || '—'}</div>
+                            <div class="appt-detail-label">Time</div>
+                            <div class="appt-detail-value">${a.preferred_time?.substring(0,5) || '—'}</div>
                         </div>
                         ${a.notes ? `<div style="grid-column:1/-1;">
-                            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;opacity:0.5;margin-bottom:4px;">Notes</div>
+                            <div class="appt-detail-label">Notes</div>
                             <div style="font-weight:500;">${a.notes}</div>
                         </div>` : ''}
                         ${a.reschedule_reason ? `<div style="grid-column:1/-1;">
-                            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;opacity:0.5;margin-bottom:4px;">Rescheduled Reason</div>
+                            <div class="appt-detail-label">Rescheduled Reason</div>
                             <div style="font-weight:500;">${a.reschedule_reason}</div>
                         </div>` : ''}
                     </div>
@@ -620,90 +645,69 @@ const view = {
             const issuedAt = ticket.issuedAt ? new Date(ticket.issuedAt).toLocaleDateString() : '—';
             const photoHtml = isExpanded
                 ? `<img src="../../get_image.php?type=transport&id=${ticket.typeId || 0}" alt="${ticket.typeName || ''}"
-                        style="width:100px;height:100px;object-fit:cover;border-radius:12px;border:2px solid rgba(255,255,255,0.1);"
+                        style="width:80px;height:80px;object-fit:cover;border-radius:12px;border:2px solid rgba(255,255,255,0.1);"
                         onerror="this.style.display='none';">`
                 : '';
 
             const mapBlock = isExpanded
-                ? `<div style="margin:20px 0;border-radius:12px;overflow:hidden;border:2px solid rgba(255,255,255,0.05);background:#0f1117;">
+                ? `<div style="margin:20px 0;border-radius:12px;overflow:hidden;border:2px solid rgba(255,255,255,0.05);position:relative;">
                        <div id="map-${ticket.idTicket}" class="ticket-map"
                             data-deplat="${ticket.depLat}"  data-deplng="${ticket.depLng}"
                             data-destlat="${ticket.destLat}" data-destlng="${ticket.destLng}"
-                            style="width:100%;height:260px;"></div>
-                       <div style="position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,0.7);color:#fff;
-                                   padding:4px 10px;border-radius:6px;font-size:0.7rem;font-weight:600;z-index:10;">
-                           Live Route Map
-                       </div>
+                            style="width:100%;height:220px;"></div>
                    </div>`
                 : '';
 
             return `
-            <div class="ticket-card" style="
-                background:var(--bg-dark,#1a1a2e);
-                border:1px solid ${isValid ? 'rgba(99,102,241,0.5)' : 'rgba(239,68,68,0.2)'};
-                border-radius:16px;overflow:hidden;
-                box-shadow:${isValid ? '0 10px 30px -10px rgba(99,102,241,0.3)' : 'none'};
-                ${!isValid ? 'opacity:0.6;' : ''}">
-
-                <div style="background:${isValid ? 'linear-gradient(135deg,#6366f1,#7c3aed)' : 'linear-gradient(135deg,#4b5563,#374151)'};
-                            padding:20px 24px;display:flex;justify-content:space-between;align-items:center;">
-                    <div style="display:flex;align-items:center;gap:20px;">
+            <div class="ticket-card ${!isValid ? 'cancelled' : ''}">
+                <div class="ticket-header ${!isValid ? 'cancelled' : ''}">
+                    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
                         ${photoHtml}
                         <div>
-                            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;opacity:0.9;color:#fff;font-weight:600;margin-bottom:4px;">
-                                ${ticket.typeName || 'Transport'} Ticket
-                            </div>
-                            <div style="font-weight:800;font-size:1.4rem;color:#fff;letter-spacing:1px;">${ticket.ref}</div>
+                            <div class="ticket-type-label">${ticket.typeName || 'Transport'} Ticket</div>
+                            <div class="ticket-ref">${ticket.ref}</div>
                         </div>
                     </div>
-                    <div style="background:${isValid ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)'};
-                                color:${isValid ? '#4ade80' : '#f87171'};
-                                padding:6px 16px;border-radius:999px;font-size:0.8rem;font-weight:800;
-                                text-transform:uppercase;border:1px solid ${isValid ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'};">
-                        ${ticket.status}
-                    </div>
+                    <span class="ticket-status-badge ${isValid ? 'valid' : 'cancelled'}">${ticket.status}</span>
                 </div>
 
-                <div style="padding:24px;">
-                    <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
-                        <div style="flex:1;text-align:center;">
-                            <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.5);margin-bottom:6px;">Origin</div>
-                            <div style="font-weight:800;font-size:1.2rem;color:#fff;">${ticket.departure || '—'}</div>
+                <div class="ticket-body">
+                    <div class="ticket-route">
+                        <div class="ticket-route-point">
+                            <div class="ticket-route-label">Origin</div>
+                            <div class="ticket-route-city">${ticket.departure || '—'}</div>
                         </div>
                         <div style="font-size:1.5rem;flex-shrink:0;">✈️</div>
-                        <div style="flex:1;text-align:center;">
-                            <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.5);margin-bottom:6px;">Destination</div>
-                            <div style="font-weight:800;font-size:1.2rem;color:#fff;">${ticket.destination || '—'}</div>
+                        <div class="ticket-route-point">
+                            <div class="ticket-route-label">Destination</div>
+                            <div class="ticket-route-city">${ticket.destination || '—'}</div>
                         </div>
                     </div>
 
                     ${mapBlock}
 
-                    <div style="border-top:2px dashed rgba(255,255,255,0.1);margin:24px -24px;position:relative;">
-                        <div style="position:absolute;left:-12px;top:-12px;width:24px;height:24px;border-radius:50%;background:#1a1a2e;"></div>
-                        <div style="position:absolute;right:-12px;top:-12px;width:24px;height:24px;border-radius:50%;background:#1a1a2e;"></div>
-                    </div>
+                    <div class="ticket-divider"></div>
 
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px;">
-                        <div style="background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;">
-                            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.4);margin-bottom:4px;">Passenger</div>
-                            <div style="font-weight:700;color:#fff;">${ticket.citizenName || user.name}</div>
+                    <div class="ticket-details">
+                        <div class="ticket-detail-item">
+                            <div class="ticket-detail-label">Passenger</div>
+                            <div class="ticket-detail-value">${ticket.citizenName || user.name}</div>
                         </div>
-                        <div style="background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;">
-                            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.4);margin-bottom:4px;">Vehicle</div>
-                            <div style="font-weight:700;color:#fff;">${ticket.transportName || '—'}</div>
+                        <div class="ticket-detail-item">
+                            <div class="ticket-detail-label">Vehicle</div>
+                            <div class="ticket-detail-value">${ticket.transportName || '—'}</div>
                         </div>
-                        <div style="background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;">
-                            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.4);margin-bottom:4px;">Departure</div>
-                            <div style="font-weight:700;color:#fff;">📅 ${depTime}</div>
+                        <div class="ticket-detail-item">
+                            <div class="ticket-detail-label">Departure</div>
+                            <div class="ticket-detail-value">📅 ${depTime}</div>
                         </div>
-                        <div style="background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;">
-                            <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.4);margin-bottom:4px;">Fare</div>
-                            <div style="font-weight:800;color:#6366f1;">${ticket.price ? parseFloat(ticket.price).toFixed(3) + ' TND' : '—'}</div>
+                        <div class="ticket-detail-item">
+                            <div class="ticket-detail-label">Fare</div>
+                            <div class="ticket-detail-value price">${ticket.price ? parseFloat(ticket.price).toFixed(3) + ' TND' : '—'}</div>
                         </div>
                     </div>
 
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.05);">
+                    <div class="ticket-footer">
                         <div style="font-size:0.8rem;color:rgba(255,255,255,0.4);font-weight:600;">Issued: ${issuedAt}</div>
                         ${isValid
                             ? `<button class="btn btn-danger" data-action="cancel-ticket" data-id="${ticket.idTicket}"
@@ -717,7 +721,7 @@ const view = {
 
         const validCards = validTickets.length > 0
             ? validTickets.map(t => renderTicketCard(t, true)).join('')
-            : `<div style="text-align:center;padding:60px 20px;background:var(--bg-dark,#1a1a2e);border-radius:16px;border:1px dashed rgba(255,255,255,0.1);">
+            : `<div class="ticket-card" style="text-align:center;padding:60px 20px;">
                    <div style="font-size:4rem;margin-bottom:16px;">🎫</div>
                    <h3 style="color:#fff;">No Active Tickets</h3>
                    <p style="color:rgba(255,255,255,0.5);margin-bottom:24px;">Book a route to get your digital boarding pass.</p>
@@ -725,28 +729,29 @@ const view = {
                </div>`;
 
         const cancelledSection = cancelledTickets.length > 0 ? `
-            <div style="margin-top:4rem;">
-                <h3 style="margin-bottom:1.5rem;color:rgba(255,255,255,0.4);font-size:1rem;text-transform:uppercase;letter-spacing:2px;display:flex;align-items:center;gap:10px;">
-                    <span style="height:1px;background:rgba(255,255,255,0.1);flex:1;"></span>
+            <div style="margin-top:3rem;">
+                <h3 style="margin-bottom:1.5rem;color:var(--secondary-grey);font-size:1rem;text-transform:uppercase;letter-spacing:2px;
+                           display:flex;align-items:center;gap:10px;">
+                    <span style="height:1px;background:var(--secondary-grey);flex:1;opacity:0.3;"></span>
                     Cancelled Bookings
-                    <span style="height:1px;background:rgba(255,255,255,0.1);flex:1;"></span>
+                    <span style="height:1px;background:var(--secondary-grey);flex:1;opacity:0.3;"></span>
                 </h3>
-                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:24px;">
+                <div style="display:flex;flex-direction:column;gap:24px;">
                     ${cancelledTickets.map(t => renderTicketCard(t, false)).join('')}
                 </div>
             </div>` : '';
 
         this.app.innerHTML = `
-            <section class="page-container" style="max-width:900px;margin:0 auto;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3rem;flex-wrap:wrap;gap:1rem;">
+            <section class="page-container" style="max-width:900px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
                     <div>
-                        <h2 style="margin-bottom:8px;border-bottom:none;padding-bottom:0;font-size:2.2rem;">My Digital Boarding Passes</h2>
-                        <p style="color:rgba(255,255,255,0.5);font-size:1rem;margin:0;font-weight:500;">
+                        <h2 style="margin-bottom:8px;border-bottom:none;padding-bottom:0;">My Boarding Passes</h2>
+                        <p style="opacity:0.6;font-size:1rem;margin:0;font-weight:500;">
                             ${validTickets.length} active ticket${validTickets.length !== 1 ? 's' : ''}
                         </p>
                     </div>
                 </div>
-                <div style="display:flex;flex-direction:column;gap:40px;">${validCards}</div>
+                <div style="display:flex;flex-direction:column;gap:32px;">${validCards}</div>
                 ${cancelledSection}
             </section>
         `;
