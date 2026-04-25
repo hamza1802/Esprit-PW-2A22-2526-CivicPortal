@@ -6,6 +6,7 @@
 
 body {
     display: flex;
+    height: 100vh;
     min-height: 100vh;
     margin: 0;
     overflow: hidden; /* Prevent body scroll, scroll main area instead */
@@ -15,7 +16,7 @@ body {
 /* Sidebar Navigation */
 nav {
     width: 260px;
-    height: 100vh;
+    flex-shrink: 0;
     position: static !important;
     display: flex;
     flex-direction: column;
@@ -25,19 +26,58 @@ nav {
     border-radius: 0 var(--radius-lg) var(--radius-lg) 0 !important;
     margin: var(--space-16) 0 var(--space-16) var(--space-16) !important;
     border: none !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
-    box-shadow: 2px 0 15px rgba(0, 0, 0, 0.2) !important;
+    box-shadow: none !important;
     z-index: 10;
     backdrop-filter: none !important;
+    overflow-y: auto;
 }
 
 .nav-brand {
     color: var(--white) !important;
     margin-bottom: 2.5rem;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     width: 100%;
     padding-bottom: 1.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-brand-sub {
+    font-size: 0.62rem;
+    font-weight: 600;
+    opacity: 0.5;
+    letter-spacing: 2px;
+    display: block;
+    margin-top: 2px;
+}
+
+.bo-logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    margin-top: 10px;
+    padding: 8px;
+    border-radius: var(--radius-xl);
+    background: none;
+    border: 1px solid rgba(239, 68, 68, 0.35) !important;
+    color: #f87171;
+    font-family: var(--font-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.bo-logout-btn:hover {
+    background: rgba(239, 68, 68, 0.12) !important;
+    transform: none !important;
+    box-shadow: none !important;
 }
 
 .nav-links {
@@ -91,13 +131,15 @@ nav {
     border-radius: var(--radius-xl) !important;
 }
 
-/* Main Content Area */
+/* Main Content Area — floating with rounded top corners */
 main#app {
     flex: 1;
-    height: 100vh;
+    min-height: 0; /* Allow flex child to scroll */
     overflow-y: auto;
     background: var(--bg-neutral);
-    padding: 2rem 3rem;
+    padding: 2rem 2.5rem;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    margin: 12px 12px 0 0;
 }
 
 /* Redesigning BackOffice components for density and clarity */
@@ -186,13 +228,22 @@ h2.reveal {
 }
 
 .editorial-card:hover {
+    background: var(--white) !important;
+    border-color: var(--secondary-grey) !important;
     transform: translateY(-2px) !important;
     box-shadow: 0 8px 20px rgba(0,0,0,0.06) !important;
 }
 
-.editorial-card:hover h3 {
-    color: var(--text-dark);
+.editorial-card:hover h3,
+.editorial-card:hover p {
+    color: var(--text-dark) !important;
     opacity: 0.7;
+}
+
+.editorial-highlight:hover {
+    background: var(--primary-navy) !important;
+    border-color: var(--primary-navy) !important;
+    box-shadow: var(--shadow-md) !important;
 }
 
 .editorial-highlight:hover h3, .editorial-highlight:hover p {

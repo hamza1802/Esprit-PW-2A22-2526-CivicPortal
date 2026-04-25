@@ -1053,47 +1053,23 @@ body {
     /* Soft glowing background objects for depth */
 }
 
-/* Additional Hero background blob to give the glass something to blur */
-body::before {
-    content: '';
-    position: fixed;
-    top: -20%;
-    left: -10%;
-    width: 60vw;
-    height: 60vw;
-    background: radial-gradient(circle, var(--accent-blue) 0%, transparent 60%);
-    opacity: 0.15;
-    z-index: -1;
-    pointer-events: none;
-}
+/* No background blobs — clean editorial style */
 
-body::after {
-    content: '';
-    position: fixed;
-    bottom: -20%;
-    right: -10%;
-    width: 50vw;
-    height: 50vw;
-    background: radial-gradient(circle, var(--primary-navy) 0%, transparent 60%);
-    opacity: 0.1;
-    z-index: -1;
-    pointer-events: none;
-}
-
-/* Nav & Header Adjustments */
+/* Nav & Header Adjustments — solid blue, no glass */
 nav {
-    background: var(--glass-bg-light) !important;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: var(--glass-border) !important;
-    box-shadow: var(--glass-shadow);
-    border-radius: var(--radius-lg) !important;
-    margin: 1rem 2rem !important;
-    top: 10px;
+    background: var(--accent-blue) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: none !important;
+    border-bottom: var(--border-main) !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    top: 0;
     position: sticky;
 }
 
-/* Grid & Cards (Remove sharp editorial grid) */
+/* Grid & Cards — editorial style (no glassmorphism) */
 .editorial-grid,
 .programs-mgmt-grid {
     border: none !important;
@@ -1101,116 +1077,144 @@ nav {
     padding: 1rem 0;
 }
 
-.editorial-card,
-.program-card,
-.program-mgmt-card,
-.form-card,
-.status-widget {
-    background: var(--glass-bg-light) !important;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: var(--glass-border) !important;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--glass-shadow);
-    overflow: hidden;
+/* Editorial cards: transparent base, navy fill on hover */
+.editorial-card {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: var(--border-main) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: none !important;
     position: relative;
-    transform: scale(1);
-    transition: all 0.3s ease !important;
+    transition: var(--transition-fast) !important;
 }
 
-/* Hover States for Interactive Cards */
-.editorial-card:hover,
-.program-card:hover,
-.program-mgmt-card:hover {
-    transform: scale(1.02) translateY(-4px);
-    box-shadow: 0 12px 40px var(--glow-primary);
-    background: rgba(255, 255, 255, 0.7) !important;
-    border-color: rgba(255, 255, 255, 0.4) !important;
+.editorial-card:hover {
+    background-color: var(--primary-navy) !important;
+    border-color: var(--primary-navy) !important;
+    transform: none !important;
+    box-shadow: none !important;
 }
 
-/* Hover typography preservation */
 .editorial-card:hover h3,
 .editorial-card:hover p,
+.editorial-card:hover .stats-number {
+    color: var(--bg-neutral) !important;
+}
+
+/* Program cards keep a subtle background for readability */
+.program-card,
+.program-mgmt-card {
+    background: var(--bg-neutral) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: var(--border-main) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: none !important;
+    position: relative;
+    transition: var(--transition-fast) !important;
+}
+
+.program-card:hover,
+.program-mgmt-card:hover {
+    background-color: var(--primary-navy) !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
 .program-card:hover h3,
 .program-card:hover p,
 .program-mgmt-card:hover h3,
-.program-mgmt-card:hover p,
-.editorial-card:hover .stats-number {
-    color: var(--primary-navy) !important;
+.program-mgmt-card:hover p {
+    color: var(--bg-neutral) !important;
 }
 
-/* Adjust dark highlight cards */
+/* Form card and status widget */
+.form-card,
+.status-widget {
+    background: var(--bg-neutral) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: var(--border-main) !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: none !important;
+}
+
+/* Highlight variant: navy background */
 .editorial-highlight {
-    background: var(--glass-bg-dark) !important;
-    background-color: var(--primary-navy) !important;
+    background: var(--primary-navy) !important;
+    border-color: var(--primary-navy) !important;
 }
 
 .editorial-highlight:hover {
-    background: var(--accent-blue) !important;
-    box-shadow: 0 12px 40px var(--glow-accent);
+    background: var(--primary-navy) !important;
+    box-shadow: var(--shadow-md) !important;
 }
 
 .editorial-highlight h3,
 .editorial-highlight p,
+.editorial-highlight .stats-number,
 .editorial-highlight:hover h3,
 .editorial-highlight:hover p {
     color: var(--bg-neutral) !important;
 }
 
+.editorial-highlight:hover .stats-number {
+    color: var(--accent-blue) !important;
+}
+
 /* Images inside cards */
 .program-img-wrapper,
 .program-mgmt-header {
-    border-bottom: var(--glass-border) !important;
+    border-bottom: var(--border-main) !important;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .program-img,
 .program-mgmt-img {
-    filter: grayscale(20%) !important;
-    /* Softer grayscale */
-    transition: transform 0.5s ease, filter 0.5s ease;
+    filter: grayscale(70%);
+    transition: transform 0.3s ease, filter 0.3s ease;
 }
 
 .program-card:hover .program-img,
 .program-mgmt-card:hover .program-mgmt-img {
-    transform: scale(1.05);
     filter: grayscale(0%) !important;
 }
 
-/* Badges override so they do not disappear on hover */
+/* Badges on hover */
 .program-mgmt-card:hover .category-badge,
 .program-card:hover .category-badge {
-    color: var(--primary-navy) !important;
-    border-color: var(--primary-navy) !important;
+    color: var(--bg-neutral) !important;
+    border-color: var(--bg-neutral) !important;
 }
 
-/* Track overrides */
+/* Track overrides on hover */
 .editorial-card:hover .progress-track,
 .program-mgmt-card:hover .capacity-track {
-    border-color: var(--border-main) !important;
+    border-color: var(--bg-neutral) !important;
 }
 
 .editorial-card:hover .progress-fill,
 .program-mgmt-card:hover .capacity-fill {
-    background: var(--primary-navy) !important;
+    background: var(--bg-neutral) !important;
 }
 
-/* Buttons */
+/* Buttons — editorial pill style */
 .btn {
     border-radius: var(--radius-xl);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border: var(--glass-border) !important;
-    transition: all 0.3s ease !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+    border: var(--border-main) !important;
+    transition: var(--transition-fast) !important;
     position: relative;
     overflow: hidden;
-    background: var(--glass-bg-light);
+    background: transparent;
 }
 
 .btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 24px var(--glow-primary);
+    transform: none;
+    box-shadow: none;
     background: var(--primary-navy) !important;
     color: var(--white) !important;
 }
@@ -1218,28 +1222,28 @@ nav {
 .btn-primary {
     background: var(--primary-navy) !important;
     color: var(--white) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border: var(--border-main) !important;
 }
 
 .btn-primary:hover {
-    background: var(--accent-blue) !important;
-    box-shadow: 0 8px 24px var(--glow-accent);
+    background: transparent !important;
+    color: var(--primary-navy) !important;
 }
 
-/* Waitlisted, Cancelled mini-stats */
+/* Mini-stats on card hover */
 .program-mgmt-card:hover .mini-stat {
-    border-color: var(--glass-border) !important;
-    color: var(--primary-navy) !important;
+    border-color: rgba(240, 234, 220, 0.5) !important;
+    color: var(--bg-neutral) !important;
 }
 
 /* Search Bar */
 .search-container {
     border-radius: var(--radius-xl);
-    background: var(--glass-bg-light);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: var(--glass-border) !important;
-    box-shadow: var(--glass-shadow);
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: var(--border-main) !important;
+    box-shadow: none;
     overflow: hidden;
 }
 
@@ -1249,8 +1253,8 @@ nav {
 }
 
 .search-btn {
-    border-radius: var(--radius-xl);
-    margin: 4px;
+    border-radius: 0;
+    margin: 0;
 }
 
 /* Inputs & Forms */
@@ -1258,62 +1262,38 @@ nav {
 .form-group select,
 .form-group textarea {
     border-radius: var(--radius-md);
-    background: rgba(255, 255, 255, 0.4) !important;
-    border: var(--glass-border) !important;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: transparent !important;
+    border: var(--border-main) !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-    background: rgba(255, 255, 255, 0.8) !important;
-    box-shadow: 0 0 0 3px rgba(58, 134, 255, 0.3);
+    background: var(--white) !important;
+    box-shadow: 0 0 0 3px rgba(58, 134, 255, 0.2);
 }
 
-/* Badges & Modals/Toasts */
+/* Badges */
 .category-badge,
 .status-badge,
 .user-role-badge {
     border-radius: var(--radius-xl);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
 }
 
 .toast {
     border-radius: var(--radius-lg);
-    background: rgba(29, 42, 68, 0.85) !important;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: var(--glass-border) !important;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    background: var(--primary-navy) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: var(--border-main) !important;
+    box-shadow: var(--shadow-md);
 }
 
-/* Radial Glow Tracking (CSS Custom Props driven by JS) */
-.glow-effect {
-    position: relative;
-}
-
-.glow-effect::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    pointer-events: none;
-    background: radial-gradient(circle 600px at var(--x, 50%) var(--y, 50%),
-            rgba(255, 255, 255, 0.3),
-            transparent 40%);
-    z-index: 1;
-    border-radius: inherit;
-    transition: opacity 0.3s ease;
-    opacity: 0;
-}
-
-.glow-effect:hover::before {
-    opacity: 1;
-}
+/* Glow effect removed (editorial design, no glass) */
 
 /* Entry Animations Reveal Sequence */
 .reveal {
@@ -1439,10 +1419,10 @@ input[type="radio"]:checked::after {
     background: rgba(29, 42, 68, 0.7);
 }
 
-/* Corner Fixes for Tables Native Boxiness */
+/* Corner Fixes for Tables */
 .table-responsive {
     border-radius: var(--radius-lg);
-    border: var(--glass-border) !important;
+    border: var(--border-main) !important;
     overflow: hidden;
 }
 
@@ -1457,108 +1437,6 @@ input[type="radio"]:checked::after {
 
 .data-table th:last-child {
     border-top-right-radius: var(--radius-lg);
-}
-
-/* ==========================================================================
-   UIVERSE.IO COMPONENTS & ENHANCEMENTS
-   ========================================================================== */
-
-/* 1. Pulse Glow Buttons */
-.btn:hover {
-    animation: uv-pulse-glow 1.5s infinite;
-}
-
-.btn-primary:hover {
-    animation: uv-pulse-glow-accent 1.5s infinite;
-}
-
-@keyframes uv-pulse-glow {
-    0% {
-        box-shadow: 0 0 0 0 rgba(29, 42, 68, 0.4);
-    }
-
-    70% {
-        box-shadow: 0 0 0 15px rgba(29, 42, 68, 0);
-    }
-
-    100% {
-        box-shadow: 0 0 0 0 rgba(29, 42, 68, 0);
-    }
-}
-
-@keyframes uv-pulse-glow-accent {
-    0% {
-        box-shadow: 0 0 0 0 rgba(58, 134, 255, 0.5);
-    }
-
-    70% {
-        box-shadow: 0 0 0 15px rgba(58, 134, 255, 0);
-    }
-
-    100% {
-        box-shadow: 0 0 0 0 rgba(58, 134, 255, 0);
-    }
-}
-
-/* 2. Animated Input Focus Ring & Search Expanding */
-.form-group input,
-.form-group select,
-.form-group textarea,
-.search-bar {
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(58, 134, 255, 0.3) !important;
-}
-
-.search-container:focus-within {
-    box-shadow: 0 8px 25px rgba(58, 134, 255, 0.25) !important;
-    transform: scale(1.02);
-}
-
-/* 3. Card Shimmer Border on Hover */
-.editorial-card::before,
-.program-card::before,
-.program-mgmt-card::before,
-.form-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: inherit;
-    padding: 2px;
-    background: linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.8) 50%, transparent 60%);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-    background-size: 200% 200%;
-}
-
-.editorial-card:hover::before,
-.program-card:hover::before,
-.program-mgmt-card:hover::before,
-.form-card:hover::before {
-    opacity: 1;
-    animation: uv-shimmer-border 2s linear infinite;
-}
-
-@keyframes uv-shimmer-border {
-    0% {
-        background-position: 200% 0;
-    }
-
-    100% {
-        background-position: -200% 0;
-    }
 }
 
 /* 4. Orbital Spinner Loader */
@@ -1716,10 +1594,10 @@ input[type="radio"]:checked::after {
     background: rgba(29, 42, 68, 0.7);
 }
 
-/* Corner Fixes for Tables Native Boxiness */
+/* Corner Fixes for Tables */
 .table-responsive {
     border-radius: var(--radius-lg);
-    border: var(--glass-border) !important;
+    border: var(--border-main) !important;
     overflow: hidden;
 }
 
@@ -1734,108 +1612,6 @@ input[type="radio"]:checked::after {
 
 .data-table th:last-child {
     border-top-right-radius: var(--radius-lg);
-}
-
-/* ==========================================================================
-   UIVERSE.IO COMPONENTS & ENHANCEMENTS
-   ========================================================================== */
-
-/* 1. Pulse Glow Buttons */
-.btn:hover {
-    animation: uv-pulse-glow 1.5s infinite;
-}
-
-.btn-primary:hover {
-    animation: uv-pulse-glow-accent 1.5s infinite;
-}
-
-@keyframes uv-pulse-glow {
-    0% {
-        box-shadow: 0 0 0 0 rgba(29, 42, 68, 0.4);
-    }
-
-    70% {
-        box-shadow: 0 0 0 15px rgba(29, 42, 68, 0);
-    }
-
-    100% {
-        box-shadow: 0 0 0 0 rgba(29, 42, 68, 0);
-    }
-}
-
-@keyframes uv-pulse-glow-accent {
-    0% {
-        box-shadow: 0 0 0 0 rgba(58, 134, 255, 0.5);
-    }
-
-    70% {
-        box-shadow: 0 0 0 15px rgba(58, 134, 255, 0);
-    }
-
-    100% {
-        box-shadow: 0 0 0 0 rgba(58, 134, 255, 0);
-    }
-}
-
-/* 2. Animated Input Focus Ring & Search Expanding */
-.form-group input,
-.form-group select,
-.form-group textarea,
-.search-bar {
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(58, 134, 255, 0.3) !important;
-}
-
-.search-container:focus-within {
-    box-shadow: 0 8px 25px rgba(58, 134, 255, 0.25) !important;
-    transform: scale(1.02);
-}
-
-/* 3. Card Shimmer Border on Hover */
-.editorial-card::before,
-.program-card::before,
-.program-mgmt-card::before,
-.form-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: inherit;
-    padding: 2px;
-    background: linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.8) 50%, transparent 60%);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-    background-size: 200% 200%;
-}
-
-.editorial-card:hover::before,
-.program-card:hover::before,
-.program-mgmt-card:hover::before,
-.form-card:hover::before {
-    opacity: 1;
-    animation: uv-shimmer-border 2s linear infinite;
-}
-
-@keyframes uv-shimmer-border {
-    0% {
-        background-position: 200% 0;
-    }
-
-    100% {
-        background-position: -200% 0;
-    }
 }
 
 /* 4. Orbital Spinner Loader */

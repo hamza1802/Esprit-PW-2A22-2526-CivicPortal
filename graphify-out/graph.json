@@ -39,7 +39,7 @@
       "label": "outputFallback()",
       "file_type": "code",
       "source_file": "get_image.php",
-      "source_location": "L100",
+      "source_location": "L106",
       "id": "get_image_outputfallback",
       "community": 20
     },
@@ -60,12 +60,20 @@
       "community": 27
     },
     {
+      "label": "migrate_v4.php",
+      "file_type": "code",
+      "source_file": "migrate_v4.php",
+      "source_location": "L1",
+      "id": "migrate_v4",
+      "community": 28
+    },
+    {
       "label": "Verification.php",
       "file_type": "code",
       "source_file": "Verification.php",
       "source_location": "L1",
       "id": "verification",
-      "community": 28
+      "community": 29
     },
     {
       "label": "ForumCommentController.php",
@@ -247,7 +255,7 @@
       "label": ".showData()",
       "file_type": "code",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L95",
+      "source_location": "L97",
       "id": "maincontroller_maincontroller_showdata",
       "community": 3
     },
@@ -255,7 +263,7 @@
       "label": ".handleRequest()",
       "file_type": "code",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L103",
+      "source_location": "L105",
       "id": "maincontroller_maincontroller_handlerequest",
       "community": 3
     },
@@ -263,7 +271,7 @@
       "label": ".getDb()",
       "file_type": "code",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L246",
+      "source_location": "L276",
       "id": "maincontroller_maincontroller_getdb",
       "community": 3
     },
@@ -271,7 +279,7 @@
       "label": ".listTransportTypes()",
       "file_type": "code",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L251",
+      "source_location": "L281",
       "id": "maincontroller_maincontroller_listtransporttypes",
       "community": 3
     },
@@ -279,7 +287,7 @@
       "label": ".listTransports()",
       "file_type": "code",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L256",
+      "source_location": "L286",
       "id": "maincontroller_maincontroller_listtransports",
       "community": 3
     },
@@ -287,7 +295,7 @@
       "label": ".showTransport()",
       "file_type": "code",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L263",
+      "source_location": "L293",
       "id": "maincontroller_maincontroller_showtransport",
       "community": 3
     },
@@ -295,7 +303,7 @@
       "label": ".addTransport()",
       "file_type": "code",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L273",
+      "source_location": "L303",
       "id": "maincontroller_maincontroller_addtransport",
       "community": 3
     },
@@ -303,7 +311,7 @@
       "label": ".updateTransport()",
       "file_type": "code",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L296",
+      "source_location": "L326",
       "id": "maincontroller_maincontroller_updatetransport",
       "community": 3
     },
@@ -311,7 +319,7 @@
       "label": ".deleteTransport()",
       "file_type": "code",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L322",
+      "source_location": "L352",
       "id": "maincontroller_maincontroller_deletetransport",
       "community": 3
     },
@@ -319,7 +327,7 @@
       "label": ".listTrajets()",
       "file_type": "code",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L327",
+      "source_location": "L357",
       "id": "maincontroller_maincontroller_listtrajets",
       "community": 3
     },
@@ -327,7 +335,7 @@
       "label": ".listTrajetsByTypeAndSort()",
       "file_type": "code",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L334",
+      "source_location": "L364",
       "id": "maincontroller_maincontroller_listtrajetsbytypeandsort",
       "community": 3
     },
@@ -335,7 +343,7 @@
       "label": ".addTrajet()",
       "file_type": "code",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L347",
+      "source_location": "L377",
       "id": "maincontroller_maincontroller_addtrajet",
       "community": 3
     },
@@ -343,7 +351,7 @@
       "label": ".deleteTrajet()",
       "file_type": "code",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L360",
+      "source_location": "L390",
       "id": "maincontroller_maincontroller_deletetrajet",
       "community": 3
     },
@@ -351,7 +359,7 @@
       "label": ".showTrajet()",
       "file_type": "code",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L364",
+      "source_location": "L394",
       "id": "maincontroller_maincontroller_showtrajet",
       "community": 3
     },
@@ -359,7 +367,7 @@
       "label": ".getOccupancy()",
       "file_type": "code",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L370",
+      "source_location": "L400",
       "id": "maincontroller_maincontroller_getoccupancy",
       "community": 3
     },
@@ -367,7 +375,7 @@
       "label": ".listTickets()",
       "file_type": "code",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L385",
+      "source_location": "L415",
       "id": "maincontroller_maincontroller_listtickets",
       "community": 3
     },
@@ -375,7 +383,7 @@
       "label": ".listTicketsEnriched()",
       "file_type": "code",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L392",
+      "source_location": "L422",
       "id": "maincontroller_maincontroller_listticketsenriched",
       "community": 3
     },
@@ -383,7 +391,7 @@
       "label": ".addTicket()",
       "file_type": "code",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L414",
+      "source_location": "L444",
       "id": "maincontroller_maincontroller_addticket",
       "community": 3
     },
@@ -391,7 +399,7 @@
       "label": ".cancelTicket()",
       "file_type": "code",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L421",
+      "source_location": "L451",
       "id": "maincontroller_maincontroller_cancelticket",
       "community": 3
     },
@@ -399,7 +407,7 @@
       "label": ".generateRef()",
       "file_type": "code",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L425",
+      "source_location": "L455",
       "id": "maincontroller_maincontroller_generateref",
       "community": 3
     },
@@ -2569,7 +2577,7 @@
       "source_file": "scratch\\debug_api.php",
       "source_location": "L1",
       "id": "debug_api",
-      "community": 29
+      "community": 30
     },
     {
       "label": "migrate_forum.php",
@@ -2577,7 +2585,7 @@
       "source_file": "scratch\\migrate_forum.php",
       "source_location": "L1",
       "id": "migrate_forum",
-      "community": 30
+      "community": 31
     },
     {
       "label": "test.php",
@@ -2585,7 +2593,7 @@
       "source_file": "scratch\\test.php",
       "source_location": "L1",
       "id": "test",
-      "community": 31
+      "community": 32
     },
     {
       "label": "test_register.php",
@@ -2593,7 +2601,7 @@
       "source_file": "scratch\\test_register.php",
       "source_location": "L1",
       "id": "test_register",
-      "community": 32
+      "community": 33
     },
     {
       "label": "glass-animations.js",
@@ -2665,7 +2673,7 @@
       "source_file": "View\\FrontOffice\\controller.js",
       "source_location": "L1",
       "id": "controller",
-      "community": 33
+      "community": 34
     },
     {
       "label": "index.php",
@@ -2673,7 +2681,7 @@
       "source_file": "View\\FrontOffice\\index.php",
       "source_location": "L1",
       "id": "index",
-      "community": 34
+      "community": 35
     },
     {
       "label": "model.js",
@@ -2681,7 +2689,7 @@
       "source_file": "View\\FrontOffice\\model.js",
       "source_location": "L1",
       "id": "model",
-      "community": 35
+      "community": 36
     },
     {
       "label": "view.js",
@@ -2689,7 +2697,7 @@
       "source_file": "View\\FrontOffice\\view.js",
       "source_location": "L1",
       "id": "view",
-      "community": 36
+      "community": 37
     },
     {
       "label": "createPost.php",
@@ -2697,7 +2705,7 @@
       "source_file": "View\\FrontOffice\\createPost.php",
       "source_location": "L1",
       "id": "createpost",
-      "community": 37
+      "community": 38
     },
     {
       "label": "editPost.php",
@@ -2705,7 +2713,7 @@
       "source_file": "View\\FrontOffice\\editPost.php",
       "source_location": "L1",
       "id": "editpost",
-      "community": 38
+      "community": 39
     },
     {
       "label": "forum.php",
@@ -2713,7 +2721,7 @@
       "source_file": "View\\FrontOffice\\forum.php",
       "source_location": "L1",
       "id": "forum",
-      "community": 39
+      "community": 40
     },
     {
       "label": "login.php",
@@ -2721,7 +2729,7 @@
       "source_file": "View\\FrontOffice\\login.php",
       "source_location": "L1",
       "id": "login",
-      "community": 40
+      "community": 41
     },
     {
       "label": "register.php",
@@ -2729,7 +2737,7 @@
       "source_file": "View\\FrontOffice\\register.php",
       "source_location": "L1",
       "id": "register",
-      "community": 41
+      "community": 42
     },
     {
       "label": "viewPost.php",
@@ -2737,7 +2745,7 @@
       "source_file": "View\\FrontOffice\\viewPost.php",
       "source_location": "L1",
       "id": "viewpost",
-      "community": 42
+      "community": 43
     },
     {
       "label": "forum_nav.php",
@@ -2745,7 +2753,7 @@
       "source_file": "View\\FrontOffice\\partials\\forum_nav.php",
       "source_location": "L1",
       "id": "forum_nav",
-      "community": 43
+      "community": 44
     }
   ],
   "links": [
@@ -2753,7 +2761,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "get_image.php",
-      "source_location": "L100",
+      "source_location": "L106",
       "weight": 1.0,
       "_src": "get_image",
       "_tgt": "get_image_outputfallback",
@@ -2993,7 +3001,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L95",
+      "source_location": "L97",
       "weight": 1.0,
       "_src": "maincontroller_maincontroller",
       "_tgt": "maincontroller_maincontroller_showdata",
@@ -3005,7 +3013,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L103",
+      "source_location": "L105",
       "weight": 1.0,
       "_src": "maincontroller_maincontroller",
       "_tgt": "maincontroller_maincontroller_handlerequest",
@@ -3017,7 +3025,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L246",
+      "source_location": "L276",
       "weight": 1.0,
       "_src": "maincontroller_maincontroller",
       "_tgt": "maincontroller_maincontroller_getdb",
@@ -3029,7 +3037,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L251",
+      "source_location": "L281",
       "weight": 1.0,
       "_src": "maincontroller_maincontroller",
       "_tgt": "maincontroller_maincontroller_listtransporttypes",
@@ -3041,7 +3049,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L256",
+      "source_location": "L286",
       "weight": 1.0,
       "_src": "maincontroller_maincontroller",
       "_tgt": "maincontroller_maincontroller_listtransports",
@@ -3053,7 +3061,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L263",
+      "source_location": "L293",
       "weight": 1.0,
       "_src": "maincontroller_maincontroller",
       "_tgt": "maincontroller_maincontroller_showtransport",
@@ -3065,7 +3073,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L273",
+      "source_location": "L303",
       "weight": 1.0,
       "_src": "maincontroller_maincontroller",
       "_tgt": "maincontroller_maincontroller_addtransport",
@@ -3077,7 +3085,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L296",
+      "source_location": "L326",
       "weight": 1.0,
       "_src": "maincontroller_maincontroller",
       "_tgt": "maincontroller_maincontroller_updatetransport",
@@ -3089,7 +3097,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L322",
+      "source_location": "L352",
       "weight": 1.0,
       "_src": "maincontroller_maincontroller",
       "_tgt": "maincontroller_maincontroller_deletetransport",
@@ -3101,7 +3109,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L327",
+      "source_location": "L357",
       "weight": 1.0,
       "_src": "maincontroller_maincontroller",
       "_tgt": "maincontroller_maincontroller_listtrajets",
@@ -3113,7 +3121,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L334",
+      "source_location": "L364",
       "weight": 1.0,
       "_src": "maincontroller_maincontroller",
       "_tgt": "maincontroller_maincontroller_listtrajetsbytypeandsort",
@@ -3125,7 +3133,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L347",
+      "source_location": "L377",
       "weight": 1.0,
       "_src": "maincontroller_maincontroller",
       "_tgt": "maincontroller_maincontroller_addtrajet",
@@ -3137,7 +3145,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L360",
+      "source_location": "L390",
       "weight": 1.0,
       "_src": "maincontroller_maincontroller",
       "_tgt": "maincontroller_maincontroller_deletetrajet",
@@ -3149,7 +3157,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L364",
+      "source_location": "L394",
       "weight": 1.0,
       "_src": "maincontroller_maincontroller",
       "_tgt": "maincontroller_maincontroller_showtrajet",
@@ -3161,7 +3169,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L370",
+      "source_location": "L400",
       "weight": 1.0,
       "_src": "maincontroller_maincontroller",
       "_tgt": "maincontroller_maincontroller_getoccupancy",
@@ -3173,7 +3181,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L385",
+      "source_location": "L415",
       "weight": 1.0,
       "_src": "maincontroller_maincontroller",
       "_tgt": "maincontroller_maincontroller_listtickets",
@@ -3185,7 +3193,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L392",
+      "source_location": "L422",
       "weight": 1.0,
       "_src": "maincontroller_maincontroller",
       "_tgt": "maincontroller_maincontroller_listticketsenriched",
@@ -3197,7 +3205,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L414",
+      "source_location": "L444",
       "weight": 1.0,
       "_src": "maincontroller_maincontroller",
       "_tgt": "maincontroller_maincontroller_addticket",
@@ -3209,7 +3217,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L421",
+      "source_location": "L451",
       "weight": 1.0,
       "_src": "maincontroller_maincontroller",
       "_tgt": "maincontroller_maincontroller_cancelticket",
@@ -3221,7 +3229,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L425",
+      "source_location": "L455",
       "weight": 1.0,
       "_src": "maincontroller_maincontroller",
       "_tgt": "maincontroller_maincontroller_generateref",

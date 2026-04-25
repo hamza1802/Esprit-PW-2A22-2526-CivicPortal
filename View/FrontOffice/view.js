@@ -31,8 +31,7 @@ const view = {
         const nav = document.querySelector('nav');
 
         const roleBadge = user?.role === 'admin'
-            ? `<a href="../BackOffice/index.php" class="user-role-badge"
-                  style="background:var(--accent-blue);text-decoration:none;">Admin Panel</a>`
+            ? `<a href="../BackOffice/index.php" class="user-role-badge" style="text-decoration:none;">Admin Panel</a>`
             : `<div class="user-role-badge">Citizen</div>`;
 
         nav.innerHTML = `

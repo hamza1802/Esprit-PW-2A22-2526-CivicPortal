@@ -47,8 +47,11 @@ const view = {
 
         nav.innerHTML = `
             <div class="nav-brand">
-                <i class="bi bi-building"></i> CivicPortal<br>
-                <span style="font-size:0.8rem;opacity:0.7;font-weight:600;">STAFF PORTAL</span>
+                <i class="bi bi-building"></i>
+                <div>
+                    CivicPortal
+                    <span class="nav-brand-sub">STAFF PORTAL</span>
+                </div>
             </div>
             <ul class="nav-links">
                 <li><a href="#home"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
@@ -58,6 +61,10 @@ const view = {
             </ul>
             <div class="user-controls">
                 <div class="user-role-badge">${role}</div>
+                <button class="bo-logout-btn"
+                    onclick="fetch('../../Verification.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'logout'})}).then(()=>window.location.href='../FrontOffice/login.php')">
+                    <i class="bi bi-box-arrow-left"></i> Logout
+                </button>
             </div>
         `;
 

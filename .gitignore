@@ -8,4 +8,5 @@ migrate_v*.php
 TEST_CREDENTIALS.md
 .gemini/
 *.log
+.claude/
 
