@@ -4,12 +4,44 @@
   "graph": {},
   "nodes": [
     {
+      "label": "api_transport.php",
+      "file_type": "code",
+      "source_file": "api_transport.php",
+      "source_location": "L1",
+      "id": "api_transport",
+      "community": 23
+    },
+    {
+      "label": "bootstrap.php",
+      "file_type": "code",
+      "source_file": "bootstrap.php",
+      "source_location": "L1",
+      "id": "bootstrap",
+      "community": 24
+    },
+    {
       "label": "debug_api_root.php",
       "file_type": "code",
       "source_file": "debug_api_root.php",
       "source_location": "L1",
       "id": "debug_api_root",
-      "community": 8
+      "community": 25
+    },
+    {
+      "label": "get_image.php",
+      "file_type": "code",
+      "source_file": "get_image.php",
+      "source_location": "L1",
+      "id": "get_image",
+      "community": 20
+    },
+    {
+      "label": "outputFallback()",
+      "file_type": "code",
+      "source_file": "get_image.php",
+      "source_location": "L106",
+      "id": "get_image_outputfallback",
+      "community": 20
     },
     {
       "label": "migrate_v2.php",
@@ -17,7 +49,23 @@
       "source_file": "migrate_v2.php",
       "source_location": "L1",
       "id": "migrate_v2",
-      "community": 9
+      "community": 26
+    },
+    {
+      "label": "migrate_v3.php",
+      "file_type": "code",
+      "source_file": "migrate_v3.php",
+      "source_location": "L1",
+      "id": "migrate_v3",
+      "community": 27
+    },
+    {
+      "label": "migrate_v4.php",
+      "file_type": "code",
+      "source_file": "migrate_v4.php",
+      "source_location": "L1",
+      "id": "migrate_v4",
+      "community": 28
     },
     {
       "label": "Verification.php",
@@ -25,7 +73,159 @@
       "source_file": "Verification.php",
       "source_location": "L1",
       "id": "verification",
-      "community": 10
+      "community": 29
+    },
+    {
+      "label": "ForumCommentController.php",
+      "file_type": "code",
+      "source_file": "Controller\\ForumCommentController.php",
+      "source_location": "L1",
+      "id": "forumcommentcontroller",
+      "community": 17
+    },
+    {
+      "label": "ForumCommentController",
+      "file_type": "code",
+      "source_file": "Controller\\ForumCommentController.php",
+      "source_location": "L12",
+      "id": "forumcommentcontroller_forumcommentcontroller",
+      "community": 17
+    },
+    {
+      "label": ".getDb()",
+      "file_type": "code",
+      "source_file": "Controller\\ForumCommentController.php",
+      "source_location": "L14",
+      "id": "forumcommentcontroller_forumcommentcontroller_getdb",
+      "community": 17
+    },
+    {
+      "label": ".getCommentsByPost()",
+      "file_type": "code",
+      "source_file": "Controller\\ForumCommentController.php",
+      "source_location": "L21",
+      "id": "forumcommentcontroller_forumcommentcontroller_getcommentsbypost",
+      "community": 17
+    },
+    {
+      "label": ".getAllComments()",
+      "file_type": "code",
+      "source_file": "Controller\\ForumCommentController.php",
+      "source_location": "L37",
+      "id": "forumcommentcontroller_forumcommentcontroller_getallcomments",
+      "community": 17
+    },
+    {
+      "label": ".addComment()",
+      "file_type": "code",
+      "source_file": "Controller\\ForumCommentController.php",
+      "source_location": "L53",
+      "id": "forumcommentcontroller_forumcommentcontroller_addcomment",
+      "community": 17
+    },
+    {
+      "label": ".updateComment()",
+      "file_type": "code",
+      "source_file": "Controller\\ForumCommentController.php",
+      "source_location": "L69",
+      "id": "forumcommentcontroller_forumcommentcontroller_updatecomment",
+      "community": 17
+    },
+    {
+      "label": ".deleteComment()",
+      "file_type": "code",
+      "source_file": "Controller\\ForumCommentController.php",
+      "source_location": "L81",
+      "id": "forumcommentcontroller_forumcommentcontroller_deletecomment",
+      "community": 17
+    },
+    {
+      "label": ".getCommentById()",
+      "file_type": "code",
+      "source_file": "Controller\\ForumCommentController.php",
+      "source_location": "L96",
+      "id": "forumcommentcontroller_forumcommentcontroller_getcommentbyid",
+      "community": 17
+    },
+    {
+      "label": "ForumPostController.php",
+      "file_type": "code",
+      "source_file": "Controller\\ForumPostController.php",
+      "source_location": "L1",
+      "id": "forumpostcontroller",
+      "community": 14
+    },
+    {
+      "label": "ForumPostController",
+      "file_type": "code",
+      "source_file": "Controller\\ForumPostController.php",
+      "source_location": "L12",
+      "id": "forumpostcontroller_forumpostcontroller",
+      "community": 14
+    },
+    {
+      "label": ".getDb()",
+      "file_type": "code",
+      "source_file": "Controller\\ForumPostController.php",
+      "source_location": "L14",
+      "id": "forumpostcontroller_forumpostcontroller_getdb",
+      "community": 14
+    },
+    {
+      "label": ".getAllPosts()",
+      "file_type": "code",
+      "source_file": "Controller\\ForumPostController.php",
+      "source_location": "L34",
+      "id": "forumpostcontroller_forumpostcontroller_getallposts",
+      "community": 14
+    },
+    {
+      "label": ".getPostById()",
+      "file_type": "code",
+      "source_file": "Controller\\ForumPostController.php",
+      "source_location": "L64",
+      "id": "forumpostcontroller_forumpostcontroller_getpostbyid",
+      "community": 14
+    },
+    {
+      "label": ".createPost()",
+      "file_type": "code",
+      "source_file": "Controller\\ForumPostController.php",
+      "source_location": "L80",
+      "id": "forumpostcontroller_forumpostcontroller_createpost",
+      "community": 14
+    },
+    {
+      "label": ".updatePost()",
+      "file_type": "code",
+      "source_file": "Controller\\ForumPostController.php",
+      "source_location": "L98",
+      "id": "forumpostcontroller_forumpostcontroller_updatepost",
+      "community": 14
+    },
+    {
+      "label": ".deletePost()",
+      "file_type": "code",
+      "source_file": "Controller\\ForumPostController.php",
+      "source_location": "L112",
+      "id": "forumpostcontroller_forumpostcontroller_deletepost",
+      "community": 14
+    },
+    {
+      "label": ".updateStatus()",
+      "file_type": "code",
+      "source_file": "Controller\\ForumPostController.php",
+      "source_location": "L127",
+      "id": "forumpostcontroller_forumpostcontroller_updatestatus",
+      "community": 14
+    },
+    {
+      "label": ".getCommentCount()",
+      "file_type": "code",
+      "source_file": "Controller\\ForumPostController.php",
+      "source_location": "L140",
+      "id": "forumpostcontroller_forumpostcontroller_getcommentcount",
+      "community": 14
     },
     {
       "label": "MainController.php",
@@ -33,31 +233,383 @@
       "source_file": "Controller\\MainController.php",
       "source_location": "L1",
       "id": "maincontroller",
-      "community": 5
+      "community": 3
     },
     {
       "label": "MainController",
       "file_type": "code",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L10",
+      "source_location": "L17",
       "id": "maincontroller_maincontroller",
-      "community": 5
+      "community": 3
+    },
+    {
+      "label": ".authorize()",
+      "file_type": "code",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L22",
+      "id": "maincontroller_maincontroller_authorize",
+      "community": 3
     },
     {
       "label": ".showData()",
       "file_type": "code",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L12",
+      "source_location": "L97",
       "id": "maincontroller_maincontroller_showdata",
-      "community": 5
+      "community": 3
     },
     {
       "label": ".handleRequest()",
       "file_type": "code",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L20",
+      "source_location": "L105",
       "id": "maincontroller_maincontroller_handlerequest",
-      "community": 5
+      "community": 3
+    },
+    {
+      "label": ".getDb()",
+      "file_type": "code",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L276",
+      "id": "maincontroller_maincontroller_getdb",
+      "community": 3
+    },
+    {
+      "label": ".listTransportTypes()",
+      "file_type": "code",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L281",
+      "id": "maincontroller_maincontroller_listtransporttypes",
+      "community": 3
+    },
+    {
+      "label": ".listTransports()",
+      "file_type": "code",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L286",
+      "id": "maincontroller_maincontroller_listtransports",
+      "community": 3
+    },
+    {
+      "label": ".showTransport()",
+      "file_type": "code",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L293",
+      "id": "maincontroller_maincontroller_showtransport",
+      "community": 3
+    },
+    {
+      "label": ".addTransport()",
+      "file_type": "code",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L303",
+      "id": "maincontroller_maincontroller_addtransport",
+      "community": 3
+    },
+    {
+      "label": ".updateTransport()",
+      "file_type": "code",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L326",
+      "id": "maincontroller_maincontroller_updatetransport",
+      "community": 3
+    },
+    {
+      "label": ".deleteTransport()",
+      "file_type": "code",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L352",
+      "id": "maincontroller_maincontroller_deletetransport",
+      "community": 3
+    },
+    {
+      "label": ".listTrajets()",
+      "file_type": "code",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L357",
+      "id": "maincontroller_maincontroller_listtrajets",
+      "community": 3
+    },
+    {
+      "label": ".listTrajetsByTypeAndSort()",
+      "file_type": "code",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L364",
+      "id": "maincontroller_maincontroller_listtrajetsbytypeandsort",
+      "community": 3
+    },
+    {
+      "label": ".addTrajet()",
+      "file_type": "code",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L377",
+      "id": "maincontroller_maincontroller_addtrajet",
+      "community": 3
+    },
+    {
+      "label": ".deleteTrajet()",
+      "file_type": "code",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L390",
+      "id": "maincontroller_maincontroller_deletetrajet",
+      "community": 3
+    },
+    {
+      "label": ".showTrajet()",
+      "file_type": "code",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L394",
+      "id": "maincontroller_maincontroller_showtrajet",
+      "community": 3
+    },
+    {
+      "label": ".getOccupancy()",
+      "file_type": "code",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L400",
+      "id": "maincontroller_maincontroller_getoccupancy",
+      "community": 3
+    },
+    {
+      "label": ".listTickets()",
+      "file_type": "code",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L415",
+      "id": "maincontroller_maincontroller_listtickets",
+      "community": 3
+    },
+    {
+      "label": ".listTicketsEnriched()",
+      "file_type": "code",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L422",
+      "id": "maincontroller_maincontroller_listticketsenriched",
+      "community": 3
+    },
+    {
+      "label": ".addTicket()",
+      "file_type": "code",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L444",
+      "id": "maincontroller_maincontroller_addticket",
+      "community": 3
+    },
+    {
+      "label": ".cancelTicket()",
+      "file_type": "code",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L451",
+      "id": "maincontroller_maincontroller_cancelticket",
+      "community": 3
+    },
+    {
+      "label": ".generateRef()",
+      "file_type": "code",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L455",
+      "id": "maincontroller_maincontroller_generateref",
+      "community": 3
+    },
+    {
+      "label": "UserController.php",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L1",
+      "id": "usercontroller",
+      "community": 2
+    },
+    {
+      "label": "UserController",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L18",
+      "id": "usercontroller_usercontroller",
+      "community": 2
+    },
+    {
+      "label": ".getAllUsers()",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L33",
+      "id": "usercontroller_usercontroller_getallusers",
+      "community": 2
+    },
+    {
+      "label": ".getUserById()",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L63",
+      "id": "usercontroller_usercontroller_getuserbyid",
+      "community": 2
+    },
+    {
+      "label": ".getUserByEmail()",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L71",
+      "id": "usercontroller_usercontroller_getuserbyemail",
+      "community": 2
+    },
+    {
+      "label": ".emailExists()",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L79",
+      "id": "usercontroller_usercontroller_emailexists",
+      "community": 2
+    },
+    {
+      "label": ".usernameExists()",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L91",
+      "id": "usercontroller_usercontroller_usernameexists",
+      "community": 2
+    },
+    {
+      "label": ".createUserRecord()",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L107",
+      "id": "usercontroller_usercontroller_createuserrecord",
+      "community": 2
+    },
+    {
+      "label": ".updateUserRecord()",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L125",
+      "id": "usercontroller_usercontroller_updateuserrecord",
+      "community": 2
+    },
+    {
+      "label": ".deleteUserRecord()",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L150",
+      "id": "usercontroller_usercontroller_deleteuserrecord",
+      "community": 2
+    },
+    {
+      "label": ".uploadProfilePic()",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L164",
+      "id": "usercontroller_usercontroller_uploadprofilepic",
+      "community": 2
+    },
+    {
+      "label": ".toggleUserActive()",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L205",
+      "id": "usercontroller_usercontroller_toggleuseractive",
+      "community": 2
+    },
+    {
+      "label": ".getAgents()",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L216",
+      "id": "usercontroller_usercontroller_getagents",
+      "community": 2
+    },
+    {
+      "label": ".getProfileByUserId()",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L230",
+      "id": "usercontroller_usercontroller_getprofilebyuserid",
+      "community": 2
+    },
+    {
+      "label": ".createProfileRecord()",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L238",
+      "id": "usercontroller_usercontroller_createprofilerecord",
+      "community": 2
+    },
+    {
+      "label": ".ensureProfileExists()",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L245",
+      "id": "usercontroller_usercontroller_ensureprofileexists",
+      "community": 2
+    },
+    {
+      "label": ".updateProfileRecord()",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L261",
+      "id": "usercontroller_usercontroller_updateprofilerecord",
+      "community": 2
+    },
+    {
+      "label": ".validateUser()",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L290",
+      "id": "usercontroller_usercontroller_validateuser",
+      "community": 2
+    },
+    {
+      "label": ".validateUserLogin()",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L344",
+      "id": "usercontroller_usercontroller_validateuserlogin",
+      "community": 2
+    },
+    {
+      "label": ".login()",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L359",
+      "id": "usercontroller_usercontroller_login",
+      "community": 2
+    },
+    {
+      "label": ".logout()",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L387",
+      "id": "usercontroller_usercontroller_logout",
+      "community": 2
+    },
+    {
+      "label": ".register()",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L399",
+      "id": "usercontroller_usercontroller_register",
+      "community": 2
+    },
+    {
+      "label": ".updateProfile()",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L413",
+      "id": "usercontroller_usercontroller_updateprofile",
+      "community": 2
+    },
+    {
+      "label": ".createUser()",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L462",
+      "id": "usercontroller_usercontroller_createuser",
+      "community": 2
+    },
+    {
+      "label": ".deleteUser()",
+      "file_type": "code",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L474",
+      "id": "usercontroller_usercontroller_deleteuser",
+      "community": 2
     },
     {
       "label": "AppModel.php",
@@ -71,7 +623,7 @@
       "label": "AppModel",
       "file_type": "code",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L13",
+      "source_location": "L17",
       "id": "appmodel_appmodel",
       "community": 0
     },
@@ -79,7 +631,7 @@
       "label": ".getDb()",
       "file_type": "code",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L14",
+      "source_location": "L18",
       "id": "appmodel_appmodel_getdb",
       "community": 0
     },
@@ -87,23 +639,47 @@
       "label": ".init()",
       "file_type": "code",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L18",
+      "source_location": "L22",
       "id": "appmodel_appmodel_init",
+      "community": 0
+    },
+    {
+      "label": ".readImageUpload()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L38",
+      "id": "appmodel_appmodel_readimageupload",
       "community": 0
     },
     {
       "label": ".getRequests()",
       "file_type": "code",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L27",
+      "source_location": "L58",
       "id": "appmodel_appmodel_getrequests",
+      "community": 0
+    },
+    {
+      "label": ".getRequestsByUser()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L74",
+      "id": "appmodel_appmodel_getrequestsbyuser",
+      "community": 0
+    },
+    {
+      "label": ".getRequestsByAssignee()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L90",
+      "id": "appmodel_appmodel_getrequestsbyassignee",
       "community": 0
     },
     {
       "label": ".addRequest()",
       "file_type": "code",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L36",
+      "source_location": "L106",
       "id": "appmodel_appmodel_addrequest",
       "community": 0
     },
@@ -111,15 +687,23 @@
       "label": ".updateRequestStatus()",
       "file_type": "code",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L51",
+      "source_location": "L144",
       "id": "appmodel_appmodel_updaterequeststatus",
+      "community": 0
+    },
+    {
+      "label": ".assignRequest()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L153",
+      "id": "appmodel_appmodel_assignrequest",
       "community": 0
     },
     {
       "label": ".getPrograms()",
       "file_type": "code",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L61",
+      "source_location": "L163",
       "id": "appmodel_appmodel_getprograms",
       "community": 0
     },
@@ -127,7 +711,7 @@
       "label": ".getProgramById()",
       "file_type": "code",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L84",
+      "source_location": "L184",
       "id": "appmodel_appmodel_getprogrambyid",
       "community": 0
     },
@@ -135,7 +719,7 @@
       "label": ".getEnrollmentsByProgram()",
       "file_type": "code",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L107",
+      "source_location": "L204",
       "id": "appmodel_appmodel_getenrollmentsbyprogram",
       "community": 0
     },
@@ -143,7 +727,7 @@
       "label": ".addProgram()",
       "file_type": "code",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L120",
+      "source_location": "L218",
       "id": "appmodel_appmodel_addprogram",
       "community": 0
     },
@@ -151,7 +735,7 @@
       "label": ".updateProgram()",
       "file_type": "code",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L138",
+      "source_location": "L245",
       "id": "appmodel_appmodel_updateprogram",
       "community": 0
     },
@@ -159,23 +743,15 @@
       "label": ".validateProgramData()",
       "file_type": "code",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L168",
+      "source_location": "L279",
       "id": "appmodel_appmodel_validateprogramdata",
-      "community": 0
-    },
-    {
-      "label": ".handleFileUpload()",
-      "file_type": "code",
-      "source_file": "Model\\AppModel.php",
-      "source_location": "L197",
-      "id": "appmodel_appmodel_handlefileupload",
       "community": 0
     },
     {
       "label": ".deleteProgram()",
       "file_type": "code",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L218",
+      "source_location": "L297",
       "id": "appmodel_appmodel_deleteprogram",
       "community": 0
     },
@@ -183,7 +759,7 @@
       "label": ".enrollUser()",
       "file_type": "code",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L229",
+      "source_location": "L307",
       "id": "appmodel_appmodel_enrolluser",
       "community": 0
     },
@@ -191,7 +767,7 @@
       "label": ".getEnrollments()",
       "file_type": "code",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L253",
+      "source_location": "L326",
       "id": "appmodel_appmodel_getenrollments",
       "community": 0
     },
@@ -199,7 +775,7 @@
       "label": ".getPendingEnrollments()",
       "file_type": "code",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L260",
+      "source_location": "L333",
       "id": "appmodel_appmodel_getpendingenrollments",
       "community": 0
     },
@@ -207,7 +783,7 @@
       "label": ".getAllEnrollmentsCounts()",
       "file_type": "code",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L271",
+      "source_location": "L341",
       "id": "appmodel_appmodel_getallenrollmentscounts",
       "community": 0
     },
@@ -215,7 +791,7 @@
       "label": ".updateEnrollmentStatus()",
       "file_type": "code",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L278",
+      "source_location": "L348",
       "id": "appmodel_appmodel_updateenrollmentstatus",
       "community": 0
     },
@@ -223,9 +799,433 @@
       "label": ".getStats()",
       "file_type": "code",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L287",
+      "source_location": "L358",
       "id": "appmodel_appmodel_getstats",
       "community": 0
+    },
+    {
+      "label": ".getCategories()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L373",
+      "id": "appmodel_appmodel_getcategories",
+      "community": 0
+    },
+    {
+      "label": ".addCategory()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L377",
+      "id": "appmodel_appmodel_addcategory",
+      "community": 0
+    },
+    {
+      "label": ".updateCategory()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L390",
+      "id": "appmodel_appmodel_updatecategory",
+      "community": 0
+    },
+    {
+      "label": ".deleteCategory()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L402",
+      "id": "appmodel_appmodel_deletecategory",
+      "community": 0
+    },
+    {
+      "label": ".createAppointment()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L423",
+      "id": "appmodel_appmodel_createappointment",
+      "community": 0
+    },
+    {
+      "label": ".getAppointmentsByUser()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L473",
+      "id": "appmodel_appmodel_getappointmentsbyuser",
+      "community": 0
+    },
+    {
+      "label": ".getAppointmentsByAgent()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L484",
+      "id": "appmodel_appmodel_getappointmentsbyagent",
+      "community": 0
+    },
+    {
+      "label": ".getAllAppointments()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L495",
+      "id": "appmodel_appmodel_getallappointments",
+      "community": 0
+    },
+    {
+      "label": ".updateAppointmentStatus()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L506",
+      "id": "appmodel_appmodel_updateappointmentstatus",
+      "community": 0
+    },
+    {
+      "label": ".cancelAppointment()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L526",
+      "id": "appmodel_appmodel_cancelappointment",
+      "community": 0
+    },
+    {
+      "label": ".createSlot()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L544",
+      "id": "appmodel_appmodel_createslot",
+      "community": 0
+    },
+    {
+      "label": ".getSlotsByAgent()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L557",
+      "id": "appmodel_appmodel_getslotsbyagent",
+      "community": 0
+    },
+    {
+      "label": ".getAllSlots()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L564",
+      "id": "appmodel_appmodel_getallslots",
+      "community": 0
+    },
+    {
+      "label": ".deleteSlot()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L572",
+      "id": "appmodel_appmodel_deleteslot",
+      "community": 0
+    },
+    {
+      "label": ".getAvailableSlots()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L577",
+      "id": "appmodel_appmodel_getavailableslots",
+      "community": 0
+    },
+    {
+      "label": ".createNotification()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L594",
+      "id": "appmodel_appmodel_createnotification",
+      "community": 0
+    },
+    {
+      "label": ".getNotificationsByUser()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L600",
+      "id": "appmodel_appmodel_getnotificationsbyuser",
+      "community": 0
+    },
+    {
+      "label": ".markNotificationRead()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L607",
+      "id": "appmodel_appmodel_marknotificationread",
+      "community": 0
+    },
+    {
+      "label": ".getUnreadCount()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L612",
+      "id": "appmodel_appmodel_getunreadcount",
+      "community": 0
+    },
+    {
+      "label": ".getServiceTypes()",
+      "file_type": "code",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L622",
+      "id": "appmodel_appmodel_getservicetypes",
+      "community": 0
+    },
+    {
+      "label": "Appointment.php",
+      "file_type": "code",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L1",
+      "id": "appointment",
+      "community": 4
+    },
+    {
+      "label": "Appointment",
+      "file_type": "code",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L7",
+      "id": "appointment_appointment",
+      "community": 4
+    },
+    {
+      "label": ".__construct()",
+      "file_type": "code",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L25",
+      "id": "appointment_appointment_construct",
+      "community": 4
+    },
+    {
+      "label": ".getId()",
+      "file_type": "code",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L48",
+      "id": "appointment_appointment_getid",
+      "community": 4
+    },
+    {
+      "label": ".getUserId()",
+      "file_type": "code",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L49",
+      "id": "appointment_appointment_getuserid",
+      "community": 4
+    },
+    {
+      "label": ".getServiceType()",
+      "file_type": "code",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L50",
+      "id": "appointment_appointment_getservicetype",
+      "community": 4
+    },
+    {
+      "label": ".getPreferredDate()",
+      "file_type": "code",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L51",
+      "id": "appointment_appointment_getpreferreddate",
+      "community": 4
+    },
+    {
+      "label": ".getPreferredTime()",
+      "file_type": "code",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L52",
+      "id": "appointment_appointment_getpreferredtime",
+      "community": 4
+    },
+    {
+      "label": ".getNotes()",
+      "file_type": "code",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L53",
+      "id": "appointment_appointment_getnotes",
+      "community": 4
+    },
+    {
+      "label": ".getStatus()",
+      "file_type": "code",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L54",
+      "id": "appointment_appointment_getstatus",
+      "community": 4
+    },
+    {
+      "label": ".getAssignedTo()",
+      "file_type": "code",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L55",
+      "id": "appointment_appointment_getassignedto",
+      "community": 4
+    },
+    {
+      "label": ".getRescheduleReason()",
+      "file_type": "code",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L56",
+      "id": "appointment_appointment_getreschedulereason",
+      "community": 4
+    },
+    {
+      "label": ".getNewDate()",
+      "file_type": "code",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L57",
+      "id": "appointment_appointment_getnewdate",
+      "community": 4
+    },
+    {
+      "label": ".getNewTime()",
+      "file_type": "code",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L58",
+      "id": "appointment_appointment_getnewtime",
+      "community": 4
+    },
+    {
+      "label": ".getCreatedAt()",
+      "file_type": "code",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L59",
+      "id": "appointment_appointment_getcreatedat",
+      "community": 4
+    },
+    {
+      "label": ".getUserName()",
+      "file_type": "code",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L60",
+      "id": "appointment_appointment_getusername",
+      "community": 4
+    },
+    {
+      "label": ".getAgentName()",
+      "file_type": "code",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L61",
+      "id": "appointment_appointment_getagentname",
+      "community": 4
+    },
+    {
+      "label": ".jsonSerialize()",
+      "file_type": "code",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L63",
+      "id": "appointment_appointment_jsonserialize",
+      "community": 4
+    },
+    {
+      "label": ".toArray()",
+      "file_type": "code",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L67",
+      "id": "appointment_appointment_toarray",
+      "community": 4
+    },
+    {
+      "label": ".fromRow()",
+      "file_type": "code",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L86",
+      "id": "appointment_appointment_fromrow",
+      "community": 4
+    },
+    {
+      "label": "AppointmentSlot.php",
+      "file_type": "code",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L1",
+      "id": "appointmentslot",
+      "community": 10
+    },
+    {
+      "label": "AppointmentSlot",
+      "file_type": "code",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L7",
+      "id": "appointmentslot_appointmentslot",
+      "community": 10
+    },
+    {
+      "label": ".__construct()",
+      "file_type": "code",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L18",
+      "id": "appointmentslot_appointmentslot_construct",
+      "community": 10
+    },
+    {
+      "label": ".getId()",
+      "file_type": "code",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L33",
+      "id": "appointmentslot_appointmentslot_getid",
+      "community": 10
+    },
+    {
+      "label": ".getAgentId()",
+      "file_type": "code",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L34",
+      "id": "appointmentslot_appointmentslot_getagentid",
+      "community": 10
+    },
+    {
+      "label": ".getServiceType()",
+      "file_type": "code",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L35",
+      "id": "appointmentslot_appointmentslot_getservicetype",
+      "community": 10
+    },
+    {
+      "label": ".getDayOfWeek()",
+      "file_type": "code",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L36",
+      "id": "appointmentslot_appointmentslot_getdayofweek",
+      "community": 10
+    },
+    {
+      "label": ".getStartTime()",
+      "file_type": "code",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L37",
+      "id": "appointmentslot_appointmentslot_getstarttime",
+      "community": 10
+    },
+    {
+      "label": ".getEndTime()",
+      "file_type": "code",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L38",
+      "id": "appointmentslot_appointmentslot_getendtime",
+      "community": 10
+    },
+    {
+      "label": ".isActive()",
+      "file_type": "code",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L39",
+      "id": "appointmentslot_appointmentslot_isactive",
+      "community": 10
+    },
+    {
+      "label": ".jsonSerialize()",
+      "file_type": "code",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L41",
+      "id": "appointmentslot_appointmentslot_jsonserialize",
+      "community": 10
+    },
+    {
+      "label": ".toArray()",
+      "file_type": "code",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L45",
+      "id": "appointmentslot_appointmentslot_toarray",
+      "community": 10
+    },
+    {
+      "label": ".fromRow()",
+      "file_type": "code",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L60",
+      "id": "appointmentslot_appointmentslot_fromrow",
+      "community": 10
     },
     {
       "label": "Database.php",
@@ -233,7 +1233,7 @@
       "source_file": "Model\\Database.php",
       "source_location": "L1",
       "id": "database",
-      "community": 4
+      "community": 19
     },
     {
       "label": "Database",
@@ -241,7 +1241,7 @@
       "source_file": "Model\\Database.php",
       "source_location": "L7",
       "id": "database_database",
-      "community": 4
+      "community": 19
     },
     {
       "label": ".__construct()",
@@ -249,7 +1249,7 @@
       "source_file": "Model\\Database.php",
       "source_location": "L17",
       "id": "database_database_construct",
-      "community": 4
+      "community": 19
     },
     {
       "label": ".getInstance()",
@@ -257,7 +1257,7 @@
       "source_file": "Model\\Database.php",
       "source_location": "L33",
       "id": "database_database_getinstance",
-      "community": 4
+      "community": 19
     },
     {
       "label": ".getConnection()",
@@ -265,7 +1265,7 @@
       "source_file": "Model\\Database.php",
       "source_location": "L40",
       "id": "database_database_getconnection",
-      "community": 4
+      "community": 19
     },
     {
       "label": "DbSetup.php",
@@ -273,7 +1273,7 @@
       "source_file": "Model\\DbSetup.php",
       "source_location": "L1",
       "id": "dbsetup",
-      "community": 6
+      "community": 21
     },
     {
       "label": "setupDatabase()",
@@ -281,7 +1281,447 @@
       "source_file": "Model\\DbSetup.php",
       "source_location": "L12",
       "id": "dbsetup_setupdatabase",
+      "community": 21
+    },
+    {
+      "label": "ForumComment.php",
+      "file_type": "code",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L1",
+      "id": "forumcomment",
+      "community": 8
+    },
+    {
+      "label": "ForumComment",
+      "file_type": "code",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L7",
+      "id": "forumcomment_forumcomment",
+      "community": 8
+    },
+    {
+      "label": ".__construct()",
+      "file_type": "code",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L14",
+      "id": "forumcomment_forumcomment_construct",
+      "community": 8
+    },
+    {
+      "label": ".getCommentId()",
+      "file_type": "code",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L29",
+      "id": "forumcomment_forumcomment_getcommentid",
+      "community": 8
+    },
+    {
+      "label": ".getPostId()",
+      "file_type": "code",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L30",
+      "id": "forumcomment_forumcomment_getpostid",
+      "community": 8
+    },
+    {
+      "label": ".getUserId()",
+      "file_type": "code",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L31",
+      "id": "forumcomment_forumcomment_getuserid",
+      "community": 8
+    },
+    {
+      "label": ".getContent()",
+      "file_type": "code",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L32",
+      "id": "forumcomment_forumcomment_getcontent",
+      "community": 8
+    },
+    {
+      "label": ".getCreatedAt()",
+      "file_type": "code",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L33",
+      "id": "forumcomment_forumcomment_getcreatedat",
+      "community": 8
+    },
+    {
+      "label": ".setCommentId()",
+      "file_type": "code",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L36",
+      "id": "forumcomment_forumcomment_setcommentid",
+      "community": 8
+    },
+    {
+      "label": ".setPostId()",
+      "file_type": "code",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L37",
+      "id": "forumcomment_forumcomment_setpostid",
+      "community": 8
+    },
+    {
+      "label": ".setUserId()",
+      "file_type": "code",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L38",
+      "id": "forumcomment_forumcomment_setuserid",
+      "community": 8
+    },
+    {
+      "label": ".setContent()",
+      "file_type": "code",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L39",
+      "id": "forumcomment_forumcomment_setcontent",
+      "community": 8
+    },
+    {
+      "label": ".setCreatedAt()",
+      "file_type": "code",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L40",
+      "id": "forumcomment_forumcomment_setcreatedat",
+      "community": 8
+    },
+    {
+      "label": ".toArray()",
+      "file_type": "code",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L42",
+      "id": "forumcomment_forumcomment_toarray",
+      "community": 8
+    },
+    {
+      "label": "ForumPost.php",
+      "file_type": "code",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L1",
+      "id": "forumpost",
       "community": 6
+    },
+    {
+      "label": "ForumPost",
+      "file_type": "code",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L7",
+      "id": "forumpost_forumpost",
+      "community": 6
+    },
+    {
+      "label": ".__construct()",
+      "file_type": "code",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L16",
+      "id": "forumpost_forumpost_construct",
+      "community": 6
+    },
+    {
+      "label": ".getPostId()",
+      "file_type": "code",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L35",
+      "id": "forumpost_forumpost_getpostid",
+      "community": 6
+    },
+    {
+      "label": ".getUserId()",
+      "file_type": "code",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L36",
+      "id": "forumpost_forumpost_getuserid",
+      "community": 6
+    },
+    {
+      "label": ".getTitle()",
+      "file_type": "code",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L37",
+      "id": "forumpost_forumpost_gettitle",
+      "community": 6
+    },
+    {
+      "label": ".getContent()",
+      "file_type": "code",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L38",
+      "id": "forumpost_forumpost_getcontent",
+      "community": 6
+    },
+    {
+      "label": ".getCategory()",
+      "file_type": "code",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L39",
+      "id": "forumpost_forumpost_getcategory",
+      "community": 6
+    },
+    {
+      "label": ".getStatus()",
+      "file_type": "code",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L40",
+      "id": "forumpost_forumpost_getstatus",
+      "community": 6
+    },
+    {
+      "label": ".getCreatedAt()",
+      "file_type": "code",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L41",
+      "id": "forumpost_forumpost_getcreatedat",
+      "community": 6
+    },
+    {
+      "label": ".setPostId()",
+      "file_type": "code",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L44",
+      "id": "forumpost_forumpost_setpostid",
+      "community": 6
+    },
+    {
+      "label": ".setUserId()",
+      "file_type": "code",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L45",
+      "id": "forumpost_forumpost_setuserid",
+      "community": 6
+    },
+    {
+      "label": ".setTitle()",
+      "file_type": "code",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L46",
+      "id": "forumpost_forumpost_settitle",
+      "community": 6
+    },
+    {
+      "label": ".setContent()",
+      "file_type": "code",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L47",
+      "id": "forumpost_forumpost_setcontent",
+      "community": 6
+    },
+    {
+      "label": ".setCategory()",
+      "file_type": "code",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L48",
+      "id": "forumpost_forumpost_setcategory",
+      "community": 6
+    },
+    {
+      "label": ".setStatus()",
+      "file_type": "code",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L49",
+      "id": "forumpost_forumpost_setstatus",
+      "community": 6
+    },
+    {
+      "label": ".setCreatedAt()",
+      "file_type": "code",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L50",
+      "id": "forumpost_forumpost_setcreatedat",
+      "community": 6
+    },
+    {
+      "label": ".toArray()",
+      "file_type": "code",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L52",
+      "id": "forumpost_forumpost_toarray",
+      "community": 6
+    },
+    {
+      "label": "Notification.php",
+      "file_type": "code",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L1",
+      "id": "notification",
+      "community": 11
+    },
+    {
+      "label": "Notification",
+      "file_type": "code",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L7",
+      "id": "notification_notification",
+      "community": 11
+    },
+    {
+      "label": ".__construct()",
+      "file_type": "code",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L16",
+      "id": "notification_notification_construct",
+      "community": 11
+    },
+    {
+      "label": ".getId()",
+      "file_type": "code",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L29",
+      "id": "notification_notification_getid",
+      "community": 11
+    },
+    {
+      "label": ".getUserId()",
+      "file_type": "code",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L30",
+      "id": "notification_notification_getuserid",
+      "community": 11
+    },
+    {
+      "label": ".getTitle()",
+      "file_type": "code",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L31",
+      "id": "notification_notification_gettitle",
+      "community": 11
+    },
+    {
+      "label": ".getBody()",
+      "file_type": "code",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L32",
+      "id": "notification_notification_getbody",
+      "community": 11
+    },
+    {
+      "label": ".getType()",
+      "file_type": "code",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L33",
+      "id": "notification_notification_gettype",
+      "community": 11
+    },
+    {
+      "label": ".isRead()",
+      "file_type": "code",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L34",
+      "id": "notification_notification_isread",
+      "community": 11
+    },
+    {
+      "label": ".jsonSerialize()",
+      "file_type": "code",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L36",
+      "id": "notification_notification_jsonserialize",
+      "community": 11
+    },
+    {
+      "label": ".toArray()",
+      "file_type": "code",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L40",
+      "id": "notification_notification_toarray",
+      "community": 11
+    },
+    {
+      "label": ".fromRow()",
+      "file_type": "code",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L52",
+      "id": "notification_notification_fromrow",
+      "community": 11
+    },
+    {
+      "label": "profile.php",
+      "file_type": "code",
+      "source_file": "View\\FrontOffice\\profile.php",
+      "source_location": "L1",
+      "id": "profile",
+      "community": 13
+    },
+    {
+      "label": "Profile",
+      "file_type": "code",
+      "source_file": "Model\\Profile.php",
+      "source_location": "L8",
+      "id": "profile_profile",
+      "community": 13
+    },
+    {
+      "label": ".__construct()",
+      "file_type": "code",
+      "source_file": "Model\\Profile.php",
+      "source_location": "L16",
+      "id": "profile_profile_construct",
+      "community": 13
+    },
+    {
+      "label": ".getUserId()",
+      "file_type": "code",
+      "source_file": "Model\\Profile.php",
+      "source_location": "L28",
+      "id": "profile_profile_getuserid",
+      "community": 13
+    },
+    {
+      "label": ".getFirstName()",
+      "file_type": "code",
+      "source_file": "Model\\Profile.php",
+      "source_location": "L29",
+      "id": "profile_profile_getfirstname",
+      "community": 13
+    },
+    {
+      "label": ".getLastName()",
+      "file_type": "code",
+      "source_file": "Model\\Profile.php",
+      "source_location": "L30",
+      "id": "profile_profile_getlastname",
+      "community": 13
+    },
+    {
+      "label": ".getFullName()",
+      "file_type": "code",
+      "source_file": "Model\\Profile.php",
+      "source_location": "L31",
+      "id": "profile_profile_getfullname",
+      "community": 13
+    },
+    {
+      "label": ".getBio()",
+      "file_type": "code",
+      "source_file": "Model\\Profile.php",
+      "source_location": "L34",
+      "id": "profile_profile_getbio",
+      "community": 13
+    },
+    {
+      "label": ".getPhoneNumber()",
+      "file_type": "code",
+      "source_file": "Model\\Profile.php",
+      "source_location": "L35",
+      "id": "profile_profile_getphonenumber",
+      "community": 13
+    },
+    {
+      "label": ".getDateOfBirth()",
+      "file_type": "code",
+      "source_file": "Model\\Profile.php",
+      "source_location": "L36",
+      "id": "profile_profile_getdateofbirth",
+      "community": 13
+    },
+    {
+      "label": ".fromRow()",
+      "file_type": "code",
+      "source_file": "Model\\Profile.php",
+      "source_location": "L38",
+      "id": "profile_profile_fromrow",
+      "community": 13
     },
     {
       "label": "Program.php",
@@ -289,7 +1729,7 @@
       "source_file": "Model\\Program.php",
       "source_location": "L1",
       "id": "program",
-      "community": 1
+      "community": 12
     },
     {
       "label": "Program",
@@ -297,7 +1737,7 @@
       "source_file": "Model\\Program.php",
       "source_location": "L7",
       "id": "program_program",
-      "community": 1
+      "community": 12
     },
     {
       "label": ".__construct()",
@@ -305,7 +1745,7 @@
       "source_file": "Model\\Program.php",
       "source_location": "L17",
       "id": "program_program_construct",
-      "community": 1
+      "community": 12
     },
     {
       "label": ".getId()",
@@ -313,7 +1753,7 @@
       "source_file": "Model\\Program.php",
       "source_location": "L29",
       "id": "program_program_getid",
-      "community": 1
+      "community": 12
     },
     {
       "label": ".getTitle()",
@@ -321,7 +1761,7 @@
       "source_file": "Model\\Program.php",
       "source_location": "L30",
       "id": "program_program_gettitle",
-      "community": 1
+      "community": 12
     },
     {
       "label": ".getDescription()",
@@ -329,7 +1769,7 @@
       "source_file": "Model\\Program.php",
       "source_location": "L31",
       "id": "program_program_getdescription",
-      "community": 1
+      "community": 12
     },
     {
       "label": ".getCategory()",
@@ -337,7 +1777,7 @@
       "source_file": "Model\\Program.php",
       "source_location": "L32",
       "id": "program_program_getcategory",
-      "community": 1
+      "community": 12
     },
     {
       "label": ".getCapacity()",
@@ -345,7 +1785,7 @@
       "source_file": "Model\\Program.php",
       "source_location": "L33",
       "id": "program_program_getcapacity",
-      "community": 1
+      "community": 12
     },
     {
       "label": ".getLocation()",
@@ -353,7 +1793,7 @@
       "source_file": "Model\\Program.php",
       "source_location": "L34",
       "id": "program_program_getlocation",
-      "community": 1
+      "community": 12
     },
     {
       "label": ".getStatus()",
@@ -361,7 +1801,7 @@
       "source_file": "Model\\Program.php",
       "source_location": "L35",
       "id": "program_program_getstatus",
-      "community": 1
+      "community": 12
     },
     {
       "label": ".getImage()",
@@ -369,7 +1809,7 @@
       "source_file": "Model\\Program.php",
       "source_location": "L36",
       "id": "program_program_getimage",
-      "community": 1
+      "community": 12
     },
     {
       "label": ".toArray()",
@@ -377,7 +1817,7 @@
       "source_file": "Model\\Program.php",
       "source_location": "L38",
       "id": "program_program_toarray",
-      "community": 1
+      "community": 12
     },
     {
       "label": "ServiceRequest.php",
@@ -385,7 +1825,7 @@
       "source_file": "Model\\ServiceRequest.php",
       "source_location": "L1",
       "id": "servicerequest",
-      "community": 3
+      "community": 15
     },
     {
       "label": "ServiceRequest",
@@ -393,7 +1833,7 @@
       "source_file": "Model\\ServiceRequest.php",
       "source_location": "L7",
       "id": "servicerequest_servicerequest",
-      "community": 3
+      "community": 15
     },
     {
       "label": ".__construct()",
@@ -401,7 +1841,7 @@
       "source_file": "Model\\ServiceRequest.php",
       "source_location": "L14",
       "id": "servicerequest_servicerequest_construct",
-      "community": 3
+      "community": 15
     },
     {
       "label": ".getId()",
@@ -409,7 +1849,7 @@
       "source_file": "Model\\ServiceRequest.php",
       "source_location": "L23",
       "id": "servicerequest_servicerequest_getid",
-      "community": 3
+      "community": 15
     },
     {
       "label": ".getType()",
@@ -417,7 +1857,7 @@
       "source_file": "Model\\ServiceRequest.php",
       "source_location": "L24",
       "id": "servicerequest_servicerequest_gettype",
-      "community": 3
+      "community": 15
     },
     {
       "label": ".getUserId()",
@@ -425,7 +1865,7 @@
       "source_file": "Model\\ServiceRequest.php",
       "source_location": "L25",
       "id": "servicerequest_servicerequest_getuserid",
-      "community": 3
+      "community": 15
     },
     {
       "label": ".getStatus()",
@@ -433,7 +1873,7 @@
       "source_file": "Model\\ServiceRequest.php",
       "source_location": "L26",
       "id": "servicerequest_servicerequest_getstatus",
-      "community": 3
+      "community": 15
     },
     {
       "label": ".getDate()",
@@ -441,7 +1881,7 @@
       "source_file": "Model\\ServiceRequest.php",
       "source_location": "L27",
       "id": "servicerequest_servicerequest_getdate",
-      "community": 3
+      "community": 15
     },
     {
       "label": ".setStatus()",
@@ -449,7 +1889,7 @@
       "source_file": "Model\\ServiceRequest.php",
       "source_location": "L30",
       "id": "servicerequest_servicerequest_setstatus",
-      "community": 3
+      "community": 15
     },
     {
       "label": ".toArray()",
@@ -457,7 +1897,527 @@
       "source_file": "Model\\ServiceRequest.php",
       "source_location": "L32",
       "id": "servicerequest_servicerequest_toarray",
-      "community": 3
+      "community": 15
+    },
+    {
+      "label": "Ticket.php",
+      "file_type": "code",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L1",
+      "id": "ticket",
+      "community": 7
+    },
+    {
+      "label": "Ticket",
+      "file_type": "code",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L9",
+      "id": "ticket_ticket",
+      "community": 7
+    },
+    {
+      "label": ".__construct()",
+      "file_type": "code",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L18",
+      "id": "ticket_ticket_construct",
+      "community": 7
+    },
+    {
+      "label": ".getIdTicket()",
+      "file_type": "code",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L37",
+      "id": "ticket_ticket_getidticket",
+      "community": 7
+    },
+    {
+      "label": ".getIdUser()",
+      "file_type": "code",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L38",
+      "id": "ticket_ticket_getiduser",
+      "community": 7
+    },
+    {
+      "label": ".getRef()",
+      "file_type": "code",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L39",
+      "id": "ticket_ticket_getref",
+      "community": 7
+    },
+    {
+      "label": ".getCitizenName()",
+      "file_type": "code",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L40",
+      "id": "ticket_ticket_getcitizenname",
+      "community": 7
+    },
+    {
+      "label": ".getIdTrajet()",
+      "file_type": "code",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L41",
+      "id": "ticket_ticket_getidtrajet",
+      "community": 7
+    },
+    {
+      "label": ".getIssuedAt()",
+      "file_type": "code",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L42",
+      "id": "ticket_ticket_getissuedat",
+      "community": 7
+    },
+    {
+      "label": ".getStatus()",
+      "file_type": "code",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L43",
+      "id": "ticket_ticket_getstatus",
+      "community": 7
+    },
+    {
+      "label": ".setIdUser()",
+      "file_type": "code",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L46",
+      "id": "ticket_ticket_setiduser",
+      "community": 7
+    },
+    {
+      "label": ".setRef()",
+      "file_type": "code",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L47",
+      "id": "ticket_ticket_setref",
+      "community": 7
+    },
+    {
+      "label": ".setCitizenName()",
+      "file_type": "code",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L48",
+      "id": "ticket_ticket_setcitizenname",
+      "community": 7
+    },
+    {
+      "label": ".setIdTrajet()",
+      "file_type": "code",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L49",
+      "id": "ticket_ticket_setidtrajet",
+      "community": 7
+    },
+    {
+      "label": ".setStatus()",
+      "file_type": "code",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L50",
+      "id": "ticket_ticket_setstatus",
+      "community": 7
+    },
+    {
+      "label": "Trajet.php",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L1",
+      "id": "trajet",
+      "community": 1
+    },
+    {
+      "label": "Trajet",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L8",
+      "id": "trajet_trajet",
+      "community": 1
+    },
+    {
+      "label": ".__construct()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L22",
+      "id": "trajet_trajet_construct",
+      "community": 1
+    },
+    {
+      "label": ".getIdTrajet()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L51",
+      "id": "trajet_trajet_getidtrajet",
+      "community": 1
+    },
+    {
+      "label": ".getDeparture()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L52",
+      "id": "trajet_trajet_getdeparture",
+      "community": 1
+    },
+    {
+      "label": ".getDestination()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L53",
+      "id": "trajet_trajet_getdestination",
+      "community": 1
+    },
+    {
+      "label": ".getIdTransport()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L54",
+      "id": "trajet_trajet_getidtransport",
+      "community": 1
+    },
+    {
+      "label": ".getDepartureTime()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L55",
+      "id": "trajet_trajet_getdeparturetime",
+      "community": 1
+    },
+    {
+      "label": ".getPrice()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L56",
+      "id": "trajet_trajet_getprice",
+      "community": 1
+    },
+    {
+      "label": ".getDepLat()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L57",
+      "id": "trajet_trajet_getdeplat",
+      "community": 1
+    },
+    {
+      "label": ".getDepLng()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L58",
+      "id": "trajet_trajet_getdeplng",
+      "community": 1
+    },
+    {
+      "label": ".getDepAddress()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L59",
+      "id": "trajet_trajet_getdepaddress",
+      "community": 1
+    },
+    {
+      "label": ".getDestLat()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L60",
+      "id": "trajet_trajet_getdestlat",
+      "community": 1
+    },
+    {
+      "label": ".getDestLng()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L61",
+      "id": "trajet_trajet_getdestlng",
+      "community": 1
+    },
+    {
+      "label": ".getDestAddress()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L62",
+      "id": "trajet_trajet_getdestaddress",
+      "community": 1
+    },
+    {
+      "label": ".setDeparture()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L65",
+      "id": "trajet_trajet_setdeparture",
+      "community": 1
+    },
+    {
+      "label": ".setDestination()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L66",
+      "id": "trajet_trajet_setdestination",
+      "community": 1
+    },
+    {
+      "label": ".setIdTransport()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L67",
+      "id": "trajet_trajet_setidtransport",
+      "community": 1
+    },
+    {
+      "label": ".setDepartureTime()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L68",
+      "id": "trajet_trajet_setdeparturetime",
+      "community": 1
+    },
+    {
+      "label": ".setPrice()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L69",
+      "id": "trajet_trajet_setprice",
+      "community": 1
+    },
+    {
+      "label": ".setDepLat()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L70",
+      "id": "trajet_trajet_setdeplat",
+      "community": 1
+    },
+    {
+      "label": ".setDepLng()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L71",
+      "id": "trajet_trajet_setdeplng",
+      "community": 1
+    },
+    {
+      "label": ".setDepAddress()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L72",
+      "id": "trajet_trajet_setdepaddress",
+      "community": 1
+    },
+    {
+      "label": ".setDestLat()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L73",
+      "id": "trajet_trajet_setdestlat",
+      "community": 1
+    },
+    {
+      "label": ".setDestLng()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L74",
+      "id": "trajet_trajet_setdestlng",
+      "community": 1
+    },
+    {
+      "label": ".setDestAddress()",
+      "file_type": "code",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L75",
+      "id": "trajet_trajet_setdestaddress",
+      "community": 1
+    },
+    {
+      "label": "Transport.php",
+      "file_type": "code",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L1",
+      "id": "transport",
+      "community": 9
+    },
+    {
+      "label": "Transport",
+      "file_type": "code",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L8",
+      "id": "transport_transport",
+      "community": 9
+    },
+    {
+      "label": ".__construct()",
+      "file_type": "code",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L16",
+      "id": "transport_transport_construct",
+      "community": 9
+    },
+    {
+      "label": ".getIdTransport()",
+      "file_type": "code",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L33",
+      "id": "transport_transport_getidtransport",
+      "community": 9
+    },
+    {
+      "label": ".getName()",
+      "file_type": "code",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L34",
+      "id": "transport_transport_getname",
+      "community": 9
+    },
+    {
+      "label": ".getType()",
+      "file_type": "code",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L35",
+      "id": "transport_transport_gettype",
+      "community": 9
+    },
+    {
+      "label": ".getCapacity()",
+      "file_type": "code",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L36",
+      "id": "transport_transport_getcapacity",
+      "community": 9
+    },
+    {
+      "label": ".getStatus()",
+      "file_type": "code",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L37",
+      "id": "transport_transport_getstatus",
+      "community": 9
+    },
+    {
+      "label": ".getIdTransportType()",
+      "file_type": "code",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L38",
+      "id": "transport_transport_getidtransporttype",
+      "community": 9
+    },
+    {
+      "label": ".setName()",
+      "file_type": "code",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L41",
+      "id": "transport_transport_setname",
+      "community": 9
+    },
+    {
+      "label": ".setType()",
+      "file_type": "code",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L42",
+      "id": "transport_transport_settype",
+      "community": 9
+    },
+    {
+      "label": ".setCapacity()",
+      "file_type": "code",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L43",
+      "id": "transport_transport_setcapacity",
+      "community": 9
+    },
+    {
+      "label": ".setStatus()",
+      "file_type": "code",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L44",
+      "id": "transport_transport_setstatus",
+      "community": 9
+    },
+    {
+      "label": ".setIdTransportType()",
+      "file_type": "code",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L45",
+      "id": "transport_transport_setidtransporttype",
+      "community": 9
+    },
+    {
+      "label": "TransportType.php",
+      "file_type": "code",
+      "source_file": "Model\\TransportType.php",
+      "source_location": "L1",
+      "id": "transporttype",
+      "community": 16
+    },
+    {
+      "label": "TransportType",
+      "file_type": "code",
+      "source_file": "Model\\TransportType.php",
+      "source_location": "L8",
+      "id": "transporttype_transporttype",
+      "community": 16
+    },
+    {
+      "label": ".__construct()",
+      "file_type": "code",
+      "source_file": "Model\\TransportType.php",
+      "source_location": "L14",
+      "id": "transporttype_transporttype_construct",
+      "community": 16
+    },
+    {
+      "label": ".getIdTransportType()",
+      "file_type": "code",
+      "source_file": "Model\\TransportType.php",
+      "source_location": "L27",
+      "id": "transporttype_transporttype_getidtransporttype",
+      "community": 16
+    },
+    {
+      "label": ".getName()",
+      "file_type": "code",
+      "source_file": "Model\\TransportType.php",
+      "source_location": "L28",
+      "id": "transporttype_transporttype_getname",
+      "community": 16
+    },
+    {
+      "label": ".getDescription()",
+      "file_type": "code",
+      "source_file": "Model\\TransportType.php",
+      "source_location": "L29",
+      "id": "transporttype_transporttype_getdescription",
+      "community": 16
+    },
+    {
+      "label": ".getPhotoUrl()",
+      "file_type": "code",
+      "source_file": "Model\\TransportType.php",
+      "source_location": "L30",
+      "id": "transporttype_transporttype_getphotourl",
+      "community": 16
+    },
+    {
+      "label": ".setName()",
+      "file_type": "code",
+      "source_file": "Model\\TransportType.php",
+      "source_location": "L33",
+      "id": "transporttype_transporttype_setname",
+      "community": 16
+    },
+    {
+      "label": ".setDescription()",
+      "file_type": "code",
+      "source_file": "Model\\TransportType.php",
+      "source_location": "L34",
+      "id": "transporttype_transporttype_setdescription",
+      "community": 16
+    },
+    {
+      "label": ".setPhotoUrl()",
+      "file_type": "code",
+      "source_file": "Model\\TransportType.php",
+      "source_location": "L35",
+      "id": "transporttype_transporttype_setphotourl",
+      "community": 16
     },
     {
       "label": "User.php",
@@ -465,87 +2425,151 @@
       "source_file": "Model\\User.php",
       "source_location": "L1",
       "id": "user",
-      "community": 2
+      "community": 5
     },
     {
       "label": "User",
       "file_type": "code",
       "source_file": "Model\\User.php",
-      "source_location": "L7",
+      "source_location": "L8",
       "id": "user_user",
-      "community": 2
+      "community": 5
+    },
+    {
+      "label": ".jsonSerialize()",
+      "file_type": "code",
+      "source_file": "Model\\User.php",
+      "source_location": "L9",
+      "id": "user_user_jsonserialize",
+      "community": 5
     },
     {
       "label": ".__construct()",
       "file_type": "code",
       "source_file": "Model\\User.php",
-      "source_location": "L13",
+      "source_location": "L22",
       "id": "user_user_construct",
-      "community": 2
+      "community": 5
     },
     {
       "label": ".getId()",
       "file_type": "code",
       "source_file": "Model\\User.php",
-      "source_location": "L21",
+      "source_location": "L37",
       "id": "user_user_getid",
-      "community": 2
+      "community": 5
     },
     {
       "label": ".getName()",
       "file_type": "code",
       "source_file": "Model\\User.php",
-      "source_location": "L22",
+      "source_location": "L38",
       "id": "user_user_getname",
-      "community": 2
-    },
-    {
-      "label": ".getRole()",
-      "file_type": "code",
-      "source_file": "Model\\User.php",
-      "source_location": "L23",
-      "id": "user_user_getrole",
-      "community": 2
+      "community": 5
     },
     {
       "label": ".getEmail()",
       "file_type": "code",
       "source_file": "Model\\User.php",
-      "source_location": "L24",
+      "source_location": "L39",
       "id": "user_user_getemail",
-      "community": 2
+      "community": 5
+    },
+    {
+      "label": ".getRole()",
+      "file_type": "code",
+      "source_file": "Model\\User.php",
+      "source_location": "L40",
+      "id": "user_user_getrole",
+      "community": 5
+    },
+    {
+      "label": ".getPasswordHash()",
+      "file_type": "code",
+      "source_file": "Model\\User.php",
+      "source_location": "L41",
+      "id": "user_user_getpasswordhash",
+      "community": 5
+    },
+    {
+      "label": ".getCreatedAt()",
+      "file_type": "code",
+      "source_file": "Model\\User.php",
+      "source_location": "L42",
+      "id": "user_user_getcreatedat",
+      "community": 5
+    },
+    {
+      "label": ".isActive()",
+      "file_type": "code",
+      "source_file": "Model\\User.php",
+      "source_location": "L43",
+      "id": "user_user_isactive",
+      "community": 5
+    },
+    {
+      "label": ".hasProfilePic()",
+      "file_type": "code",
+      "source_file": "Model\\User.php",
+      "source_location": "L44",
+      "id": "user_user_hasprofilepic",
+      "community": 5
     },
     {
       "label": ".setName()",
       "file_type": "code",
       "source_file": "Model\\User.php",
-      "source_location": "L27",
+      "source_location": "L46",
       "id": "user_user_setname",
-      "community": 2
-    },
-    {
-      "label": ".setRole()",
-      "file_type": "code",
-      "source_file": "Model\\User.php",
-      "source_location": "L28",
-      "id": "user_user_setrole",
-      "community": 2
+      "community": 5
     },
     {
       "label": ".setEmail()",
       "file_type": "code",
       "source_file": "Model\\User.php",
-      "source_location": "L29",
+      "source_location": "L47",
       "id": "user_user_setemail",
-      "community": 2
+      "community": 5
+    },
+    {
+      "label": ".setRole()",
+      "file_type": "code",
+      "source_file": "Model\\User.php",
+      "source_location": "L48",
+      "id": "user_user_setrole",
+      "community": 5
+    },
+    {
+      "label": ".setActive()",
+      "file_type": "code",
+      "source_file": "Model\\User.php",
+      "source_location": "L49",
+      "id": "user_user_setactive",
+      "community": 5
+    },
+    {
+      "label": ".getDisplayName()",
+      "file_type": "code",
+      "source_file": "Model\\User.php",
+      "source_location": "L52",
+      "id": "user_user_getdisplayname",
+      "community": 5
     },
     {
       "label": ".toArray()",
       "file_type": "code",
       "source_file": "Model\\User.php",
-      "source_location": "L31",
+      "source_location": "L56",
       "id": "user_user_toarray",
-      "community": 2
+      "community": 5
+    },
+    {
+      "label": ".fromRow()",
+      "file_type": "code",
+      "source_file": "Model\\User.php",
+      "source_location": "L68",
+      "id": "user_user_fromrow",
+      "community": 5
     },
     {
       "label": "debug_api.php",
@@ -553,7 +2577,79 @@
       "source_file": "scratch\\debug_api.php",
       "source_location": "L1",
       "id": "debug_api",
-      "community": 11
+      "community": 30
+    },
+    {
+      "label": "migrate_forum.php",
+      "file_type": "code",
+      "source_file": "scratch\\migrate_forum.php",
+      "source_location": "L1",
+      "id": "migrate_forum",
+      "community": 31
+    },
+    {
+      "label": "test.php",
+      "file_type": "code",
+      "source_file": "scratch\\test.php",
+      "source_location": "L1",
+      "id": "test",
+      "community": 32
+    },
+    {
+      "label": "test_register.php",
+      "file_type": "code",
+      "source_file": "scratch\\test_register.php",
+      "source_location": "L1",
+      "id": "test_register",
+      "community": 33
+    },
+    {
+      "label": "glass-animations.js",
+      "file_type": "code",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L1",
+      "id": "glass_animations",
+      "community": 18
+    },
+    {
+      "label": "InteractiveUI",
+      "file_type": "code",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L6",
+      "id": "glass_animations_interactiveui",
+      "community": 18
+    },
+    {
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L7",
+      "id": "glass_animations_interactiveui_constructor",
+      "community": 18
+    },
+    {
+      "label": ".initReveal()",
+      "file_type": "code",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L18",
+      "id": "glass_animations_interactiveui_initreveal",
+      "community": 18
+    },
+    {
+      "label": ".initCursorTracking()",
+      "file_type": "code",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L50",
+      "id": "glass_animations_interactiveui_initcursortracking",
+      "community": 18
+    },
+    {
+      "label": ".observeDOM()",
+      "file_type": "code",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L73",
+      "id": "glass_animations_interactiveui_observedom",
+      "community": 18
     },
     {
       "label": "app.js",
@@ -561,7 +2657,7 @@
       "source_file": "View\\FrontOffice\\app.js",
       "source_location": "L1",
       "id": "app",
-      "community": 7
+      "community": 22
     },
     {
       "label": "setupScrollAnimations()",
@@ -569,7 +2665,7 @@
       "source_file": "View\\FrontOffice\\app.js",
       "source_location": "L9",
       "id": "app_setupscrollanimations",
-      "community": 7
+      "community": 22
     },
     {
       "label": "controller.js",
@@ -577,7 +2673,7 @@
       "source_file": "View\\FrontOffice\\controller.js",
       "source_location": "L1",
       "id": "controller",
-      "community": 12
+      "community": 34
     },
     {
       "label": "index.php",
@@ -585,7 +2681,7 @@
       "source_file": "View\\FrontOffice\\index.php",
       "source_location": "L1",
       "id": "index",
-      "community": 13
+      "community": 35
     },
     {
       "label": "model.js",
@@ -593,7 +2689,7 @@
       "source_file": "View\\FrontOffice\\model.js",
       "source_location": "L1",
       "id": "model",
-      "community": 14
+      "community": 36
     },
     {
       "label": "view.js",
@@ -601,15 +2697,287 @@
       "source_file": "View\\FrontOffice\\view.js",
       "source_location": "L1",
       "id": "view",
-      "community": 15
+      "community": 37
+    },
+    {
+      "label": "createPost.php",
+      "file_type": "code",
+      "source_file": "View\\FrontOffice\\createPost.php",
+      "source_location": "L1",
+      "id": "createpost",
+      "community": 38
+    },
+    {
+      "label": "editPost.php",
+      "file_type": "code",
+      "source_file": "View\\FrontOffice\\editPost.php",
+      "source_location": "L1",
+      "id": "editpost",
+      "community": 39
+    },
+    {
+      "label": "forum.php",
+      "file_type": "code",
+      "source_file": "View\\FrontOffice\\forum.php",
+      "source_location": "L1",
+      "id": "forum",
+      "community": 40
+    },
+    {
+      "label": "login.php",
+      "file_type": "code",
+      "source_file": "View\\FrontOffice\\login.php",
+      "source_location": "L1",
+      "id": "login",
+      "community": 41
+    },
+    {
+      "label": "register.php",
+      "file_type": "code",
+      "source_file": "View\\FrontOffice\\register.php",
+      "source_location": "L1",
+      "id": "register",
+      "community": 42
+    },
+    {
+      "label": "viewPost.php",
+      "file_type": "code",
+      "source_file": "View\\FrontOffice\\viewPost.php",
+      "source_location": "L1",
+      "id": "viewpost",
+      "community": 43
+    },
+    {
+      "label": "forum_nav.php",
+      "file_type": "code",
+      "source_file": "View\\FrontOffice\\partials\\forum_nav.php",
+      "source_location": "L1",
+      "id": "forum_nav",
+      "community": 44
     }
   ],
   "links": [
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "get_image.php",
+      "source_location": "L106",
+      "weight": 1.0,
+      "_src": "get_image",
+      "_tgt": "get_image_outputfallback",
+      "source": "get_image",
+      "target": "get_image_outputfallback",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\ForumCommentController.php",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_src": "forumcommentcontroller",
+      "_tgt": "forumcommentcontroller_forumcommentcontroller",
+      "source": "forumcommentcontroller",
+      "target": "forumcommentcontroller_forumcommentcontroller",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\ForumCommentController.php",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_src": "forumcommentcontroller_forumcommentcontroller",
+      "_tgt": "forumcommentcontroller_forumcommentcontroller_getdb",
+      "source": "forumcommentcontroller_forumcommentcontroller",
+      "target": "forumcommentcontroller_forumcommentcontroller_getdb",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\ForumCommentController.php",
+      "source_location": "L21",
+      "weight": 1.0,
+      "_src": "forumcommentcontroller_forumcommentcontroller",
+      "_tgt": "forumcommentcontroller_forumcommentcontroller_getcommentsbypost",
+      "source": "forumcommentcontroller_forumcommentcontroller",
+      "target": "forumcommentcontroller_forumcommentcontroller_getcommentsbypost",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\ForumCommentController.php",
+      "source_location": "L37",
+      "weight": 1.0,
+      "_src": "forumcommentcontroller_forumcommentcontroller",
+      "_tgt": "forumcommentcontroller_forumcommentcontroller_getallcomments",
+      "source": "forumcommentcontroller_forumcommentcontroller",
+      "target": "forumcommentcontroller_forumcommentcontroller_getallcomments",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\ForumCommentController.php",
+      "source_location": "L53",
+      "weight": 1.0,
+      "_src": "forumcommentcontroller_forumcommentcontroller",
+      "_tgt": "forumcommentcontroller_forumcommentcontroller_addcomment",
+      "source": "forumcommentcontroller_forumcommentcontroller",
+      "target": "forumcommentcontroller_forumcommentcontroller_addcomment",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\ForumCommentController.php",
+      "source_location": "L69",
+      "weight": 1.0,
+      "_src": "forumcommentcontroller_forumcommentcontroller",
+      "_tgt": "forumcommentcontroller_forumcommentcontroller_updatecomment",
+      "source": "forumcommentcontroller_forumcommentcontroller",
+      "target": "forumcommentcontroller_forumcommentcontroller_updatecomment",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\ForumCommentController.php",
+      "source_location": "L81",
+      "weight": 1.0,
+      "_src": "forumcommentcontroller_forumcommentcontroller",
+      "_tgt": "forumcommentcontroller_forumcommentcontroller_deletecomment",
+      "source": "forumcommentcontroller_forumcommentcontroller",
+      "target": "forumcommentcontroller_forumcommentcontroller_deletecomment",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\ForumCommentController.php",
+      "source_location": "L96",
+      "weight": 1.0,
+      "_src": "forumcommentcontroller_forumcommentcontroller",
+      "_tgt": "forumcommentcontroller_forumcommentcontroller_getcommentbyid",
+      "source": "forumcommentcontroller_forumcommentcontroller",
+      "target": "forumcommentcontroller_forumcommentcontroller_getcommentbyid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\ForumPostController.php",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_src": "forumpostcontroller",
+      "_tgt": "forumpostcontroller_forumpostcontroller",
+      "source": "forumpostcontroller",
+      "target": "forumpostcontroller_forumpostcontroller",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\ForumPostController.php",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_src": "forumpostcontroller_forumpostcontroller",
+      "_tgt": "forumpostcontroller_forumpostcontroller_getdb",
+      "source": "forumpostcontroller_forumpostcontroller",
+      "target": "forumpostcontroller_forumpostcontroller_getdb",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\ForumPostController.php",
+      "source_location": "L34",
+      "weight": 1.0,
+      "_src": "forumpostcontroller_forumpostcontroller",
+      "_tgt": "forumpostcontroller_forumpostcontroller_getallposts",
+      "source": "forumpostcontroller_forumpostcontroller",
+      "target": "forumpostcontroller_forumpostcontroller_getallposts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\ForumPostController.php",
+      "source_location": "L64",
+      "weight": 1.0,
+      "_src": "forumpostcontroller_forumpostcontroller",
+      "_tgt": "forumpostcontroller_forumpostcontroller_getpostbyid",
+      "source": "forumpostcontroller_forumpostcontroller",
+      "target": "forumpostcontroller_forumpostcontroller_getpostbyid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\ForumPostController.php",
+      "source_location": "L80",
+      "weight": 1.0,
+      "_src": "forumpostcontroller_forumpostcontroller",
+      "_tgt": "forumpostcontroller_forumpostcontroller_createpost",
+      "source": "forumpostcontroller_forumpostcontroller",
+      "target": "forumpostcontroller_forumpostcontroller_createpost",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\ForumPostController.php",
+      "source_location": "L98",
+      "weight": 1.0,
+      "_src": "forumpostcontroller_forumpostcontroller",
+      "_tgt": "forumpostcontroller_forumpostcontroller_updatepost",
+      "source": "forumpostcontroller_forumpostcontroller",
+      "target": "forumpostcontroller_forumpostcontroller_updatepost",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\ForumPostController.php",
+      "source_location": "L112",
+      "weight": 1.0,
+      "_src": "forumpostcontroller_forumpostcontroller",
+      "_tgt": "forumpostcontroller_forumpostcontroller_deletepost",
+      "source": "forumpostcontroller_forumpostcontroller",
+      "target": "forumpostcontroller_forumpostcontroller_deletepost",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\ForumPostController.php",
+      "source_location": "L127",
+      "weight": 1.0,
+      "_src": "forumpostcontroller_forumpostcontroller",
+      "_tgt": "forumpostcontroller_forumpostcontroller_updatestatus",
+      "source": "forumpostcontroller_forumpostcontroller",
+      "target": "forumpostcontroller_forumpostcontroller_updatestatus",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\ForumPostController.php",
+      "source_location": "L140",
+      "weight": 1.0,
+      "_src": "forumpostcontroller_forumpostcontroller",
+      "_tgt": "forumpostcontroller_forumpostcontroller_getcommentcount",
+      "source": "forumpostcontroller_forumpostcontroller",
+      "target": "forumpostcontroller_forumpostcontroller_getcommentcount",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L10",
+      "source_location": "L17",
       "weight": 1.0,
       "_src": "maincontroller",
       "_tgt": "maincontroller_maincontroller",
@@ -621,7 +2989,19 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L12",
+      "source_location": "L22",
+      "weight": 1.0,
+      "_src": "maincontroller_maincontroller",
+      "_tgt": "maincontroller_maincontroller_authorize",
+      "source": "maincontroller_maincontroller",
+      "target": "maincontroller_maincontroller_authorize",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L97",
       "weight": 1.0,
       "_src": "maincontroller_maincontroller",
       "_tgt": "maincontroller_maincontroller_showdata",
@@ -633,7 +3013,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Controller\\MainController.php",
-      "source_location": "L20",
+      "source_location": "L105",
       "weight": 1.0,
       "_src": "maincontroller_maincontroller",
       "_tgt": "maincontroller_maincontroller_handlerequest",
@@ -642,10 +3022,514 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L276",
+      "weight": 1.0,
+      "_src": "maincontroller_maincontroller",
+      "_tgt": "maincontroller_maincontroller_getdb",
+      "source": "maincontroller_maincontroller",
+      "target": "maincontroller_maincontroller_getdb",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L281",
+      "weight": 1.0,
+      "_src": "maincontroller_maincontroller",
+      "_tgt": "maincontroller_maincontroller_listtransporttypes",
+      "source": "maincontroller_maincontroller",
+      "target": "maincontroller_maincontroller_listtransporttypes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L286",
+      "weight": 1.0,
+      "_src": "maincontroller_maincontroller",
+      "_tgt": "maincontroller_maincontroller_listtransports",
+      "source": "maincontroller_maincontroller",
+      "target": "maincontroller_maincontroller_listtransports",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L293",
+      "weight": 1.0,
+      "_src": "maincontroller_maincontroller",
+      "_tgt": "maincontroller_maincontroller_showtransport",
+      "source": "maincontroller_maincontroller",
+      "target": "maincontroller_maincontroller_showtransport",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L303",
+      "weight": 1.0,
+      "_src": "maincontroller_maincontroller",
+      "_tgt": "maincontroller_maincontroller_addtransport",
+      "source": "maincontroller_maincontroller",
+      "target": "maincontroller_maincontroller_addtransport",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L326",
+      "weight": 1.0,
+      "_src": "maincontroller_maincontroller",
+      "_tgt": "maincontroller_maincontroller_updatetransport",
+      "source": "maincontroller_maincontroller",
+      "target": "maincontroller_maincontroller_updatetransport",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L352",
+      "weight": 1.0,
+      "_src": "maincontroller_maincontroller",
+      "_tgt": "maincontroller_maincontroller_deletetransport",
+      "source": "maincontroller_maincontroller",
+      "target": "maincontroller_maincontroller_deletetransport",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L357",
+      "weight": 1.0,
+      "_src": "maincontroller_maincontroller",
+      "_tgt": "maincontroller_maincontroller_listtrajets",
+      "source": "maincontroller_maincontroller",
+      "target": "maincontroller_maincontroller_listtrajets",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L364",
+      "weight": 1.0,
+      "_src": "maincontroller_maincontroller",
+      "_tgt": "maincontroller_maincontroller_listtrajetsbytypeandsort",
+      "source": "maincontroller_maincontroller",
+      "target": "maincontroller_maincontroller_listtrajetsbytypeandsort",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L377",
+      "weight": 1.0,
+      "_src": "maincontroller_maincontroller",
+      "_tgt": "maincontroller_maincontroller_addtrajet",
+      "source": "maincontroller_maincontroller",
+      "target": "maincontroller_maincontroller_addtrajet",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L390",
+      "weight": 1.0,
+      "_src": "maincontroller_maincontroller",
+      "_tgt": "maincontroller_maincontroller_deletetrajet",
+      "source": "maincontroller_maincontroller",
+      "target": "maincontroller_maincontroller_deletetrajet",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L394",
+      "weight": 1.0,
+      "_src": "maincontroller_maincontroller",
+      "_tgt": "maincontroller_maincontroller_showtrajet",
+      "source": "maincontroller_maincontroller",
+      "target": "maincontroller_maincontroller_showtrajet",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L400",
+      "weight": 1.0,
+      "_src": "maincontroller_maincontroller",
+      "_tgt": "maincontroller_maincontroller_getoccupancy",
+      "source": "maincontroller_maincontroller",
+      "target": "maincontroller_maincontroller_getoccupancy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L415",
+      "weight": 1.0,
+      "_src": "maincontroller_maincontroller",
+      "_tgt": "maincontroller_maincontroller_listtickets",
+      "source": "maincontroller_maincontroller",
+      "target": "maincontroller_maincontroller_listtickets",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L422",
+      "weight": 1.0,
+      "_src": "maincontroller_maincontroller",
+      "_tgt": "maincontroller_maincontroller_listticketsenriched",
+      "source": "maincontroller_maincontroller",
+      "target": "maincontroller_maincontroller_listticketsenriched",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L444",
+      "weight": 1.0,
+      "_src": "maincontroller_maincontroller",
+      "_tgt": "maincontroller_maincontroller_addticket",
+      "source": "maincontroller_maincontroller",
+      "target": "maincontroller_maincontroller_addticket",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L451",
+      "weight": 1.0,
+      "_src": "maincontroller_maincontroller",
+      "_tgt": "maincontroller_maincontroller_cancelticket",
+      "source": "maincontroller_maincontroller",
+      "target": "maincontroller_maincontroller_cancelticket",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\MainController.php",
+      "source_location": "L455",
+      "weight": 1.0,
+      "_src": "maincontroller_maincontroller",
+      "_tgt": "maincontroller_maincontroller_generateref",
+      "source": "maincontroller_maincontroller",
+      "target": "maincontroller_maincontroller_generateref",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L18",
+      "weight": 1.0,
+      "_src": "usercontroller",
+      "_tgt": "usercontroller_usercontroller",
+      "source": "usercontroller",
+      "target": "usercontroller_usercontroller",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L33",
+      "weight": 1.0,
+      "_src": "usercontroller_usercontroller",
+      "_tgt": "usercontroller_usercontroller_getallusers",
+      "source": "usercontroller_usercontroller",
+      "target": "usercontroller_usercontroller_getallusers",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L63",
+      "weight": 1.0,
+      "_src": "usercontroller_usercontroller",
+      "_tgt": "usercontroller_usercontroller_getuserbyid",
+      "source": "usercontroller_usercontroller",
+      "target": "usercontroller_usercontroller_getuserbyid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L71",
+      "weight": 1.0,
+      "_src": "usercontroller_usercontroller",
+      "_tgt": "usercontroller_usercontroller_getuserbyemail",
+      "source": "usercontroller_usercontroller",
+      "target": "usercontroller_usercontroller_getuserbyemail",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L79",
+      "weight": 1.0,
+      "_src": "usercontroller_usercontroller",
+      "_tgt": "usercontroller_usercontroller_emailexists",
+      "source": "usercontroller_usercontroller",
+      "target": "usercontroller_usercontroller_emailexists",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L91",
+      "weight": 1.0,
+      "_src": "usercontroller_usercontroller",
+      "_tgt": "usercontroller_usercontroller_usernameexists",
+      "source": "usercontroller_usercontroller",
+      "target": "usercontroller_usercontroller_usernameexists",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L107",
+      "weight": 1.0,
+      "_src": "usercontroller_usercontroller",
+      "_tgt": "usercontroller_usercontroller_createuserrecord",
+      "source": "usercontroller_usercontroller",
+      "target": "usercontroller_usercontroller_createuserrecord",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L125",
+      "weight": 1.0,
+      "_src": "usercontroller_usercontroller",
+      "_tgt": "usercontroller_usercontroller_updateuserrecord",
+      "source": "usercontroller_usercontroller",
+      "target": "usercontroller_usercontroller_updateuserrecord",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L150",
+      "weight": 1.0,
+      "_src": "usercontroller_usercontroller",
+      "_tgt": "usercontroller_usercontroller_deleteuserrecord",
+      "source": "usercontroller_usercontroller",
+      "target": "usercontroller_usercontroller_deleteuserrecord",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L164",
+      "weight": 1.0,
+      "_src": "usercontroller_usercontroller",
+      "_tgt": "usercontroller_usercontroller_uploadprofilepic",
+      "source": "usercontroller_usercontroller",
+      "target": "usercontroller_usercontroller_uploadprofilepic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L205",
+      "weight": 1.0,
+      "_src": "usercontroller_usercontroller",
+      "_tgt": "usercontroller_usercontroller_toggleuseractive",
+      "source": "usercontroller_usercontroller",
+      "target": "usercontroller_usercontroller_toggleuseractive",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L216",
+      "weight": 1.0,
+      "_src": "usercontroller_usercontroller",
+      "_tgt": "usercontroller_usercontroller_getagents",
+      "source": "usercontroller_usercontroller",
+      "target": "usercontroller_usercontroller_getagents",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L230",
+      "weight": 1.0,
+      "_src": "usercontroller_usercontroller",
+      "_tgt": "usercontroller_usercontroller_getprofilebyuserid",
+      "source": "usercontroller_usercontroller",
+      "target": "usercontroller_usercontroller_getprofilebyuserid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L238",
+      "weight": 1.0,
+      "_src": "usercontroller_usercontroller",
+      "_tgt": "usercontroller_usercontroller_createprofilerecord",
+      "source": "usercontroller_usercontroller",
+      "target": "usercontroller_usercontroller_createprofilerecord",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L245",
+      "weight": 1.0,
+      "_src": "usercontroller_usercontroller",
+      "_tgt": "usercontroller_usercontroller_ensureprofileexists",
+      "source": "usercontroller_usercontroller",
+      "target": "usercontroller_usercontroller_ensureprofileexists",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L261",
+      "weight": 1.0,
+      "_src": "usercontroller_usercontroller",
+      "_tgt": "usercontroller_usercontroller_updateprofilerecord",
+      "source": "usercontroller_usercontroller",
+      "target": "usercontroller_usercontroller_updateprofilerecord",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L290",
+      "weight": 1.0,
+      "_src": "usercontroller_usercontroller",
+      "_tgt": "usercontroller_usercontroller_validateuser",
+      "source": "usercontroller_usercontroller",
+      "target": "usercontroller_usercontroller_validateuser",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L344",
+      "weight": 1.0,
+      "_src": "usercontroller_usercontroller",
+      "_tgt": "usercontroller_usercontroller_validateuserlogin",
+      "source": "usercontroller_usercontroller",
+      "target": "usercontroller_usercontroller_validateuserlogin",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L359",
+      "weight": 1.0,
+      "_src": "usercontroller_usercontroller",
+      "_tgt": "usercontroller_usercontroller_login",
+      "source": "usercontroller_usercontroller",
+      "target": "usercontroller_usercontroller_login",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L387",
+      "weight": 1.0,
+      "_src": "usercontroller_usercontroller",
+      "_tgt": "usercontroller_usercontroller_logout",
+      "source": "usercontroller_usercontroller",
+      "target": "usercontroller_usercontroller_logout",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L399",
+      "weight": 1.0,
+      "_src": "usercontroller_usercontroller",
+      "_tgt": "usercontroller_usercontroller_register",
+      "source": "usercontroller_usercontroller",
+      "target": "usercontroller_usercontroller_register",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L413",
+      "weight": 1.0,
+      "_src": "usercontroller_usercontroller",
+      "_tgt": "usercontroller_usercontroller_updateprofile",
+      "source": "usercontroller_usercontroller",
+      "target": "usercontroller_usercontroller_updateprofile",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L462",
+      "weight": 1.0,
+      "_src": "usercontroller_usercontroller",
+      "_tgt": "usercontroller_usercontroller_createuser",
+      "source": "usercontroller_usercontroller",
+      "target": "usercontroller_usercontroller_createuser",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Controller\\UserController.php",
+      "source_location": "L474",
+      "weight": 1.0,
+      "_src": "usercontroller_usercontroller",
+      "_tgt": "usercontroller_usercontroller_deleteuser",
+      "source": "usercontroller_usercontroller",
+      "target": "usercontroller_usercontroller_deleteuser",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L13",
+      "source_location": "L17",
       "weight": 1.0,
       "_src": "appmodel",
       "_tgt": "appmodel_appmodel",
@@ -657,7 +3541,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L14",
+      "source_location": "L18",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
       "_tgt": "appmodel_appmodel_getdb",
@@ -669,7 +3553,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L18",
+      "source_location": "L22",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
       "_tgt": "appmodel_appmodel_init",
@@ -681,7 +3565,19 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L27",
+      "source_location": "L38",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_readimageupload",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_readimageupload",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L58",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
       "_tgt": "appmodel_appmodel_getrequests",
@@ -693,7 +3589,31 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L36",
+      "source_location": "L74",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_getrequestsbyuser",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_getrequestsbyuser",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L90",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_getrequestsbyassignee",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_getrequestsbyassignee",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L106",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
       "_tgt": "appmodel_appmodel_addrequest",
@@ -705,7 +3625,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L51",
+      "source_location": "L144",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
       "_tgt": "appmodel_appmodel_updaterequeststatus",
@@ -717,7 +3637,19 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L61",
+      "source_location": "L153",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_assignrequest",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_assignrequest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L163",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
       "_tgt": "appmodel_appmodel_getprograms",
@@ -729,7 +3661,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L84",
+      "source_location": "L184",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
       "_tgt": "appmodel_appmodel_getprogrambyid",
@@ -741,7 +3673,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L107",
+      "source_location": "L204",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
       "_tgt": "appmodel_appmodel_getenrollmentsbyprogram",
@@ -753,7 +3685,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L120",
+      "source_location": "L218",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
       "_tgt": "appmodel_appmodel_addprogram",
@@ -765,7 +3697,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L138",
+      "source_location": "L245",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
       "_tgt": "appmodel_appmodel_updateprogram",
@@ -777,7 +3709,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L168",
+      "source_location": "L279",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
       "_tgt": "appmodel_appmodel_validateprogramdata",
@@ -789,19 +3721,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L197",
-      "weight": 1.0,
-      "_src": "appmodel_appmodel",
-      "_tgt": "appmodel_appmodel_handlefileupload",
-      "source": "appmodel_appmodel",
-      "target": "appmodel_appmodel_handlefileupload",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "Model\\AppModel.php",
-      "source_location": "L218",
+      "source_location": "L297",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
       "_tgt": "appmodel_appmodel_deleteprogram",
@@ -813,7 +3733,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L229",
+      "source_location": "L307",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
       "_tgt": "appmodel_appmodel_enrolluser",
@@ -825,7 +3745,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L253",
+      "source_location": "L326",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
       "_tgt": "appmodel_appmodel_getenrollments",
@@ -837,7 +3757,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L260",
+      "source_location": "L333",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
       "_tgt": "appmodel_appmodel_getpendingenrollments",
@@ -849,7 +3769,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L271",
+      "source_location": "L341",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
       "_tgt": "appmodel_appmodel_getallenrollmentscounts",
@@ -861,7 +3781,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L278",
+      "source_location": "L348",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
       "_tgt": "appmodel_appmodel_updateenrollmentstatus",
@@ -873,12 +3793,648 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\AppModel.php",
-      "source_location": "L287",
+      "source_location": "L358",
       "weight": 1.0,
       "_src": "appmodel_appmodel",
       "_tgt": "appmodel_appmodel_getstats",
       "source": "appmodel_appmodel",
       "target": "appmodel_appmodel_getstats",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L373",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_getcategories",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_getcategories",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L377",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_addcategory",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_addcategory",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L390",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_updatecategory",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_updatecategory",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L402",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_deletecategory",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_deletecategory",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L423",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_createappointment",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_createappointment",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L473",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_getappointmentsbyuser",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_getappointmentsbyuser",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L484",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_getappointmentsbyagent",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_getappointmentsbyagent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L495",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_getallappointments",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_getallappointments",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L506",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_updateappointmentstatus",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_updateappointmentstatus",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L526",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_cancelappointment",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_cancelappointment",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L544",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_createslot",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_createslot",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L557",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_getslotsbyagent",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_getslotsbyagent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L564",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_getallslots",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_getallslots",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L572",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_deleteslot",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_deleteslot",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L577",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_getavailableslots",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_getavailableslots",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L594",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_createnotification",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_createnotification",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L600",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_getnotificationsbyuser",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_getnotificationsbyuser",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L607",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_marknotificationread",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_marknotificationread",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L612",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_getunreadcount",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_getunreadcount",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppModel.php",
+      "source_location": "L622",
+      "weight": 1.0,
+      "_src": "appmodel_appmodel",
+      "_tgt": "appmodel_appmodel_getservicetypes",
+      "source": "appmodel_appmodel",
+      "target": "appmodel_appmodel_getservicetypes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_src": "appointment",
+      "_tgt": "appointment_appointment",
+      "source": "appointment",
+      "target": "appointment_appointment",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L25",
+      "weight": 1.0,
+      "_src": "appointment_appointment",
+      "_tgt": "appointment_appointment_construct",
+      "source": "appointment_appointment",
+      "target": "appointment_appointment_construct",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L48",
+      "weight": 1.0,
+      "_src": "appointment_appointment",
+      "_tgt": "appointment_appointment_getid",
+      "source": "appointment_appointment",
+      "target": "appointment_appointment_getid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L49",
+      "weight": 1.0,
+      "_src": "appointment_appointment",
+      "_tgt": "appointment_appointment_getuserid",
+      "source": "appointment_appointment",
+      "target": "appointment_appointment_getuserid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L50",
+      "weight": 1.0,
+      "_src": "appointment_appointment",
+      "_tgt": "appointment_appointment_getservicetype",
+      "source": "appointment_appointment",
+      "target": "appointment_appointment_getservicetype",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L51",
+      "weight": 1.0,
+      "_src": "appointment_appointment",
+      "_tgt": "appointment_appointment_getpreferreddate",
+      "source": "appointment_appointment",
+      "target": "appointment_appointment_getpreferreddate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L52",
+      "weight": 1.0,
+      "_src": "appointment_appointment",
+      "_tgt": "appointment_appointment_getpreferredtime",
+      "source": "appointment_appointment",
+      "target": "appointment_appointment_getpreferredtime",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L53",
+      "weight": 1.0,
+      "_src": "appointment_appointment",
+      "_tgt": "appointment_appointment_getnotes",
+      "source": "appointment_appointment",
+      "target": "appointment_appointment_getnotes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L54",
+      "weight": 1.0,
+      "_src": "appointment_appointment",
+      "_tgt": "appointment_appointment_getstatus",
+      "source": "appointment_appointment",
+      "target": "appointment_appointment_getstatus",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L55",
+      "weight": 1.0,
+      "_src": "appointment_appointment",
+      "_tgt": "appointment_appointment_getassignedto",
+      "source": "appointment_appointment",
+      "target": "appointment_appointment_getassignedto",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L56",
+      "weight": 1.0,
+      "_src": "appointment_appointment",
+      "_tgt": "appointment_appointment_getreschedulereason",
+      "source": "appointment_appointment",
+      "target": "appointment_appointment_getreschedulereason",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L57",
+      "weight": 1.0,
+      "_src": "appointment_appointment",
+      "_tgt": "appointment_appointment_getnewdate",
+      "source": "appointment_appointment",
+      "target": "appointment_appointment_getnewdate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L58",
+      "weight": 1.0,
+      "_src": "appointment_appointment",
+      "_tgt": "appointment_appointment_getnewtime",
+      "source": "appointment_appointment",
+      "target": "appointment_appointment_getnewtime",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L59",
+      "weight": 1.0,
+      "_src": "appointment_appointment",
+      "_tgt": "appointment_appointment_getcreatedat",
+      "source": "appointment_appointment",
+      "target": "appointment_appointment_getcreatedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L60",
+      "weight": 1.0,
+      "_src": "appointment_appointment",
+      "_tgt": "appointment_appointment_getusername",
+      "source": "appointment_appointment",
+      "target": "appointment_appointment_getusername",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L61",
+      "weight": 1.0,
+      "_src": "appointment_appointment",
+      "_tgt": "appointment_appointment_getagentname",
+      "source": "appointment_appointment",
+      "target": "appointment_appointment_getagentname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L63",
+      "weight": 1.0,
+      "_src": "appointment_appointment",
+      "_tgt": "appointment_appointment_jsonserialize",
+      "source": "appointment_appointment",
+      "target": "appointment_appointment_jsonserialize",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L67",
+      "weight": 1.0,
+      "_src": "appointment_appointment",
+      "_tgt": "appointment_appointment_toarray",
+      "source": "appointment_appointment",
+      "target": "appointment_appointment_toarray",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L86",
+      "weight": 1.0,
+      "_src": "appointment_appointment",
+      "_tgt": "appointment_appointment_fromrow",
+      "source": "appointment_appointment",
+      "target": "appointment_appointment_fromrow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Appointment.php",
+      "source_location": "L64",
+      "weight": 1.0,
+      "_src": "appointment_appointment_jsonserialize",
+      "_tgt": "appointment_appointment_toarray",
+      "source": "appointment_appointment_jsonserialize",
+      "target": "appointment_appointment_toarray",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_src": "appointmentslot",
+      "_tgt": "appointmentslot_appointmentslot",
+      "source": "appointmentslot",
+      "target": "appointmentslot_appointmentslot",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L18",
+      "weight": 1.0,
+      "_src": "appointmentslot_appointmentslot",
+      "_tgt": "appointmentslot_appointmentslot_construct",
+      "source": "appointmentslot_appointmentslot",
+      "target": "appointmentslot_appointmentslot_construct",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L33",
+      "weight": 1.0,
+      "_src": "appointmentslot_appointmentslot",
+      "_tgt": "appointmentslot_appointmentslot_getid",
+      "source": "appointmentslot_appointmentslot",
+      "target": "appointmentslot_appointmentslot_getid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L34",
+      "weight": 1.0,
+      "_src": "appointmentslot_appointmentslot",
+      "_tgt": "appointmentslot_appointmentslot_getagentid",
+      "source": "appointmentslot_appointmentslot",
+      "target": "appointmentslot_appointmentslot_getagentid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L35",
+      "weight": 1.0,
+      "_src": "appointmentslot_appointmentslot",
+      "_tgt": "appointmentslot_appointmentslot_getservicetype",
+      "source": "appointmentslot_appointmentslot",
+      "target": "appointmentslot_appointmentslot_getservicetype",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L36",
+      "weight": 1.0,
+      "_src": "appointmentslot_appointmentslot",
+      "_tgt": "appointmentslot_appointmentslot_getdayofweek",
+      "source": "appointmentslot_appointmentslot",
+      "target": "appointmentslot_appointmentslot_getdayofweek",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L37",
+      "weight": 1.0,
+      "_src": "appointmentslot_appointmentslot",
+      "_tgt": "appointmentslot_appointmentslot_getstarttime",
+      "source": "appointmentslot_appointmentslot",
+      "target": "appointmentslot_appointmentslot_getstarttime",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L38",
+      "weight": 1.0,
+      "_src": "appointmentslot_appointmentslot",
+      "_tgt": "appointmentslot_appointmentslot_getendtime",
+      "source": "appointmentslot_appointmentslot",
+      "target": "appointmentslot_appointmentslot_getendtime",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L39",
+      "weight": 1.0,
+      "_src": "appointmentslot_appointmentslot",
+      "_tgt": "appointmentslot_appointmentslot_isactive",
+      "source": "appointmentslot_appointmentslot",
+      "target": "appointmentslot_appointmentslot_isactive",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L41",
+      "weight": 1.0,
+      "_src": "appointmentslot_appointmentslot",
+      "_tgt": "appointmentslot_appointmentslot_jsonserialize",
+      "source": "appointmentslot_appointmentslot",
+      "target": "appointmentslot_appointmentslot_jsonserialize",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L45",
+      "weight": 1.0,
+      "_src": "appointmentslot_appointmentslot",
+      "_tgt": "appointmentslot_appointmentslot_toarray",
+      "source": "appointmentslot_appointmentslot",
+      "target": "appointmentslot_appointmentslot_toarray",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L60",
+      "weight": 1.0,
+      "_src": "appointmentslot_appointmentslot",
+      "_tgt": "appointmentslot_appointmentslot_fromrow",
+      "source": "appointmentslot_appointmentslot",
+      "target": "appointmentslot_appointmentslot_fromrow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\AppointmentSlot.php",
+      "source_location": "L42",
+      "weight": 1.0,
+      "_src": "appointmentslot_appointmentslot_jsonserialize",
+      "_tgt": "appointmentslot_appointmentslot_toarray",
+      "source": "appointmentslot_appointmentslot_jsonserialize",
+      "target": "appointmentslot_appointmentslot_toarray",
       "confidence_score": 1.0
     },
     {
@@ -939,6 +4495,630 @@
       "_tgt": "dbsetup_setupdatabase",
       "source": "dbsetup",
       "target": "dbsetup_setupdatabase",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_src": "forumcomment",
+      "_tgt": "forumcomment_forumcomment",
+      "source": "forumcomment",
+      "target": "forumcomment_forumcomment",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_src": "forumcomment_forumcomment",
+      "_tgt": "forumcomment_forumcomment_construct",
+      "source": "forumcomment_forumcomment",
+      "target": "forumcomment_forumcomment_construct",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L29",
+      "weight": 1.0,
+      "_src": "forumcomment_forumcomment",
+      "_tgt": "forumcomment_forumcomment_getcommentid",
+      "source": "forumcomment_forumcomment",
+      "target": "forumcomment_forumcomment_getcommentid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L30",
+      "weight": 1.0,
+      "_src": "forumcomment_forumcomment",
+      "_tgt": "forumcomment_forumcomment_getpostid",
+      "source": "forumcomment_forumcomment",
+      "target": "forumcomment_forumcomment_getpostid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L31",
+      "weight": 1.0,
+      "_src": "forumcomment_forumcomment",
+      "_tgt": "forumcomment_forumcomment_getuserid",
+      "source": "forumcomment_forumcomment",
+      "target": "forumcomment_forumcomment_getuserid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L32",
+      "weight": 1.0,
+      "_src": "forumcomment_forumcomment",
+      "_tgt": "forumcomment_forumcomment_getcontent",
+      "source": "forumcomment_forumcomment",
+      "target": "forumcomment_forumcomment_getcontent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L33",
+      "weight": 1.0,
+      "_src": "forumcomment_forumcomment",
+      "_tgt": "forumcomment_forumcomment_getcreatedat",
+      "source": "forumcomment_forumcomment",
+      "target": "forumcomment_forumcomment_getcreatedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L36",
+      "weight": 1.0,
+      "_src": "forumcomment_forumcomment",
+      "_tgt": "forumcomment_forumcomment_setcommentid",
+      "source": "forumcomment_forumcomment",
+      "target": "forumcomment_forumcomment_setcommentid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L37",
+      "weight": 1.0,
+      "_src": "forumcomment_forumcomment",
+      "_tgt": "forumcomment_forumcomment_setpostid",
+      "source": "forumcomment_forumcomment",
+      "target": "forumcomment_forumcomment_setpostid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L38",
+      "weight": 1.0,
+      "_src": "forumcomment_forumcomment",
+      "_tgt": "forumcomment_forumcomment_setuserid",
+      "source": "forumcomment_forumcomment",
+      "target": "forumcomment_forumcomment_setuserid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L39",
+      "weight": 1.0,
+      "_src": "forumcomment_forumcomment",
+      "_tgt": "forumcomment_forumcomment_setcontent",
+      "source": "forumcomment_forumcomment",
+      "target": "forumcomment_forumcomment_setcontent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L40",
+      "weight": 1.0,
+      "_src": "forumcomment_forumcomment",
+      "_tgt": "forumcomment_forumcomment_setcreatedat",
+      "source": "forumcomment_forumcomment",
+      "target": "forumcomment_forumcomment_setcreatedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumComment.php",
+      "source_location": "L42",
+      "weight": 1.0,
+      "_src": "forumcomment_forumcomment",
+      "_tgt": "forumcomment_forumcomment_toarray",
+      "source": "forumcomment_forumcomment",
+      "target": "forumcomment_forumcomment_toarray",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_src": "forumpost",
+      "_tgt": "forumpost_forumpost",
+      "source": "forumpost",
+      "target": "forumpost_forumpost",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L16",
+      "weight": 1.0,
+      "_src": "forumpost_forumpost",
+      "_tgt": "forumpost_forumpost_construct",
+      "source": "forumpost_forumpost",
+      "target": "forumpost_forumpost_construct",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L35",
+      "weight": 1.0,
+      "_src": "forumpost_forumpost",
+      "_tgt": "forumpost_forumpost_getpostid",
+      "source": "forumpost_forumpost",
+      "target": "forumpost_forumpost_getpostid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L36",
+      "weight": 1.0,
+      "_src": "forumpost_forumpost",
+      "_tgt": "forumpost_forumpost_getuserid",
+      "source": "forumpost_forumpost",
+      "target": "forumpost_forumpost_getuserid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L37",
+      "weight": 1.0,
+      "_src": "forumpost_forumpost",
+      "_tgt": "forumpost_forumpost_gettitle",
+      "source": "forumpost_forumpost",
+      "target": "forumpost_forumpost_gettitle",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L38",
+      "weight": 1.0,
+      "_src": "forumpost_forumpost",
+      "_tgt": "forumpost_forumpost_getcontent",
+      "source": "forumpost_forumpost",
+      "target": "forumpost_forumpost_getcontent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L39",
+      "weight": 1.0,
+      "_src": "forumpost_forumpost",
+      "_tgt": "forumpost_forumpost_getcategory",
+      "source": "forumpost_forumpost",
+      "target": "forumpost_forumpost_getcategory",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L40",
+      "weight": 1.0,
+      "_src": "forumpost_forumpost",
+      "_tgt": "forumpost_forumpost_getstatus",
+      "source": "forumpost_forumpost",
+      "target": "forumpost_forumpost_getstatus",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L41",
+      "weight": 1.0,
+      "_src": "forumpost_forumpost",
+      "_tgt": "forumpost_forumpost_getcreatedat",
+      "source": "forumpost_forumpost",
+      "target": "forumpost_forumpost_getcreatedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L44",
+      "weight": 1.0,
+      "_src": "forumpost_forumpost",
+      "_tgt": "forumpost_forumpost_setpostid",
+      "source": "forumpost_forumpost",
+      "target": "forumpost_forumpost_setpostid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L45",
+      "weight": 1.0,
+      "_src": "forumpost_forumpost",
+      "_tgt": "forumpost_forumpost_setuserid",
+      "source": "forumpost_forumpost",
+      "target": "forumpost_forumpost_setuserid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L46",
+      "weight": 1.0,
+      "_src": "forumpost_forumpost",
+      "_tgt": "forumpost_forumpost_settitle",
+      "source": "forumpost_forumpost",
+      "target": "forumpost_forumpost_settitle",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L47",
+      "weight": 1.0,
+      "_src": "forumpost_forumpost",
+      "_tgt": "forumpost_forumpost_setcontent",
+      "source": "forumpost_forumpost",
+      "target": "forumpost_forumpost_setcontent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L48",
+      "weight": 1.0,
+      "_src": "forumpost_forumpost",
+      "_tgt": "forumpost_forumpost_setcategory",
+      "source": "forumpost_forumpost",
+      "target": "forumpost_forumpost_setcategory",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L49",
+      "weight": 1.0,
+      "_src": "forumpost_forumpost",
+      "_tgt": "forumpost_forumpost_setstatus",
+      "source": "forumpost_forumpost",
+      "target": "forumpost_forumpost_setstatus",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L50",
+      "weight": 1.0,
+      "_src": "forumpost_forumpost",
+      "_tgt": "forumpost_forumpost_setcreatedat",
+      "source": "forumpost_forumpost",
+      "target": "forumpost_forumpost_setcreatedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\ForumPost.php",
+      "source_location": "L52",
+      "weight": 1.0,
+      "_src": "forumpost_forumpost",
+      "_tgt": "forumpost_forumpost_toarray",
+      "source": "forumpost_forumpost",
+      "target": "forumpost_forumpost_toarray",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_src": "notification",
+      "_tgt": "notification_notification",
+      "source": "notification",
+      "target": "notification_notification",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L16",
+      "weight": 1.0,
+      "_src": "notification_notification",
+      "_tgt": "notification_notification_construct",
+      "source": "notification_notification",
+      "target": "notification_notification_construct",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L29",
+      "weight": 1.0,
+      "_src": "notification_notification",
+      "_tgt": "notification_notification_getid",
+      "source": "notification_notification",
+      "target": "notification_notification_getid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L30",
+      "weight": 1.0,
+      "_src": "notification_notification",
+      "_tgt": "notification_notification_getuserid",
+      "source": "notification_notification",
+      "target": "notification_notification_getuserid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L31",
+      "weight": 1.0,
+      "_src": "notification_notification",
+      "_tgt": "notification_notification_gettitle",
+      "source": "notification_notification",
+      "target": "notification_notification_gettitle",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L32",
+      "weight": 1.0,
+      "_src": "notification_notification",
+      "_tgt": "notification_notification_getbody",
+      "source": "notification_notification",
+      "target": "notification_notification_getbody",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L33",
+      "weight": 1.0,
+      "_src": "notification_notification",
+      "_tgt": "notification_notification_gettype",
+      "source": "notification_notification",
+      "target": "notification_notification_gettype",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L34",
+      "weight": 1.0,
+      "_src": "notification_notification",
+      "_tgt": "notification_notification_isread",
+      "source": "notification_notification",
+      "target": "notification_notification_isread",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L36",
+      "weight": 1.0,
+      "_src": "notification_notification",
+      "_tgt": "notification_notification_jsonserialize",
+      "source": "notification_notification",
+      "target": "notification_notification_jsonserialize",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L40",
+      "weight": 1.0,
+      "_src": "notification_notification",
+      "_tgt": "notification_notification_toarray",
+      "source": "notification_notification",
+      "target": "notification_notification_toarray",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L52",
+      "weight": 1.0,
+      "_src": "notification_notification",
+      "_tgt": "notification_notification_fromrow",
+      "source": "notification_notification",
+      "target": "notification_notification_fromrow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Notification.php",
+      "source_location": "L37",
+      "weight": 1.0,
+      "_src": "notification_notification_jsonserialize",
+      "_tgt": "notification_notification_toarray",
+      "source": "notification_notification_jsonserialize",
+      "target": "notification_notification_toarray",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Profile.php",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_src": "profile",
+      "_tgt": "profile_profile",
+      "source": "profile",
+      "target": "profile_profile",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Profile.php",
+      "source_location": "L16",
+      "weight": 1.0,
+      "_src": "profile_profile",
+      "_tgt": "profile_profile_construct",
+      "source": "profile_profile",
+      "target": "profile_profile_construct",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Profile.php",
+      "source_location": "L28",
+      "weight": 1.0,
+      "_src": "profile_profile",
+      "_tgt": "profile_profile_getuserid",
+      "source": "profile_profile",
+      "target": "profile_profile_getuserid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Profile.php",
+      "source_location": "L29",
+      "weight": 1.0,
+      "_src": "profile_profile",
+      "_tgt": "profile_profile_getfirstname",
+      "source": "profile_profile",
+      "target": "profile_profile_getfirstname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Profile.php",
+      "source_location": "L30",
+      "weight": 1.0,
+      "_src": "profile_profile",
+      "_tgt": "profile_profile_getlastname",
+      "source": "profile_profile",
+      "target": "profile_profile_getlastname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Profile.php",
+      "source_location": "L31",
+      "weight": 1.0,
+      "_src": "profile_profile",
+      "_tgt": "profile_profile_getfullname",
+      "source": "profile_profile",
+      "target": "profile_profile_getfullname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Profile.php",
+      "source_location": "L34",
+      "weight": 1.0,
+      "_src": "profile_profile",
+      "_tgt": "profile_profile_getbio",
+      "source": "profile_profile",
+      "target": "profile_profile_getbio",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Profile.php",
+      "source_location": "L35",
+      "weight": 1.0,
+      "_src": "profile_profile",
+      "_tgt": "profile_profile_getphonenumber",
+      "source": "profile_profile",
+      "target": "profile_profile_getphonenumber",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Profile.php",
+      "source_location": "L36",
+      "weight": 1.0,
+      "_src": "profile_profile",
+      "_tgt": "profile_profile_getdateofbirth",
+      "source": "profile_profile",
+      "target": "profile_profile_getdateofbirth",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Profile.php",
+      "source_location": "L38",
+      "weight": 1.0,
+      "_src": "profile_profile",
+      "_tgt": "profile_profile_fromrow",
+      "source": "profile_profile",
+      "target": "profile_profile_fromrow",
       "confidence_score": 1.0
     },
     {
@@ -1184,8 +5364,740 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_src": "ticket",
+      "_tgt": "ticket_ticket",
+      "source": "ticket",
+      "target": "ticket_ticket",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L18",
+      "weight": 1.0,
+      "_src": "ticket_ticket",
+      "_tgt": "ticket_ticket_construct",
+      "source": "ticket_ticket",
+      "target": "ticket_ticket_construct",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L37",
+      "weight": 1.0,
+      "_src": "ticket_ticket",
+      "_tgt": "ticket_ticket_getidticket",
+      "source": "ticket_ticket",
+      "target": "ticket_ticket_getidticket",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L38",
+      "weight": 1.0,
+      "_src": "ticket_ticket",
+      "_tgt": "ticket_ticket_getiduser",
+      "source": "ticket_ticket",
+      "target": "ticket_ticket_getiduser",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L39",
+      "weight": 1.0,
+      "_src": "ticket_ticket",
+      "_tgt": "ticket_ticket_getref",
+      "source": "ticket_ticket",
+      "target": "ticket_ticket_getref",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L40",
+      "weight": 1.0,
+      "_src": "ticket_ticket",
+      "_tgt": "ticket_ticket_getcitizenname",
+      "source": "ticket_ticket",
+      "target": "ticket_ticket_getcitizenname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L41",
+      "weight": 1.0,
+      "_src": "ticket_ticket",
+      "_tgt": "ticket_ticket_getidtrajet",
+      "source": "ticket_ticket",
+      "target": "ticket_ticket_getidtrajet",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L42",
+      "weight": 1.0,
+      "_src": "ticket_ticket",
+      "_tgt": "ticket_ticket_getissuedat",
+      "source": "ticket_ticket",
+      "target": "ticket_ticket_getissuedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L43",
+      "weight": 1.0,
+      "_src": "ticket_ticket",
+      "_tgt": "ticket_ticket_getstatus",
+      "source": "ticket_ticket",
+      "target": "ticket_ticket_getstatus",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L46",
+      "weight": 1.0,
+      "_src": "ticket_ticket",
+      "_tgt": "ticket_ticket_setiduser",
+      "source": "ticket_ticket",
+      "target": "ticket_ticket_setiduser",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L47",
+      "weight": 1.0,
+      "_src": "ticket_ticket",
+      "_tgt": "ticket_ticket_setref",
+      "source": "ticket_ticket",
+      "target": "ticket_ticket_setref",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L48",
+      "weight": 1.0,
+      "_src": "ticket_ticket",
+      "_tgt": "ticket_ticket_setcitizenname",
+      "source": "ticket_ticket",
+      "target": "ticket_ticket_setcitizenname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L49",
+      "weight": 1.0,
+      "_src": "ticket_ticket",
+      "_tgt": "ticket_ticket_setidtrajet",
+      "source": "ticket_ticket",
+      "target": "ticket_ticket_setidtrajet",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Ticket.php",
+      "source_location": "L50",
+      "weight": 1.0,
+      "_src": "ticket_ticket",
+      "_tgt": "ticket_ticket_setstatus",
+      "source": "ticket_ticket",
+      "target": "ticket_ticket_setstatus",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_src": "trajet",
+      "_tgt": "trajet_trajet",
+      "source": "trajet",
+      "target": "trajet_trajet",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L22",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_construct",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_construct",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L51",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_getidtrajet",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_getidtrajet",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L52",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_getdeparture",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_getdeparture",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L53",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_getdestination",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_getdestination",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L54",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_getidtransport",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_getidtransport",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L55",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_getdeparturetime",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_getdeparturetime",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L56",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_getprice",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_getprice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L57",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_getdeplat",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_getdeplat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L58",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_getdeplng",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_getdeplng",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L59",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_getdepaddress",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_getdepaddress",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L60",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_getdestlat",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_getdestlat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L61",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_getdestlng",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_getdestlng",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L62",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_getdestaddress",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_getdestaddress",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L65",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_setdeparture",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_setdeparture",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L66",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_setdestination",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_setdestination",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L67",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_setidtransport",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_setidtransport",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L68",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_setdeparturetime",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_setdeparturetime",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L69",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_setprice",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_setprice",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L70",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_setdeplat",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_setdeplat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L71",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_setdeplng",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_setdeplng",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L72",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_setdepaddress",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_setdepaddress",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L73",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_setdestlat",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_setdestlat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L74",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_setdestlng",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_setdestlng",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Trajet.php",
+      "source_location": "L75",
+      "weight": 1.0,
+      "_src": "trajet_trajet",
+      "_tgt": "trajet_trajet_setdestaddress",
+      "source": "trajet_trajet",
+      "target": "trajet_trajet_setdestaddress",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_src": "transport",
+      "_tgt": "transport_transport",
+      "source": "transport",
+      "target": "transport_transport",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L16",
+      "weight": 1.0,
+      "_src": "transport_transport",
+      "_tgt": "transport_transport_construct",
+      "source": "transport_transport",
+      "target": "transport_transport_construct",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L33",
+      "weight": 1.0,
+      "_src": "transport_transport",
+      "_tgt": "transport_transport_getidtransport",
+      "source": "transport_transport",
+      "target": "transport_transport_getidtransport",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L34",
+      "weight": 1.0,
+      "_src": "transport_transport",
+      "_tgt": "transport_transport_getname",
+      "source": "transport_transport",
+      "target": "transport_transport_getname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L35",
+      "weight": 1.0,
+      "_src": "transport_transport",
+      "_tgt": "transport_transport_gettype",
+      "source": "transport_transport",
+      "target": "transport_transport_gettype",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L36",
+      "weight": 1.0,
+      "_src": "transport_transport",
+      "_tgt": "transport_transport_getcapacity",
+      "source": "transport_transport",
+      "target": "transport_transport_getcapacity",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L37",
+      "weight": 1.0,
+      "_src": "transport_transport",
+      "_tgt": "transport_transport_getstatus",
+      "source": "transport_transport",
+      "target": "transport_transport_getstatus",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L38",
+      "weight": 1.0,
+      "_src": "transport_transport",
+      "_tgt": "transport_transport_getidtransporttype",
+      "source": "transport_transport",
+      "target": "transport_transport_getidtransporttype",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L41",
+      "weight": 1.0,
+      "_src": "transport_transport",
+      "_tgt": "transport_transport_setname",
+      "source": "transport_transport",
+      "target": "transport_transport_setname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L42",
+      "weight": 1.0,
+      "_src": "transport_transport",
+      "_tgt": "transport_transport_settype",
+      "source": "transport_transport",
+      "target": "transport_transport_settype",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L43",
+      "weight": 1.0,
+      "_src": "transport_transport",
+      "_tgt": "transport_transport_setcapacity",
+      "source": "transport_transport",
+      "target": "transport_transport_setcapacity",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L44",
+      "weight": 1.0,
+      "_src": "transport_transport",
+      "_tgt": "transport_transport_setstatus",
+      "source": "transport_transport",
+      "target": "transport_transport_setstatus",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\Transport.php",
+      "source_location": "L45",
+      "weight": 1.0,
+      "_src": "transport_transport",
+      "_tgt": "transport_transport_setidtransporttype",
+      "source": "transport_transport",
+      "target": "transport_transport_setidtransporttype",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\TransportType.php",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_src": "transporttype",
+      "_tgt": "transporttype_transporttype",
+      "source": "transporttype",
+      "target": "transporttype_transporttype",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\TransportType.php",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_src": "transporttype_transporttype",
+      "_tgt": "transporttype_transporttype_construct",
+      "source": "transporttype_transporttype",
+      "target": "transporttype_transporttype_construct",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\TransportType.php",
+      "source_location": "L27",
+      "weight": 1.0,
+      "_src": "transporttype_transporttype",
+      "_tgt": "transporttype_transporttype_getidtransporttype",
+      "source": "transporttype_transporttype",
+      "target": "transporttype_transporttype_getidtransporttype",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\TransportType.php",
+      "source_location": "L28",
+      "weight": 1.0,
+      "_src": "transporttype_transporttype",
+      "_tgt": "transporttype_transporttype_getname",
+      "source": "transporttype_transporttype",
+      "target": "transporttype_transporttype_getname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\TransportType.php",
+      "source_location": "L29",
+      "weight": 1.0,
+      "_src": "transporttype_transporttype",
+      "_tgt": "transporttype_transporttype_getdescription",
+      "source": "transporttype_transporttype",
+      "target": "transporttype_transporttype_getdescription",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\TransportType.php",
+      "source_location": "L30",
+      "weight": 1.0,
+      "_src": "transporttype_transporttype",
+      "_tgt": "transporttype_transporttype_getphotourl",
+      "source": "transporttype_transporttype",
+      "target": "transporttype_transporttype_getphotourl",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\TransportType.php",
+      "source_location": "L33",
+      "weight": 1.0,
+      "_src": "transporttype_transporttype",
+      "_tgt": "transporttype_transporttype_setname",
+      "source": "transporttype_transporttype",
+      "target": "transporttype_transporttype_setname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\TransportType.php",
+      "source_location": "L34",
+      "weight": 1.0,
+      "_src": "transporttype_transporttype",
+      "_tgt": "transporttype_transporttype_setdescription",
+      "source": "transporttype_transporttype",
+      "target": "transporttype_transporttype_setdescription",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\TransportType.php",
+      "source_location": "L35",
+      "weight": 1.0,
+      "_src": "transporttype_transporttype",
+      "_tgt": "transporttype_transporttype_setphotourl",
+      "source": "transporttype_transporttype",
+      "target": "transporttype_transporttype_setphotourl",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "Model\\User.php",
-      "source_location": "L7",
+      "source_location": "L8",
       "weight": 1.0,
       "_src": "user",
       "_tgt": "user_user",
@@ -1197,7 +6109,19 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\User.php",
-      "source_location": "L13",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_src": "user_user",
+      "_tgt": "user_user_jsonserialize",
+      "source": "user_user",
+      "target": "user_user_jsonserialize",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\User.php",
+      "source_location": "L22",
       "weight": 1.0,
       "_src": "user_user",
       "_tgt": "user_user_construct",
@@ -1209,7 +6133,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\User.php",
-      "source_location": "L21",
+      "source_location": "L37",
       "weight": 1.0,
       "_src": "user_user",
       "_tgt": "user_user_getid",
@@ -1221,7 +6145,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\User.php",
-      "source_location": "L22",
+      "source_location": "L38",
       "weight": 1.0,
       "_src": "user_user",
       "_tgt": "user_user_getname",
@@ -1233,19 +6157,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\User.php",
-      "source_location": "L23",
-      "weight": 1.0,
-      "_src": "user_user",
-      "_tgt": "user_user_getrole",
-      "source": "user_user",
-      "target": "user_user_getrole",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "Model\\User.php",
-      "source_location": "L24",
+      "source_location": "L39",
       "weight": 1.0,
       "_src": "user_user",
       "_tgt": "user_user_getemail",
@@ -1257,7 +6169,67 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\User.php",
-      "source_location": "L27",
+      "source_location": "L40",
+      "weight": 1.0,
+      "_src": "user_user",
+      "_tgt": "user_user_getrole",
+      "source": "user_user",
+      "target": "user_user_getrole",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\User.php",
+      "source_location": "L41",
+      "weight": 1.0,
+      "_src": "user_user",
+      "_tgt": "user_user_getpasswordhash",
+      "source": "user_user",
+      "target": "user_user_getpasswordhash",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\User.php",
+      "source_location": "L42",
+      "weight": 1.0,
+      "_src": "user_user",
+      "_tgt": "user_user_getcreatedat",
+      "source": "user_user",
+      "target": "user_user_getcreatedat",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\User.php",
+      "source_location": "L43",
+      "weight": 1.0,
+      "_src": "user_user",
+      "_tgt": "user_user_isactive",
+      "source": "user_user",
+      "target": "user_user_isactive",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\User.php",
+      "source_location": "L44",
+      "weight": 1.0,
+      "_src": "user_user",
+      "_tgt": "user_user_hasprofilepic",
+      "source": "user_user",
+      "target": "user_user_hasprofilepic",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\User.php",
+      "source_location": "L46",
       "weight": 1.0,
       "_src": "user_user",
       "_tgt": "user_user_setname",
@@ -1269,19 +6241,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\User.php",
-      "source_location": "L28",
-      "weight": 1.0,
-      "_src": "user_user",
-      "_tgt": "user_user_setrole",
-      "source": "user_user",
-      "target": "user_user_setrole",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "Model\\User.php",
-      "source_location": "L29",
+      "source_location": "L47",
       "weight": 1.0,
       "_src": "user_user",
       "_tgt": "user_user_setemail",
@@ -1293,12 +6253,168 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "Model\\User.php",
-      "source_location": "L31",
+      "source_location": "L48",
+      "weight": 1.0,
+      "_src": "user_user",
+      "_tgt": "user_user_setrole",
+      "source": "user_user",
+      "target": "user_user_setrole",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\User.php",
+      "source_location": "L49",
+      "weight": 1.0,
+      "_src": "user_user",
+      "_tgt": "user_user_setactive",
+      "source": "user_user",
+      "target": "user_user_setactive",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\User.php",
+      "source_location": "L52",
+      "weight": 1.0,
+      "_src": "user_user",
+      "_tgt": "user_user_getdisplayname",
+      "source": "user_user",
+      "target": "user_user_getdisplayname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\User.php",
+      "source_location": "L56",
       "weight": 1.0,
       "_src": "user_user",
       "_tgt": "user_user_toarray",
       "source": "user_user",
       "target": "user_user_toarray",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\User.php",
+      "source_location": "L68",
+      "weight": 1.0,
+      "_src": "user_user",
+      "_tgt": "user_user_fromrow",
+      "source": "user_user",
+      "target": "user_user_fromrow",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "Model\\User.php",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_src": "user_user_jsonserialize",
+      "_tgt": "user_user_toarray",
+      "source": "user_user_jsonserialize",
+      "target": "user_user_toarray",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_src": "glass_animations",
+      "_tgt": "glass_animations_interactiveui",
+      "source": "glass_animations",
+      "target": "glass_animations_interactiveui",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_src": "glass_animations_interactiveui",
+      "_tgt": "glass_animations_interactiveui_constructor",
+      "source": "glass_animations_interactiveui",
+      "target": "glass_animations_interactiveui_constructor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L18",
+      "weight": 1.0,
+      "_src": "glass_animations_interactiveui",
+      "_tgt": "glass_animations_interactiveui_initreveal",
+      "source": "glass_animations_interactiveui",
+      "target": "glass_animations_interactiveui_initreveal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L50",
+      "weight": 1.0,
+      "_src": "glass_animations_interactiveui",
+      "_tgt": "glass_animations_interactiveui_initcursortracking",
+      "source": "glass_animations_interactiveui",
+      "target": "glass_animations_interactiveui_initcursortracking",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L73",
+      "weight": 1.0,
+      "_src": "glass_animations_interactiveui",
+      "_tgt": "glass_animations_interactiveui_observedom",
+      "source": "glass_animations_interactiveui",
+      "target": "glass_animations_interactiveui_observedom",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_src": "glass_animations_interactiveui_constructor",
+      "_tgt": "glass_animations_interactiveui_initreveal",
+      "source": "glass_animations_interactiveui_constructor",
+      "target": "glass_animations_interactiveui_initreveal",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_src": "glass_animations_interactiveui_constructor",
+      "_tgt": "glass_animations_interactiveui_initcursortracking",
+      "source": "glass_animations_interactiveui_constructor",
+      "target": "glass_animations_interactiveui_initcursortracking",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "View\\assets\\js\\glass-animations.js",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_src": "glass_animations_interactiveui_constructor",
+      "_tgt": "glass_animations_interactiveui_observedom",
+      "source": "glass_animations_interactiveui_constructor",
+      "target": "glass_animations_interactiveui_observedom",
       "confidence_score": 1.0
     },
     {

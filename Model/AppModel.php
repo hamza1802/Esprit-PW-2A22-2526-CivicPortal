@@ -2,13 +2,17 @@
 /**
  * AppModel.php
  * MySQL-based data management for CivicPortal.
- * Refactored to use PDO and Blueprint entities.
+ * Refactored: BLOB image storage, appointments, notifications.
+ * Complaints/Grievances module REMOVED.
  */
 
 require_once __DIR__ . '/Database.php';
 require_once __DIR__ . '/User.php';
 require_once __DIR__ . '/ServiceRequest.php';
 require_once __DIR__ . '/Program.php';
+require_once __DIR__ . '/Appointment.php';
+require_once __DIR__ . '/AppointmentSlot.php';
+require_once __DIR__ . '/Notification.php';
 
 class AppModel {
     private static function getDb() {
@@ -21,42 +25,140 @@ class AppModel {
         }
     }
 
+    // =========================================================================
+    // IMAGE BLOB HELPER
+    // =========================================================================
+    private const MAX_IMG = 2097152; // 2MB
+    private const OK_MIME = ['image/jpeg','image/png','image/webp'];
+
     /**
-     * getRequests() - Fetch all requests from the database.
+     * Validate and read an uploaded image file into [blobData, mimeType].
+     * Returns null if no file or validation fails.
+     */
+    private static function readImageUpload(?array $file): ?array {
+        if (!$file || $file['error'] !== UPLOAD_ERR_OK) return null;
+        if ($file['size'] > self::MAX_IMG) throw new Exception('Image must be under 2MB.');
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($file['tmp_name']);
+        if (!in_array($mime, self::OK_MIME, true)) {
+            throw new Exception('Only JPEG, PNG, and WebP images are accepted.');
+        }
+        $data = file_get_contents($file['tmp_name']);
+        if ($data === false) throw new Exception('Failed to read image file.');
+        return [$data, $mime];
+    }
+
+    // =========================================================================
+    // SERVICE REQUESTS (Module 2)
+    // =========================================================================
+
+    /**
+     * Get all requests (admin view).
      */
     public static function getRequests() {
         $db = self::getDb();
-        $stmt = $db->query("SELECT * FROM requests ORDER BY created_at DESC");
+        $stmt = $db->query("
+            SELECT r.*, u.username as user_name, 
+                   a.username as agent_name
+            FROM requests r
+            LEFT JOIN users u ON r.user_id = u.id
+            LEFT JOIN users a ON r.assigned_to = a.id
+            ORDER BY r.created_at DESC
+        ");
         return $stmt->fetchAll();
     }
 
     /**
-     * addRequest() - Insert a new service request.
+     * Get requests for a specific citizen.
      */
-    public static function addRequest($type, $userId) {
+    public static function getRequestsByUser(int $userId) {
         $db = self::getDb();
-        $stmt = $db->prepare("INSERT INTO requests (user_id, title, status) VALUES (?, ?, ?)");
-        $stmt->execute([$userId, $type, 'pending']);
-        
-        $id = $db->lastInsertId();
+        $stmt = $db->prepare("
+            SELECT r.*, a.username as agent_name
+            FROM requests r
+            LEFT JOIN users a ON r.assigned_to = a.id
+            WHERE r.user_id = ?
+            ORDER BY r.created_at DESC
+        ");
+        $stmt->execute([$userId]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Get requests assigned to a specific agent.
+     */
+    public static function getRequestsByAssignee(int $agentId) {
+        $db = self::getDb();
+        $stmt = $db->prepare("
+            SELECT r.*, u.username as user_name
+            FROM requests r
+            LEFT JOIN users u ON r.user_id = u.id
+            WHERE r.assigned_to = ?
+            ORDER BY r.created_at DESC
+        ");
+        $stmt->execute([$agentId]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Add a service request with optional BLOB attachment.
+     */
+    public static function addRequest($data, $userId, $attachFile = null) {
+        $db = self::getDb();
+        $title = trim($data['title'] ?? $data['type'] ?? '');
+        $desc  = trim($data['description'] ?? '');
+        $cat   = trim($data['category'] ?? '');
+
+        if (empty($title)) throw new Exception('Request title is required.');
+
+        $blob = null; $mime = null;
+        $imgData = self::readImageUpload($attachFile);
+        if ($imgData) { [$blob, $mime] = $imgData; }
+
+        $stmt = $db->prepare("
+            INSERT INTO requests (user_id, title, description, category, status, attachment, attachment_mime)
+            VALUES (?, ?, ?, ?, 'pending', ?, ?)
+        ");
+        $stmt->bindValue(1, $userId, PDO::PARAM_INT);
+        $stmt->bindValue(2, $title);
+        $stmt->bindValue(3, $desc);
+        $stmt->bindValue(4, $cat);
+        $stmt->bindValue(5, $blob, PDO::PARAM_LOB);
+        $stmt->bindValue(6, $mime);
+        $stmt->execute();
+
         return [
-            'id' => $id,
-            'type' => $type,
+            'id' => $db->lastInsertId(),
+            'title' => $title,
+            'description' => $desc,
+            'category' => $cat,
             'userId' => $userId,
             'status' => 'pending',
             'date' => date('Y-m-d')
         ];
     }
 
+    /**
+     * Update request status and log timestamp.
+     */
     public static function updateRequestStatus($requestId, $status) {
         $db = self::getDb();
-        $stmt = $db->prepare("UPDATE requests SET status = ? WHERE id = ?");
+        $stmt = $db->prepare("UPDATE requests SET status = ?, status_updated_at = NOW() WHERE id = ?");
         return $stmt->execute([$status, $requestId]);
     }
 
     /**
-     * --- Parks & Recreation (Program CRUD) ---
+     * Admin assigns a request to an agent.
      */
+    public static function assignRequest(int $requestId, int $agentId): bool {
+        $db = self::getDb();
+        $stmt = $db->prepare("UPDATE requests SET assigned_to = ? WHERE id = ?");
+        return $stmt->execute([$agentId, $requestId]);
+    }
+
+    // =========================================================================
+    // PROGRAMS (Parks & Recreation)
+    // =========================================================================
 
     public static function getPrograms() {
         $db = self::getDb();
@@ -71,9 +173,7 @@ class AppModel {
                        COUNT(*) as total_enrolled,
                        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_count,
                        SUM(CASE WHEN status = 'confirmed' THEN 1 ELSE 0 END) as confirmed_count
-                FROM enrollment
-                WHERE status != 'cancelled'
-                GROUP BY program_id
+                FROM enrollment WHERE status != 'cancelled' GROUP BY program_id
             ) ec ON p.id = ec.program_id
             WHERE p.status != 'cancelled'
             ORDER BY p.id DESC
@@ -90,13 +190,10 @@ class AppModel {
                    COALESCE(ec.confirmed_count, 0) as confirmed_count
             FROM program p
             LEFT JOIN (
-                SELECT program_id,
-                       COUNT(*) as total_enrolled,
+                SELECT program_id, COUNT(*) as total_enrolled,
                        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_count,
                        SUM(CASE WHEN status = 'confirmed' THEN 1 ELSE 0 END) as confirmed_count
-                FROM enrollment
-                WHERE status != 'cancelled'
-                GROUP BY program_id
+                FROM enrollment WHERE status != 'cancelled' GROUP BY program_id
             ) ec ON p.id = ec.program_id
             WHERE p.id = ?
         ");
@@ -108,62 +205,76 @@ class AppModel {
         $db = self::getDb();
         $stmt = $db->prepare("
             SELECT e.*, u.username, u.email
-            FROM enrollment e
-            JOIN users u ON e.user_id = u.id
-            WHERE e.program_id = ?
-            ORDER BY e.enrolled_at DESC
+            FROM enrollment e JOIN users u ON e.user_id = u.id
+            WHERE e.program_id = ? ORDER BY e.enrolled_at DESC
         ");
         $stmt->execute([$programId]);
         return $stmt->fetchAll();
     }
 
+    /**
+     * Add program with BLOB image storage.
+     */
     public static function addProgram($data, $imageFile = null) {
         self::validateProgramData($data);
         $db = self::getDb();
-        $imageName = self::handleFileUpload($imageFile);
-        
-        $stmt = $db->prepare("INSERT INTO program (title, description, category, capacity, location, status, image) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([
-            $data['title'],
-            $data['description'],
-            $data['category'],
-            $data['capacity'],
-            $data['location'],
-            $data['status'] ?? 'active',
-            $imageName
-        ]);
+
+        $blob = null; $mime = null;
+        $imgData = self::readImageUpload($imageFile);
+        if ($imgData) { [$blob, $mime] = $imgData; }
+
+        $stmt = $db->prepare("
+            INSERT INTO program (title, description, category, capacity, location, status, program_image, program_image_mime)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+        $stmt->bindValue(1, $data['title']);
+        $stmt->bindValue(2, $data['description']);
+        $stmt->bindValue(3, $data['category']);
+        $stmt->bindValue(4, $data['capacity'], PDO::PARAM_INT);
+        $stmt->bindValue(5, $data['location']);
+        $stmt->bindValue(6, $data['status'] ?? 'active');
+        $stmt->bindValue(7, $blob, PDO::PARAM_LOB);
+        $stmt->bindValue(8, $mime);
+        $stmt->execute();
         return $db->lastInsertId();
     }
 
+    /**
+     * Update program with optional BLOB image.
+     */
     public static function updateProgram($id, $data, $imageFile = null) {
         self::validateProgramData($data);
         $db = self::getDb();
-        $imageName = self::handleFileUpload($imageFile);
-        
-        $sql = "UPDATE program SET title = ?, description = ?, category = ?, capacity = ?, location = ?, status = ?";
-        $params = [
-            $data['title'],
-            $data['description'],
-            $data['category'],
-            $data['capacity'],
-            $data['location'],
-            $data['status']
-        ];
-        
-        if ($imageName) {
-            $sql .= ", image = ?";
-            $params[] = $imageName;
-        }
-        
-        $sql .= " WHERE id = ?";
-        $params[] = $id;
 
-        $stmt = $db->prepare($sql);
-        return $stmt->execute($params);
+        $imgData = self::readImageUpload($imageFile);
+
+        if ($imgData) {
+            [$blob, $mime] = $imgData;
+            $stmt = $db->prepare("
+                UPDATE program SET title=?, description=?, category=?, capacity=?, location=?, status=?,
+                       program_image=?, program_image_mime=? WHERE id=?
+            ");
+            $stmt->bindValue(1, $data['title']);
+            $stmt->bindValue(2, $data['description']);
+            $stmt->bindValue(3, $data['category']);
+            $stmt->bindValue(4, $data['capacity'], PDO::PARAM_INT);
+            $stmt->bindValue(5, $data['location']);
+            $stmt->bindValue(6, $data['status']);
+            $stmt->bindValue(7, $blob, PDO::PARAM_LOB);
+            $stmt->bindValue(8, $mime);
+            $stmt->bindValue(9, $id, PDO::PARAM_INT);
+            return $stmt->execute();
+        }
+
+        $stmt = $db->prepare("
+            UPDATE program SET title=?, description=?, category=?, capacity=?, location=?, status=? WHERE id=?
+        ");
+        return $stmt->execute([$data['title'], $data['description'], $data['category'],
+            $data['capacity'], $data['location'], $data['status'], $id]);
     }
 
     /**
-     * validateProgramData() - Server-side validation and sanitization logic.
+     * Server-side validation and sanitization for programs.
      */
     private static function validateProgramData(&$data) {
         $data['title']       = trim($data['title'] ?? '');
@@ -172,69 +283,33 @@ class AppModel {
         $data['location']    = trim($data['location'] ?? '');
         $data['capacity']    = (isset($data['capacity']) && is_numeric($data['capacity'])) ? (int)$data['capacity'] : 0;
 
-        if (empty($data['title']) || strlen($data['title']) < 5) {
-            throw new Exception("Title must be at least 5 characters.");
-        }
-        if (empty($data['description']) || strlen($data['description']) < 20) {
-            throw new Exception("Description must be at least 20 characters.");
-        }
-        if (empty($data['category'])) {
-            throw new Exception("Category is required.");
-        }
-        if ($data['capacity'] <= 0) {
-            throw new Exception("Capacity must be a positive number.");
-        }
-        if (empty($data['location']) || strlen($data['location']) < 3) {
-            throw new Exception("Location must be at least 3 characters.");
-        }
-        
-        // Basic HTML sanitization for fields that are displayed
+        if (empty($data['title']) || strlen($data['title']) < 5) throw new Exception("Title must be at least 5 characters.");
+        if (empty($data['description']) || strlen($data['description']) < 20) throw new Exception("Description must be at least 20 characters.");
+        if (empty($data['category'])) throw new Exception("Category is required.");
+        if ($data['capacity'] <= 0) throw new Exception("Capacity must be a positive number.");
+        if (empty($data['location']) || strlen($data['location']) < 3) throw new Exception("Location must be at least 3 characters.");
+
         $data['title']       = htmlspecialchars($data['title'], ENT_QUOTES, 'UTF-8');
         $data['description'] = htmlspecialchars($data['description'], ENT_QUOTES, 'UTF-8');
         $data['location']    = htmlspecialchars($data['location'], ENT_QUOTES, 'UTF-8');
     }
 
-    private static function handleFileUpload($file) {
-        if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
-            return null;
-        }
-
-        $uploadDir = __DIR__ . '/../View/assets/images/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
-        }
-
-        $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-        $fileName = 'prog_' . time() . '_' . uniqid() . '.' . $extension;
-        $targetPath = $uploadDir . $fileName;
-
-        if (move_uploaded_file($file['tmp_name'], $targetPath)) {
-            return $fileName;
-        }
-
-        return null;
-    }
-
     public static function deleteProgram($id) {
         $db = self::getDb();
-        // We do a soft delete by marking as cancelled per typical admin flow
         $stmt = $db->prepare("UPDATE program SET status = 'cancelled' WHERE id = ?");
         return $stmt->execute([$id]);
     }
 
-    /**
-     * enrollUser() - Create an enrollment record.
-     * Implements E1: Capacity Exceeded check.
-     */
+    // =========================================================================
+    // ENROLLMENTS
+    // =========================================================================
+
     public static function enrollUser($userId, $programId) {
         $db = self::getDb();
-        
-        // 1. Check for duplicate
         $stmt = $db->prepare("SELECT COUNT(*) FROM enrollment WHERE user_id = ? AND program_id = ? AND status != 'cancelled'");
         $stmt->execute([$userId, $programId]);
         if ($stmt->fetchColumn() > 0) return true;
 
-        // 2. Check capacity
         $stmt = $db->prepare("SELECT capacity FROM program WHERE id = ?");
         $stmt->execute([$programId]);
         $capacity = (int)$stmt->fetchColumn();
@@ -244,8 +319,6 @@ class AppModel {
         $current = (int)$stmt->fetchColumn();
 
         $status = ($current < $capacity) ? 'pending' : 'waitlisted';
-
-        // 3. Insert
         $stmt = $db->prepare("INSERT INTO enrollment (user_id, program_id, status) VALUES (?, ?, ?)");
         return $stmt->execute([$userId, $programId, $status]);
     }
@@ -259,13 +332,10 @@ class AppModel {
 
     public static function getPendingEnrollments() {
         $db = self::getDb();
-        $stmt = $db->query("SELECT e.*, u.username, p.title as program_title 
-                            FROM enrollment e 
-                            JOIN users u ON e.user_id = u.id 
+        return $db->query("SELECT e.*, u.username, p.title as program_title 
+                            FROM enrollment e JOIN users u ON e.user_id = u.id 
                             JOIN program p ON e.program_id = p.id 
-                            WHERE e.status = 'pending' 
-                            ORDER BY e.enrolled_at ASC");
-        return $stmt->fetchAll();
+                            WHERE e.status = 'pending' ORDER BY e.enrolled_at ASC")->fetchAll();
     }
 
     public static function getAllEnrollmentsCounts() {
@@ -281,24 +351,282 @@ class AppModel {
         return $stmt->execute([$status, $id]);
     }
 
-    /**
-     * getStats() - Aggregate counts for Admin dashboard.
-     */
+    // =========================================================================
+    // STATS
+    // =========================================================================
+
     public static function getStats() {
         $db = self::getDb();
-        
-        $usersCount = $db->query("SELECT COUNT(*) FROM users")->fetchColumn();
-        $programsCount = $db->query("SELECT COUNT(*) FROM program WHERE status = 'active'")->fetchColumn();
-        $requestsCount = $db->query("SELECT COUNT(*) FROM requests")->fetchColumn();
-        $enrollmentsCount = $db->query("SELECT COUNT(*) FROM enrollment")->fetchColumn();
-        $complaintsCount = 0; // Assuming complaints table or logic to be added later
-
         return [
-            'usersCount' => (int)$usersCount,
-            'programsCount' => (int)$programsCount,
-            'requestsCount' => (int)$requestsCount,
-            'enrollmentsCount' => (int)$enrollmentsCount,
-            'complaintsCount' => (int)$complaintsCount
+            'usersCount'       => (int)$db->query("SELECT COUNT(*) FROM users")->fetchColumn(),
+            'programsCount'    => (int)$db->query("SELECT COUNT(*) FROM program WHERE status = 'active'")->fetchColumn(),
+            'requestsCount'    => (int)$db->query("SELECT COUNT(*) FROM requests")->fetchColumn(),
+            'enrollmentsCount' => (int)$db->query("SELECT COUNT(*) FROM enrollment")->fetchColumn(),
+            'appointmentsCount'=> (int)$db->query("SELECT COUNT(*) FROM appointments")->fetchColumn(),
+        ];
+    }
+
+    // =========================================================================
+    // CATEGORIES
+    // =========================================================================
+
+    public static function getCategories() {
+        return self::getDb()->query("SELECT * FROM program_category ORDER BY name ASC")->fetchAll();
+    }
+
+    public static function addCategory($name) {
+        $name = trim($name);
+        if (empty($name) || strlen($name) < 2) throw new Exception("Category name must be at least 2 characters.");
+        $name = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
+        $db = self::getDb();
+        $check = $db->prepare("SELECT COUNT(*) FROM program_category WHERE name = ?");
+        $check->execute([$name]);
+        if ($check->fetchColumn() > 0) throw new Exception("Category '$name' already exists.");
+        $stmt = $db->prepare("INSERT INTO program_category (name) VALUES (?)");
+        $stmt->execute([$name]);
+        return ['id' => $db->lastInsertId(), 'name' => $name];
+    }
+
+    public static function updateCategory($id, $name) {
+        $name = trim($name);
+        if (empty($name) || strlen($name) < 2) throw new Exception("Category name must be at least 2 characters.");
+        $name = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
+        $db = self::getDb();
+        $check = $db->prepare("SELECT COUNT(*) FROM program_category WHERE name = ? AND id != ?");
+        $check->execute([$name, $id]);
+        if ($check->fetchColumn() > 0) throw new Exception("Category '$name' already exists.");
+        $stmt = $db->prepare("UPDATE program_category SET name = ? WHERE id = ?");
+        return $stmt->execute([$name, $id]);
+    }
+
+    public static function deleteCategory($id) {
+        $db = self::getDb();
+        $cat = $db->prepare("SELECT name FROM program_category WHERE id = ?");
+        $cat->execute([$id]);
+        $catName = $cat->fetchColumn();
+        if ($catName) {
+            $check = $db->prepare("SELECT COUNT(*) FROM program WHERE category = ?");
+            $check->execute([$catName]);
+            if ($check->fetchColumn() > 0) throw new Exception("Cannot delete: category '$catName' is in use.");
+        }
+        $stmt = $db->prepare("DELETE FROM program_category WHERE id = ?");
+        return $stmt->execute([$id]);
+    }
+
+    // =========================================================================
+    // APPOINTMENTS (Module 3)
+    // =========================================================================
+
+    /**
+     * Book an appointment with double-booking validation.
+     */
+    public static function createAppointment(array $data, int $userId): array {
+        $db = self::getDb();
+        $svcType = trim($data['service_type'] ?? '');
+        $date    = trim($data['preferred_date'] ?? '');
+        $time    = trim($data['preferred_time'] ?? '');
+        $notes   = trim($data['notes'] ?? '');
+
+        if (empty($svcType)) throw new Exception('Service type is required.');
+        if (empty($date))    throw new Exception('Preferred date is required.');
+        if (empty($time))    throw new Exception('Preferred time is required.');
+        if (strtotime($date) < strtotime('today')) throw new Exception('Cannot book in the past.');
+
+        // Find an available agent for this service type on this day
+        $dayOfWeek = (int)date('w', strtotime($date));
+        $slotStmt = $db->prepare("
+            SELECT s.agent_id FROM appointment_slots s
+            WHERE s.service_type = ? AND s.day_of_week = ? AND s.is_active = 1
+              AND s.start_time <= ? AND s.end_time > ?
+            LIMIT 1
+        ");
+        $slotStmt->execute([$svcType, $dayOfWeek, $time, $time]);
+        $agentId = $slotStmt->fetchColumn() ?: null;
+
+        // Check for double-booking (same agent, same date/time, confirmed)
+        if ($agentId) {
+            $dblCheck = $db->prepare("
+                SELECT COUNT(*) FROM appointments 
+                WHERE assigned_to = ? AND preferred_date = ? AND preferred_time = ?
+                  AND status IN ('pending','confirmed')
+            ");
+            $dblCheck->execute([$agentId, $date, $time]);
+            if ((int)$dblCheck->fetchColumn() > 0) {
+                throw new Exception('This time slot is already booked. Please choose another.');
+            }
+        }
+
+        $stmt = $db->prepare("
+            INSERT INTO appointments (user_id, service_type, preferred_date, preferred_time, notes, assigned_to)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ");
+        $stmt->execute([$userId, $svcType, $date, $time, $notes, $agentId]);
+        $id = $db->lastInsertId();
+
+        // Log notification
+        self::createNotification($userId, 'Appointment Booked',
+            "Your appointment for {$svcType} on {$date} at {$time} has been submitted.", 'appointment');
+
+        return ['id' => $id, 'status' => 'pending'];
+    }
+
+    public static function getAppointmentsByUser(int $userId): array {
+        $db = self::getDb();
+        $stmt = $db->prepare("
+            SELECT a.*, u.username as agent_name FROM appointments a
+            LEFT JOIN users u ON a.assigned_to = u.id
+            WHERE a.user_id = ? ORDER BY a.preferred_date DESC, a.preferred_time DESC
+        ");
+        $stmt->execute([$userId]);
+        return $stmt->fetchAll();
+    }
+
+    public static function getAppointmentsByAgent(int $agentId): array {
+        $db = self::getDb();
+        $stmt = $db->prepare("
+            SELECT a.*, u.username as user_name FROM appointments a
+            LEFT JOIN users u ON a.user_id = u.id
+            WHERE a.assigned_to = ? ORDER BY a.preferred_date ASC, a.preferred_time ASC
+        ");
+        $stmt->execute([$agentId]);
+        return $stmt->fetchAll();
+    }
+
+    public static function getAllAppointments(): array {
+        $db = self::getDb();
+        return $db->query("
+            SELECT a.*, u.username as user_name, ag.username as agent_name
+            FROM appointments a
+            LEFT JOIN users u ON a.user_id = u.id
+            LEFT JOIN users ag ON a.assigned_to = ag.id
+            ORDER BY a.preferred_date DESC
+        ")->fetchAll();
+    }
+
+    public static function updateAppointmentStatus(int $id, string $status, ?string $reason = null,
+                                                    ?string $newDate = null, ?string $newTime = null): bool {
+        $db = self::getDb();
+        $stmt = $db->prepare("
+            UPDATE appointments SET status = ?, reschedule_reason = ?, new_date = ?, new_time = ? WHERE id = ?
+        ");
+        $result = $stmt->execute([$status, $reason, $newDate, $newTime, $id]);
+
+        // Get appointment details for notification
+        $apt = $db->prepare("SELECT * FROM appointments WHERE id = ?");
+        $apt->execute([$id]);
+        $row = $apt->fetch();
+        if ($row) {
+            $msg = "Your appointment for {$row['service_type']} has been {$status}.";
+            if ($reason) $msg .= " Reason: {$reason}";
+            self::createNotification((int)$row['user_id'], "Appointment {$status}", $msg, 'appointment');
+        }
+        return $result;
+    }
+
+    public static function cancelAppointment(int $id, int $userId): bool {
+        $db = self::getDb();
+        // Only allow cancelling own future appointments
+        $stmt = $db->prepare("
+            SELECT id FROM appointments 
+            WHERE id = ? AND user_id = ? AND preferred_date >= CURDATE() AND status NOT IN ('cancelled','completed')
+        ");
+        $stmt->execute([$id, $userId]);
+        if (!$stmt->fetch()) throw new Exception('Cannot cancel this appointment.');
+
+        $upd = $db->prepare("UPDATE appointments SET status = 'cancelled' WHERE id = ?");
+        return $upd->execute([$id]);
+    }
+
+    // =========================================================================
+    // APPOINTMENT SLOTS (Admin-managed)
+    // =========================================================================
+
+    public static function createSlot(array $data): int {
+        $db = self::getDb();
+        $stmt = $db->prepare("
+            INSERT INTO appointment_slots (agent_id, service_type, day_of_week, start_time, end_time)
+            VALUES (?, ?, ?, ?, ?)
+        ");
+        $stmt->execute([
+            (int)$data['agent_id'], trim($data['service_type']),
+            (int)$data['day_of_week'], $data['start_time'], $data['end_time']
+        ]);
+        return (int)$db->lastInsertId();
+    }
+
+    public static function getSlotsByAgent(int $agentId): array {
+        $db = self::getDb();
+        $stmt = $db->prepare("SELECT * FROM appointment_slots WHERE agent_id = ? ORDER BY day_of_week, start_time");
+        $stmt->execute([$agentId]);
+        return $stmt->fetchAll();
+    }
+
+    public static function getAllSlots(): array {
+        $db = self::getDb();
+        return $db->query("
+            SELECT s.*, u.username as agent_name FROM appointment_slots s
+            LEFT JOIN users u ON s.agent_id = u.id ORDER BY s.day_of_week, s.start_time
+        ")->fetchAll();
+    }
+
+    public static function deleteSlot(int $id): bool {
+        $db = self::getDb();
+        return $db->prepare("DELETE FROM appointment_slots WHERE id = ?")->execute([$id]);
+    }
+
+    public static function getAvailableSlots(string $serviceType, string $date): array {
+        $db = self::getDb();
+        $dow = (int)date('w', strtotime($date));
+        $stmt = $db->prepare("
+            SELECT s.*, u.username as agent_name FROM appointment_slots s
+            LEFT JOIN users u ON s.agent_id = u.id
+            WHERE s.service_type = ? AND s.day_of_week = ? AND s.is_active = 1
+            ORDER BY s.start_time
+        ");
+        $stmt->execute([$serviceType, $dow]);
+        return $stmt->fetchAll();
+    }
+
+    // =========================================================================
+    // NOTIFICATIONS
+    // =========================================================================
+
+    public static function createNotification(int $userId, string $title, string $body, string $type = 'info'): void {
+        $db = self::getDb();
+        $stmt = $db->prepare("INSERT INTO notifications (user_id, title, body, type) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$userId, $title, $body, $type]);
+    }
+
+    public static function getNotificationsByUser(int $userId): array {
+        $db = self::getDb();
+        $stmt = $db->prepare("SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50");
+        $stmt->execute([$userId]);
+        return $stmt->fetchAll();
+    }
+
+    public static function markNotificationRead(int $id): bool {
+        $db = self::getDb();
+        return $db->prepare("UPDATE notifications SET is_read = 1 WHERE id = ?")->execute([$id]);
+    }
+
+    public static function getUnreadCount(int $userId): int {
+        $db = self::getDb();
+        $stmt = $db->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0");
+        $stmt->execute([$userId]);
+        return (int)$stmt->fetchColumn();
+    }
+
+    // =========================================================================
+    // SERVICE TYPES (for appointment booking dropdown)
+    // =========================================================================
+    public static function getServiceTypes(): array {
+        return [
+            ['value' => 'Birth Certificate', 'label' => 'Birth Certificate'],
+            ['value' => 'ID Card Renewal', 'label' => 'ID Card Renewal'],
+            ['value' => 'Residence Certificate', 'label' => 'Residence Certificate'],
+            ['value' => 'Building Permit', 'label' => 'Building Permit'],
+            ['value' => 'General Inquiry', 'label' => 'General Inquiry'],
+            ['value' => 'Document Verification', 'label' => 'Document Verification'],
         ];
     }
     // ============================================
@@ -547,15 +875,23 @@ class AppModel {
     }
 
     public static function addTicket($data) {
-        $sql = "INSERT INTO ticket (user_id, ref, citizenName, idTrajet, issuedAt, status) VALUES (?, ?, ?, ?, NOW(), 'Valid')";
         $db = self::getDb();
-        $query = $db->prepare($sql);
-        return $query->execute([
-            $data['idUser'],
-            self::generateRef(),
-            $data['citizenName'],
-            $data['idTrajet']
-        ]);
+        try {
+            $db->beginTransaction();
+            $sql = "INSERT INTO ticket (user_id, ref, citizenName, idTrajet, issuedAt, status) VALUES (?, ?, ?, ?, NOW(), 'Valid')";
+            $query = $db->prepare($sql);
+            $result = $query->execute([
+                $data['user_id'],
+                self::generateRef(),
+                $data['citizenName'],
+                $data['idTrajet']
+            ]);
+            $db->commit();
+            return $result;
+        } catch (Exception $e) {
+            $db->rollBack();
+            throw $e;
+        }
     }
 
     public static function cancelTicket($idTicket) {

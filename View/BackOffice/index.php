@@ -3,6 +3,20 @@
  * BackOffice/index.php
  * Main entry point for CivicPortal Staff Portal
  */
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Guard: Only admin and agent roles can access BackOffice
+if (!isset($_SESSION['user_id'])) {
+    header('Location: ../FrontOffice/login.php');
+    exit;
+}
+if (!in_array($_SESSION['user_role'] ?? '', ['agent', 'admin'])) {
+    header('Location: ../FrontOffice/index.php');
+    exit;
+}
+
 require_once '../../Model/AppModel.php';
 AppModel::init();
 ?>
@@ -13,13 +27,29 @@ AppModel::init();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CivicPortal | Staff Portal</title>
     <meta name="description" content="Administrative and Worker functionalities for CivicPortal.">
-    <link rel="stylesheet" href="../assets/css/style.css?v=2.0">
-    <style>
-        /* Quick override for staff portal header styling if needed */
-        .nav-brand { color: var(--primary-red); }
-    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
 </head>
 <body>
+
+    <!-- Mobile: hamburger toggle -->
+    <button id="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Mobile: backdrop overlay (closes sidebar on tap) -->
+    <div class="backdrop" id="sidebar-backdrop"></div>
+
+    <!-- Inject PHP Session State into JS Environment -->
+    <script>
+        window.SERVER_USER = {
+            id: <?= json_encode($_SESSION['user_id'] ?? null) ?>,
+            name: <?= json_encode($_SESSION['user_name'] ?? 'Staff') ?>,
+            email: <?= json_encode($_SESSION['user_email'] ?? '') ?>,
+            role: <?= json_encode($_SESSION['user_role'] ?? '') ?>
+        };
+    </script>
 
     <!-- Header & Navigation -->
     <nav>
@@ -29,26 +59,24 @@ AppModel::init();
     <!-- Main Content Area -->
     <main id="app">
         <!-- Dynamic content injected here -->
-        <div style="padding: 100px; text-align: center;">
-            <p>Loading CivicPortal Back Office...</p>
+        <div class="uv-loader-wrapper">
+            <div class="uv-loader">
+                <div class="uv-loader-orbit"></div>
+                <div class="uv-loader-orbit"></div>
+                <div class="uv-loader-orbit"></div>
+            </div>
+            <p class="uv-loader-text">Loading Staff Portal</p>
         </div>
     </main>
 
     <!-- Toast Notifications Container -->
     <div id="toast-container" class="toast-container"></div>
 
-    <!-- Role Switcher (For Staff Demonstration Purposes) -->
-    <div class="role-switcher-container">
-        <label for="demo-role-switcher">Switch Staff Role:</label>
-        <select id="demo-role-switcher">
-            <option value="worker" selected>Worker (Staff)</option>
-            <option value="admin">Admin</option>
-        </select>
-        <small style="display: block; margin-top: 5px; opacity: 0.8; font-size: 0.6rem;">*Staff MVC Testing Mode</small>
-    </div>
 
     <!-- Scripts -->
     <script src="https://js.puter.com/v2/"></script>
     <script type="module" src="app.js"></script>
+    <script src="../assets/js/glass-animations.js"></script>
+    <script src="../assets/js/sidebar.js" defer></script>
 </body>
 </html>
