@@ -26,16 +26,26 @@ const model = {
     // -------------------------------------------------------------------------
     async apiCall(action, data = {}) {
         try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+            
             const response = await fetch('../../Verification.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action, data })
+                body: JSON.stringify({ action, data }),
+                signal: controller.signal
             });
+            clearTimeout(timeout);
+            
             const result = await response.json();
             if (!result.success) throw new Error(result.error);
             return result.data;
         } catch (error) {
-            console.error('API Error:', error);
+            if (error.name === 'AbortError') {
+                console.error('API Timeout:', action);
+            } else {
+                console.error('API Error:', error);
+            }
             return null;
         }
     },
@@ -45,16 +55,26 @@ const model = {
      */
     async apiUpload(action, formData) {
         try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 15000); // 15 second timeout for uploads
+            
             formData.append('action', action);
             const response = await fetch('../../Verification.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                signal: controller.signal
             });
+            clearTimeout(timeout);
+            
             const result = await response.json();
             if (!result.success) throw new Error(result.error);
             return result.data;
         } catch (error) {
-            console.error('Upload Error:', error);
+            if (error.name === 'AbortError') {
+                console.error('Upload Timeout:', action);
+            } else {
+                console.error('Upload Error:', error);
+            }
             return null;
         }
     },
@@ -64,16 +84,26 @@ const model = {
     // -------------------------------------------------------------------------
     async transportApi(action, data = {}) {
         try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+            
             const response = await fetch('../../api_transport.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action, ...data })
+                body: JSON.stringify({ action, ...data }),
+                signal: controller.signal
             });
+            clearTimeout(timeout);
+            
             const result = await response.json();
             if (!result.success) throw new Error(result.error);
             return result.data;
         } catch (error) {
-            console.error('Transport API Error:', error);
+            if (error.name === 'AbortError') {
+                console.error('Transport API Timeout:', action);
+            } else {
+                console.error('Transport API Error:', error);
+            }
             return null;
         }
     },
@@ -82,18 +112,38 @@ const model = {
     // Sync: fetch all data the front-office needs on load
     // -------------------------------------------------------------------------
     async sync() {
-        const [requests, programs, enrollments, types, svcTypes] = await Promise.all([
-            this.apiCall('get_my_requests'),
-            this.apiCall('get_programs'),
-            this.apiCall('get_enrollments', { userId: this.state.currentUser.id }),
-            this.transportApi('list_transport_types'),
-            this.apiCall('get_service_types'),
-        ]);
-        if (requests) this.state.serviceRequests = requests;
-        if (programs) this.state.programs = programs;
-        if (enrollments) this.state.enrollments = enrollments;
-        if (types) this.state.transportTypes = types;
-        if (svcTypes) this.state.serviceTypes = svcTypes;
+        console.log('Model: Starting sync...');
+        
+        try {
+            const promises = [
+                this.apiCall('get_my_requests'),
+                this.apiCall('get_programs'),
+                this.apiCall('get_enrollments', { userId: this.state.currentUser.id }),
+                this.transportApi('list_transport_types'),
+                this.apiCall('get_service_types'),
+            ];
+            
+            console.log('Model: Waiting for all API calls...');
+            const [requests, programs, enrollments, types, svcTypes] = await Promise.all(promises);
+            
+            console.log('Model: API calls complete');
+            console.log('  - requests:', requests);
+            console.log('  - programs:', programs);
+            console.log('  - enrollments:', enrollments);
+            console.log('  - types:', types);
+            console.log('  - svcTypes:', svcTypes);
+            
+            if (requests) this.state.serviceRequests = requests;
+            if (programs) this.state.programs = programs;
+            if (enrollments) this.state.enrollments = enrollments;
+            if (types) this.state.transportTypes = types;
+            if (svcTypes) this.state.serviceTypes = svcTypes;
+            
+            console.log('Model: Sync complete, state updated');
+        } catch (error) {
+            console.error('Model: Error during sync:', error);
+            throw error; // Re-throw so controller can handle it
+        }
     },
 
     // -------------------------------------------------------------------------

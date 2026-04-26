@@ -8,10 +8,31 @@ import view from './view.js';
 
 const controller = {
     async init() {
-        await model.sync();
-        this.setupEventListeners();
-        this.handleRouting();
-        view.renderNavBar(model.getCurrentUser());
+        try {
+            console.log('Controller: Starting initialization...');
+            
+            console.log('Controller: Syncing model...');
+            await model.sync();
+            console.log('Controller: Sync complete');
+            
+            console.log('Controller: Setting up event listeners...');
+            this.setupEventListeners();
+            console.log('Controller: Event listeners set up');
+            
+            console.log('Controller: Handling routing...');
+            this.handleRouting();
+            console.log('Controller: Routing handled');
+            
+            console.log('Controller: Rendering navigation...');
+            view.renderNavBar(model.getCurrentUser());
+            console.log('Controller: Navigation rendered');
+            
+            console.log('Controller: Initialization complete!');
+        } catch (error) {
+            console.error('FATAL ERROR during initialization:', error);
+            console.error('Stack:', error.stack);
+            view.renderToast('Error loading CivicPortal: ' + error.message, 'error');
+        }
     },
 
     setupEventListeners() {

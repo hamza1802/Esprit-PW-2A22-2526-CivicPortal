@@ -1,16 +1,16 @@
 <?php
 class Ticket {
     private ?int $idTicket;
-    private ?int $idUser;
+    private ?int $user_id;
     private ?string $ref;
     private ?string $citizenName;
     private ?int $idTrajet;
     private ?string $issuedAt;
     private ?string $status;
 
-    public function __construct(?int $idTicket, ?int $idUser, ?string $ref, ?string $citizenName, ?int $idTrajet, ?string $issuedAt, ?string $status) {
+    public function __construct(?int $idTicket, ?int $user_id, ?string $ref, ?string $citizenName, ?int $idTrajet, ?string $issuedAt, ?string $status) {
         $this->idTicket = $idTicket;
-        $this->idUser = $idUser;
+        $this->user_id = $user_id;
         $this->ref = $ref;
         $this->citizenName = $citizenName;
         $this->idTrajet = $idTrajet;
@@ -20,7 +20,7 @@ class Ticket {
 
     // Getters
     public function getIdTicket(): ?int { return $this->idTicket; }
-    public function getIdUser(): ?int { return $this->idUser; }
+    public function getUserId(): ?int { return $this->user_id; }
     public function getRef(): ?string { return $this->ref; }
     public function getCitizenName(): ?string { return $this->citizenName; }
     public function getIdTrajet(): ?int { return $this->idTrajet; }
@@ -28,7 +28,7 @@ class Ticket {
     public function getStatus(): ?string { return $this->status; }
 
     // Setters
-    public function setIdUser(?int $idUser): void { $this->idUser = $idUser; }
+    public function setUserId(?int $user_id): void { $this->user_id = $user_id; }
     public function setRef(string $ref): void { $this->ref = $ref; }
     public function setCitizenName(string $citizenName): void { $this->citizenName = $citizenName; }
     public function setIdTrajet(int $idTrajet): void { $this->idTrajet = $idTrajet; }

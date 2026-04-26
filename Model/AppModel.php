@@ -634,7 +634,7 @@ class AppModel {
     // ============================================
 
     public static function listTransportTypes() {
-        $sql = "SELECT * FROM transport_type ORDER BY name ASC";
+        $sql = "SELECT idTransportType, name, description FROM transport_type ORDER BY name ASC";
         $db = self::getDb();
         return $db->query($sql)->fetchAll();
     }
@@ -648,51 +648,73 @@ class AppModel {
     }
 
     public static function addTransportType($data, $imageFile = null) {
-        $photoUrl = self::handleTypePhotoUpload($imageFile);
-        $sql = "INSERT INTO transport_type (name, description, photo_url) VALUES (?, ?, ?)";
         $db = self::getDb();
-        $stmt = $db->prepare($sql);
-        return $stmt->execute([
-            $data['name'],
-            $data['description'],
-            $photoUrl
-        ]);
+        if ($imageFile && isset($imageFile['tmp_name']) && $imageFile['error'] === UPLOAD_ERR_OK) {
+            $blob = file_get_contents($imageFile['tmp_name']);
+            $mime = mime_content_type($imageFile['tmp_name']) ?: 'image/jpeg';
+            $sql = "INSERT INTO transport_type (name, description, image_blob, image_mime) VALUES (?, ?, ?, ?)";
+            $stmt = $db->prepare($sql);
+            $stmt->bindValue(1, $data['name']);
+            $stmt->bindValue(2, $data['description']);
+            $stmt->bindValue(3, $blob, PDO::PARAM_LOB);
+            $stmt->bindValue(4, $mime);
+            return $stmt->execute();
+        } else {
+            $sql = "INSERT INTO transport_type (name, description) VALUES (?, ?)";
+            $stmt = $db->prepare($sql);
+            return $stmt->execute([$data['name'], $data['description']]);
+        }
     }
 
     public static function updateTransportType($id, $data, $imageFile = null) {
         $db = self::getDb();
-        $photoUrl = self::handleTypePhotoUpload($imageFile);
-        
-        if ($photoUrl) {
-            $sql = "UPDATE transport_type SET name = ?, description = ?, photo_url = ? WHERE idTransportType = ?";
+        if ($imageFile && isset($imageFile['tmp_name']) && $imageFile['error'] === UPLOAD_ERR_OK) {
+            $blob = file_get_contents($imageFile['tmp_name']);
+            $mime = mime_content_type($imageFile['tmp_name']) ?: 'image/jpeg';
+            $sql = "UPDATE transport_type SET name = ?, description = ?, image_blob = ?, image_mime = ? WHERE idTransportType = ?";
             $stmt = $db->prepare($sql);
-            $stmt->execute([$data['name'], $data['description'], $photoUrl, $id]);
+            $stmt->bindValue(1, $data['name']);
+            $stmt->bindValue(2, $data['description']);
+            $stmt->bindValue(3, $blob, PDO::PARAM_LOB);
+            $stmt->bindValue(4, $mime);
+            $stmt->bindValue(5, $id);
+            return $stmt->execute();
         } else {
             $sql = "UPDATE transport_type SET name = ?, description = ? WHERE idTransportType = ?";
             $stmt = $db->prepare($sql);
-            $stmt->execute([$data['name'], $data['description'], $id]);
+            return $stmt->execute([$data['name'], $data['description'], $id]);
         }
-        return true;
     }
 
     public static function deleteTransportType($id) {
         $db = self::getDb();
-        // 1. Fetch the record to get the photo path before deletion
-        $existing = self::showTransportType($id);
-
-        // 2. Delete the database row
         $sql = "DELETE FROM transport_type WHERE idTransportType = ?";
-        $req = $db->prepare($sql);
-        $req->execute([$id]);
+        $stmt = $db->prepare($sql);
+        return $stmt->execute([$id]);
+    }
 
-        // 3. Cleanup: remove the associated photo file from disk
-        if ($existing && !empty($existing['photo_url'])) {
-            $filePath = __DIR__ . '/../View/assets/images/' . $existing['photo_url'];
-            if (file_exists($filePath)) {
-                @unlink($filePath);
-            }
+    public static function registerAgent(array $data) {
+        $db = self::getDb();
+        $name = trim($data['name']);
+        $email = trim($data['email']);
+        $passwordHash = password_hash($data['password'], PASSWORD_BCRYPT);
+        // Force the role to 'agent' securely
+        $role = 'agent';
+
+        $stmt = $db->prepare('INSERT INTO users (username, email, password_hash, role) VALUES (:username, :email, :password_hash, :role)');
+        
+        try {
+            $stmt->execute([
+                'username'      => $name,
+                'email'         => $email,
+                'password_hash' => $passwordHash,
+                'role'          => $role
+            ]);
+            return $db->lastInsertId();
+        } catch (\PDOException $e) {
+            error_log('[CivicPortal][AppModel] Failed to register agent: ' . $e->getMessage());
+            return false;
         }
-        return true;
     }
 
     private static function handleTypePhotoUpload($file) {
@@ -861,17 +883,25 @@ class AppModel {
         return $db->query($sql)->fetchAll();
     }
 
-    public static function listTicketsEnriched() {
-        $sql = "SELECT tk.*, t.departure, t.destination, t.departureTime, t.price, t.depLat, t.depLng, t.depAddress, t.destLat, t.destLng, t.destAddress,
+    public static function listTicketsEnriched($userId = null) {
+        $sql = "SELECT tk.*, tk.idTicket, t.departure, t.destination, t.departureTime, t.price, t.depLat, t.depLng, t.depAddress, t.destLat, t.destLng, t.destAddress,
                        tr.name as transportName, tr.capacity,
-                       tt.name as typeName, tt.photo_url as typePhoto, tt.description as typeDescription
+                       tt.idTransportType as typeId, tt.name as typeName, tt.description as typeDescription
                 FROM ticket tk
                 LEFT JOIN trajet t ON tk.idTrajet = t.idTrajet
                 LEFT JOIN transport tr ON t.idTransport = tr.idTransport
-                LEFT JOIN transport_type tt ON tr.idTransportType = tt.idTransportType
-                ORDER BY tk.issuedAt DESC";
+                LEFT JOIN transport_type tt ON tr.idTransportType = tt.idTransportType";
+
         $db = self::getDb();
-        return $db->query($sql)->fetchAll();
+        if ($userId !== null) {
+            $sql .= " WHERE tk.user_id = ? ORDER BY tk.issuedAt DESC";
+            $stmt = $db->prepare($sql);
+            $stmt->execute([$userId]);
+            return $stmt->fetchAll();
+        } else {
+            $sql .= " ORDER BY tk.issuedAt DESC";
+            return $db->query($sql)->fetchAll();
+        }
     }
 
     public static function addTicket($data) {
@@ -912,5 +942,3 @@ class AppModel {
         return 'CIV-' . rand(1000, 9999);
     }
 }
-?>
-

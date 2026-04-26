@@ -28,6 +28,7 @@ AppModel::init();
     <title>CivicPortal | Staff Portal</title>
     <meta name="description" content="Administrative and Worker functionalities for CivicPortal.">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/admin.css">
 </head>
@@ -74,6 +75,7 @@ AppModel::init();
 
 
     <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://js.puter.com/v2/"></script>
     <script type="module" src="app.js"></script>
     <script src="../assets/js/glass-animations.js"></script>

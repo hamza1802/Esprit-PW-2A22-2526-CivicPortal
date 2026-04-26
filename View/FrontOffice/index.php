@@ -11,23 +11,17 @@ if (empty($_SESSION['user_id'])) {
     exit;
 }
 
-require_once '../../Model/User.php';
-require_once '../../Model/Profile.php';
-require_once '../../Controller/UserController.php';
-
-$uid            = (int)$_SESSION['user_id'];
-$currentProfile = UserController::getProfileByUserId($uid);
-$currentUserObj = UserController::getUserById($uid);
-
+// Use session data directly - avoid blocking database calls before rendering HTML
+// Profile data will be fetched via API if needed by the frontend
 $currentUser = [
-    'id'            => $uid,
+    'id'            => (int)$_SESSION['user_id'],
     'name'          => $_SESSION['user_name']  ?? 'Citizen',
     'email'         => $_SESSION['user_email'] ?? '',
     'role'          => $_SESSION['user_role']  ?? 'citizen',
-    'bio'           => $currentProfile ? $currentProfile->getBio()         : '',
-    'phoneNumber'   => $currentProfile ? $currentProfile->getPhoneNumber() : '',
-    'dateOfBirth'   => $currentProfile ? $currentProfile->getDateOfBirth() : '',
-    'has_profile_pic' => $currentUserObj ? $currentUserObj->hasProfilePic() : false,
+    'bio'           => '',  // Will be loaded by frontend via API
+    'phoneNumber'   => '',  // Will be loaded by frontend via API
+    'dateOfBirth'   => '',  // Will be loaded by frontend via API
+    'has_profile_pic' => false,  // Will be loaded by frontend via API
 ];
 ?>
 <!DOCTYPE html>
@@ -44,11 +38,16 @@ $currentUser = [
 <body>
 
     <!-- Inject PHP Session State into JS Environment -->
+    <?php
+        $sessSuccess = $_SESSION['successMessage'] ?? null;
+        $sessErrors  = $_SESSION['errorMessage']   ?? null;
+        unset($_SESSION['successMessage'], $_SESSION['errorMessage']);
+    ?>
     <script>
         window.SERVER_USER = <?= json_encode($currentUser, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
         window.SERVER_MESSAGES = {
-            success: <?= json_encode($successMsg) ?>,
-            errors: <?= json_encode($errorsMsg) ?>
+            success: <?= json_encode($sessSuccess) ?>,
+            errors: <?= json_encode($sessErrors) ?>
         };
     </script>
 

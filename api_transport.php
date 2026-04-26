@@ -34,7 +34,7 @@ try { switch ($action) {
         // TRANSPORT TYPES
         // ============================================
         case 'list_transport_types':
-            $types = MainController::listTransportTypes();
+            $types = AppModel::listTransportTypes();
             echo json_encode(['success' => true, 'data' => $types]);
             break;
 
@@ -42,43 +42,41 @@ try { switch ($action) {
         // TRANSPORT VEHICLES
         // ============================================
         case 'list_transports':
-            $transports = MainController::listTransports();
+            $transports = AppModel::listTransports();
             echo json_encode(['success' => true, 'data' => $transports]);
             break;
 
         case 'get_transport':
-            $transport = MainController::showTransport((int)($input['idTransport'] ?? 0));
+            $transport = AppModel::showTransport((int)($input['idTransport'] ?? 0));
             echo json_encode(['success' => true, 'data' => $transport]);
             break;
 
         case 'add_transport':
-            $transport = new Transport(
-                null,
-                $input['name'],
-                $input['type'],
-                (int)$input['capacity'],
-                $input['status'],
-                isset($input['idTransportType']) ? (int)$input['idTransportType'] : null
-            );
-            MainController::addTransport($transport);
+            $transport = [
+                'name' => $input['name'],
+                'type' => $input['type'],
+                'capacity' => (int)$input['capacity'],
+                'status' => $input['status'],
+                'idTransportType' => !empty($input['idTransportType']) ? (int)$input['idTransportType'] : null
+            ];
+            AppModel::addTransport($transport);
             echo json_encode(['success' => true]);
             break;
 
         case 'update_transport':
-            $transport = new Transport(
-                (int)$input['idTransport'],
-                $input['name'],
-                $input['type'],
-                (int)$input['capacity'],
-                $input['status'],
-                isset($input['idTransportType']) ? (int)$input['idTransportType'] : null
-            );
-            MainController::updateTransport($transport, (int)$input['idTransport']);
+            $transport = [
+                'name' => $input['name'],
+                'type' => $input['type'],
+                'capacity' => (int)$input['capacity'],
+                'status' => $input['status'],
+                'idTransportType' => !empty($input['idTransportType']) ? (int)$input['idTransportType'] : null
+            ];
+            AppModel::updateTransport((int)$input['idTransport'], $transport);
             echo json_encode(['success' => true]);
             break;
 
         case 'delete_transport':
-            MainController::deleteTransport((int)($input['idTransport'] ?? 0));
+            AppModel::deleteTransport((int)($input['idTransport'] ?? 0));
             echo json_encode(['success' => true]);
             break;
 
@@ -86,10 +84,10 @@ try { switch ($action) {
         // TRAJETS (ROUTES)
         // ============================================
         case 'list_all_trajets':
-            $trajets  = MainController::listTrajets();
+            $trajets  = AppModel::listTrajets();
             $enriched = [];
             foreach ($trajets as $t) {
-                $occ        = MainController::getOccupancy($t['idTrajet']);
+                $occ        = AppModel::getOccupancy($t['idTrajet']);
                 $enriched[] = array_merge($t, ['capacity' => $occ['capacity'], 'sold' => $occ['sold']]);
             }
             echo json_encode(['success' => true, 'data' => $enriched]);
@@ -100,10 +98,10 @@ try { switch ($action) {
             $sortBy = $input['sortBy']  ?? 'departure';
             $order  = $input['order']   ?? 'ASC';
 
-            $trajets  = MainController::listTrajetsByTypeAndSort($type, $sortBy, $order);
+            $trajets  = AppModel::listTrajetsByTypeAndSort($type, $sortBy, $order);
             $enriched = [];
             foreach ($trajets as $t) {
-                $occ        = MainController::getOccupancy($t['idTrajet']);
+                $occ        = AppModel::getOccupancy($t['idTrajet']);
                 $enriched[] = [
                     'idTrajet'      => $t['idTrajet'],
                     'departure'     => $t['departure'],
@@ -125,26 +123,43 @@ try { switch ($action) {
             break;
 
         case 'add_trajet':
-            $trajet = new Trajet(
-                null,
-                $input['departure'],
-                $input['destination'],
-                (int)$input['idTransport'],
-                $input['departureTime'],
-                (float)$input['price'],
-                isset($input['depLat'])  ? (float)$input['depLat']  : null,
-                isset($input['depLng'])  ? (float)$input['depLng']  : null,
-                $input['depAddress']  ?? null,
-                isset($input['destLat']) ? (float)$input['destLat'] : null,
-                isset($input['destLng']) ? (float)$input['destLng'] : null,
-                $input['destAddress'] ?? null
-            );
-            MainController::addTrajet($trajet);
+            $trajet = [
+                'departure'     => $input['departure'],
+                'destination'   => $input['destination'],
+                'idTransport'   => (int)$input['idTransport'],
+                'departureTime' => $input['departureTime'],
+                'price'         => (float)$input['price'],
+                'depLat'        => isset($input['depLat']) ? (float)$input['depLat'] : null,
+                'depLng'        => isset($input['depLng']) ? (float)$input['depLng'] : null,
+                'depAddress'    => $input['depAddress'] ?? null,
+                'destLat'       => isset($input['destLat']) ? (float)$input['destLat'] : null,
+                'destLng'       => isset($input['destLng']) ? (float)$input['destLng'] : null,
+                'destAddress'   => $input['destAddress'] ?? null
+            ];
+            AppModel::addTrajet($trajet);
+            echo json_encode(['success' => true]);
+            break;
+
+        case 'update_trajet':
+            $trajet = [
+                'departure'     => $input['departure'],
+                'destination'   => $input['destination'],
+                'idTransport'   => (int)$input['idTransport'],
+                'departureTime' => $input['departureTime'],
+                'price'         => (float)$input['price'],
+                'depLat'        => isset($input['depLat']) ? (float)$input['depLat'] : null,
+                'depLng'        => isset($input['depLng']) ? (float)$input['depLng'] : null,
+                'depAddress'    => $input['depAddress'] ?? null,
+                'destLat'       => isset($input['destLat']) ? (float)$input['destLat'] : null,
+                'destLng'       => isset($input['destLng']) ? (float)$input['destLng'] : null,
+                'destAddress'   => $input['destAddress'] ?? null
+            ];
+            AppModel::updateTrajet((int)$input['idTrajet'], $trajet);
             echo json_encode(['success' => true]);
             break;
 
         case 'delete_trajet':
-            MainController::deleteTrajet((int)($input['idTrajet'] ?? 0));
+            AppModel::deleteTrajet((int)($input['idTrajet'] ?? 0));
             echo json_encode(['success' => true]);
             break;
 
@@ -152,14 +167,14 @@ try { switch ($action) {
         // TICKETS
         // ============================================
         case 'list_tickets':
-            $tickets = MainController::listTickets();
+            $tickets = AppModel::listTickets();
             echo json_encode(['success' => true, 'data' => $tickets]);
             break;
 
         case 'list_tickets_enriched':
             // Front-office: scope to logged-in citizen only
             $userId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null;
-            $tickets = MainController::listTicketsEnriched($userId);
+            $tickets = AppModel::listTicketsEnriched($userId);
             echo json_encode(['success' => true, 'data' => $tickets]);
             break;
 
@@ -171,7 +186,7 @@ try { switch ($action) {
 
             $idTrajet    = (int)($input['idTrajet'] ?? 0);
             $citizenName = trim($input['citizenName'] ?? '');
-            $idUser      = (int)$_SESSION['user_id'];
+            $user_id     = (int)$_SESSION['user_id'];
 
             // SECURITY: server-side validation — never trust client-supplied lengths.
             // idTrajet must be a positive integer; citizenName is bounded to DB column width.
@@ -184,16 +199,19 @@ try { switch ($action) {
                 break;
             }
 
-            $occ = MainController::getOccupancy($idTrajet);
+            $occ = AppModel::getOccupancy($idTrajet);
             if ($occ['capacity'] > 0 && $occ['sold'] >= $occ['capacity']) {
                 echo json_encode(['success' => false, 'error' => 'Route is sold out.']);
                 break;
             }
 
-            $ref    = MainController::generateRef();
-            $ticket = new Ticket(null, $idUser, $ref, $citizenName, $idTrajet, null, 'Valid');
-            MainController::addTicket($ticket);
-            echo json_encode(['success' => true, 'ref' => $ref]);
+            $data = [
+                'user_id'     => $user_id,
+                'citizenName' => $citizenName,
+                'idTrajet'    => $idTrajet
+            ];
+            AppModel::addTicket($data);
+            echo json_encode(['success' => true]);
             break;
 
         case 'cancel_ticket':
@@ -201,7 +219,7 @@ try { switch ($action) {
                 echo json_encode(['success' => false, 'error' => 'Not authenticated.']);
                 break;
             }
-            MainController::cancelTicket((int)($input['idTicket'] ?? 0));
+            AppModel::cancelTicket((int)($input['idTicket'] ?? 0));
             echo json_encode(['success' => true]);
             break;
 

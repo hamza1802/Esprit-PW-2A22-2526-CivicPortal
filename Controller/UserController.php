@@ -110,7 +110,10 @@ class UserController {
         $passwordHash = password_hash($input['password'], PASSWORD_BCRYPT);
 
         $name = trim($input['name']);
-        $role = trim($input['role']) ?: 'citizen';
+        $role = trim($input['role'] ?? '');
+        if (empty($role)) {
+            $role = 'citizen';
+        }
 
         $stmt->execute([
             'username'      => $name,
@@ -125,7 +128,10 @@ class UserController {
     public static function updateUserRecord(int $id, array $input): bool {
         $pdo  = Database::getInstance()->getConnection();
         $name = trim($input['name']);
-        $role = trim($input['role']) ?: 'citizen';
+        $role = trim($input['role'] ?? '');
+        if (empty($role)) {
+            $role = 'citizen';
+        }
 
         if (!empty($input['password'])) {
             $stmt = $pdo->prepare('UPDATE users SET username = :username, email = :email, role = :role, password_hash = :password_hash WHERE id = :id');
@@ -296,7 +302,10 @@ class UserController {
         $errors   = [];
         $name     = trim($input['name']     ?? '');
         $email    = trim($input['email']    ?? '');
-        $role     = trim($input['role']     ?? 'citizen');
+        $role     = trim($input['role']     ?? '');
+        if (empty($role)) {
+            $role = 'citizen';
+        }
         $password = $input['password']         ?? '';
         $confirm  = $input['confirm_password'] ?? '';
 

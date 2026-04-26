@@ -16,17 +16,20 @@ class Database {
 
     private function __construct() {
         try {
-            // First connect without DB to ensure it exists
-            $pdo = new PDO("mysql:host={$this->host};port={$this->port}", $this->user, $this->pass);
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $pdo->exec("CREATE DATABASE IF NOT EXISTS `{$this->db}` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
+            // Connect directly to the database with improved settings
+            $dsn = "mysql:host={$this->host};port={$this->port};dbname={$this->db};charset=utf8mb4";
+            $options = [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_TIMEOUT => 5, // Connection timeout
+                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_general_ci"
+            ];
             
-            // Now connect to the specific DB
-            $this->conn = new PDO("mysql:host={$this->host};port={$this->port};dbname={$this->db}", $this->user, $this->pass);
-            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $this->conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+            $this->conn = new PDO($dsn, $this->user, $this->pass, $options);
         } catch (PDOException $e) {
-            throw new Exception("Database Connection Error: " . $e->getMessage());
+            // Log the error and provide a user-friendly message
+            error_log("Database Connection Error: " . $e->getMessage());
+            throw new Exception("Database Connection Error: Please ensure MySQL is running and configured correctly.");
         }
     }
 

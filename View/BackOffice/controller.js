@@ -5,6 +5,7 @@
 
 import model from './model.js';
 import view  from './view.js';
+import { initRouteMap } from './map.js';
 
 const controller = {
     async init() {
@@ -94,10 +95,16 @@ const controller = {
                     document.getElementById('add-vehicle-panel')?.style.setProperty('display',
                         document.getElementById('add-vehicle-panel').style.display === 'none' ? 'block' : 'none');
                     break;
-                case 'toggle-add-trajet':
-                    document.getElementById('add-trajet-panel')?.style.setProperty('display',
-                        document.getElementById('add-trajet-panel').style.display === 'none' ? 'block' : 'none');
+                case 'toggle-add-trajet': {
+                    const trajetPanel = document.getElementById('add-trajet-panel');
+                    if (trajetPanel) {
+                        trajetPanel.style.display = trajetPanel.style.display === 'none' ? 'block' : 'none';
+                        if (trajetPanel.style.display === 'block') {
+                            setTimeout(() => initRouteMap(), 50);
+                        }
+                    }
                     break;
+                }
                 case 'delete-vehicle':
                     if (confirm('Delete this vehicle?')) this.handleVehicleDelete(parseInt(id));
                     break;

@@ -46,6 +46,16 @@ class MainController {
             // Notifications
             'get_notifications'     => 'any',
             'mark_notification_read'=> 'any',
+            // Transport (citizens can view, only admins can create/edit)
+            'list_transport_types'  => 'any',
+            'list_transports'       => 'any',
+            'get_transport'         => 'any',
+            'list_all_trajets'      => 'any',
+            'list_trajets'          => 'any',
+            'list_tickets'          => 'any',
+            'list_tickets_enriched' => 'any',
+            'book_ticket'           => 'any',
+            'cancel_ticket'         => 'any',
 
             // Staff (agent or admin)
             'get_requests'               => 'staff',
@@ -78,7 +88,14 @@ class MainController {
             'delete_slot'          => 'admin',
             'get_all_slots'        => 'admin',
             'add_transport_type'   => 'admin',
+            'update_transport_type'=> 'admin',
             'delete_transport_type'=> 'admin',
+            'add_transport'        => 'admin',
+            'update_transport'     => 'admin',
+            'delete_transport'     => 'admin',
+            'add_trajet'           => 'admin',
+            'update_trajet'        => 'admin',
+            'delete_trajet'        => 'admin',
         ];
 
         $required = $map[$action] ?? 'admin';
@@ -184,9 +201,9 @@ class MainController {
             case 'list_transport_types':
                 return AppModel::listTransportTypes();
             case 'add_transport_type':
-                return AppModel::addTransportType($data, $data['image_file'] ?? null);
+                return AppModel::addTransportType($data, $data['type_image_file'] ?? null);
             case 'update_transport_type':
-                return AppModel::updateTransportType($data['idTransportType'], $data, $data['image_file'] ?? null);
+                return AppModel::updateTransportType($data['idTransportType'], $data, $data['type_image_file'] ?? null);
             case 'delete_transport_type':
                 return AppModel::deleteTransportType($data['idTransportType']);
 
@@ -291,34 +308,6 @@ class MainController {
                 return ['success' => 'Slot deleted.'];
             case 'get_all_slots':
                 return AppModel::getAllSlots();
-
-            // --- Transport Type Management (Admin) ---
-            case 'add_transport_type': {
-                $name = trim($data['name'] ?? '');
-                $desc = trim($data['description'] ?? '');
-                if ($name === '') throw new Exception('Transport type name is required.');
-                $db   = Database::getInstance()->getConnection();
-                $file = $data['type_image_file'] ?? null;
-                if ($file && isset($file['error']) && $file['error'] === UPLOAD_ERR_OK) {
-                    [$blob, $mime] = AppModel::readImageUpload($file);
-                    $stmt = $db->prepare(
-                        "INSERT INTO transport_type (name, description, type_image, type_image_mime) VALUES (?,?,?,?)"
-                    );
-                    $stmt->bindValue(1, $name);
-                    $stmt->bindValue(2, $desc);
-                    $stmt->bindValue(3, $blob, PDO::PARAM_LOB);
-                    $stmt->bindValue(4, $mime);
-                    $stmt->execute();
-                } else {
-                    $db->prepare("INSERT INTO transport_type (name, description) VALUES (?,?)")->execute([$name, $desc]);
-                }
-                return ['id' => (int)$db->lastInsertId()];
-            }
-            case 'delete_transport_type': {
-                $db = Database::getInstance()->getConnection();
-                $db->prepare("DELETE FROM transport_type WHERE idTransportType = ?")->execute([(int)$data['id']]);
-                return ['success' => 'Type deleted.'];
-            }
 
             // --- Notifications ---
             case 'get_notifications':
@@ -519,5 +508,3 @@ class MainController {
         return 'CIV-' . rand(1000, 9999);
     }
 }
-?>
-

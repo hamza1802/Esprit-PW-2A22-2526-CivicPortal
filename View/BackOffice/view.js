@@ -826,11 +826,11 @@ const view = {
                             <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
                                 <div class="form-group">
                                     <label>Departure</label>
-                                    <input type="text" name="departure" placeholder="City A" required>
+                                    <input type="text" name="departure" placeholder="Search a location..." required autocomplete="off">
                                 </div>
                                 <div class="form-group">
                                     <label>Destination</label>
-                                    <input type="text" name="destination" placeholder="City B" required>
+                                    <input type="text" name="destination" placeholder="Search a location..." required autocomplete="off">
                                 </div>
                                 <div class="form-group">
                                     <label>Departure Time</label>
@@ -846,6 +846,14 @@ const view = {
                                         <option value="" disabled selected>Select vehicle</option>
                                         ${vehicleOptions}
                                     </select>
+                                </div>
+                                <div class="form-group" style="grid-column:1/-1;">
+                                    <label>Route Map (Click or drag markers)</label>
+                                    <div id="route-map" style="height:300px; border:2px solid var(--border-main); border-radius:8px; z-index: 1;"></div>
+                                    <input type="hidden" name="depLat" id="depLat">
+                                    <input type="hidden" name="depLng" id="depLng">
+                                    <input type="hidden" name="destLat" id="destLat">
+                                    <input type="hidden" name="destLng" id="destLng">
                                 </div>
                             </div>
                             <button type="submit" class="btn btn-primary" style="margin-top:0.5rem;">ADD ROUTE</button>
