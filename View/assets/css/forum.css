@@ -1,76 +1,54 @@
-/* 
+/**
  * forum.css
- * Forum-specific styles extending the CivicPortal Editorial Design System
+ * Forum-specific styles — built on Parks & Recreation design tokens.
+ * No new colors or fonts — reuses existing CSS variables from style.css.
  */
 
 /* ==========================================================================
-   Forum Layout
-   ========================================================================== */
-.forum-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 3rem 5%;
-}
-
-.forum-header {
-    margin-bottom: 3rem;
-    padding-bottom: 2rem;
-    border-bottom: var(--border-main);
-}
-
-.forum-header h1 {
-    font-size: clamp(2rem, 5vw, 4rem);
-    margin-bottom: 0.5rem;
-}
-
-.forum-header p {
-    font-size: 1.2rem;
-    color: var(--primary-navy);
-    opacity: 0.7;
-}
-
-/* ==========================================================================
-   Filters Bar
+   Forum Filters Bar
    ========================================================================== */
 .forum-filters {
     display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-    align-items: center;
-    padding: 1.5rem;
+    align-items: flex-end;
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+    padding: 2rem;
     border: var(--border-main);
+    border-radius: var(--radius-lg);
     background: var(--white);
-}
-
-.forum-filters label {
-    font-weight: 800;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 0.5px;
-}
-
-.forum-filters select {
-    padding: 0.8rem 1.2rem;
-    border: var(--border-main);
-    background: transparent;
-    font-family: inherit;
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: var(--primary-navy);
-    cursor: pointer;
-    min-width: 160px;
-}
-
-.forum-filters select:focus {
-    outline: none;
-    background: var(--bg-neutral);
+    flex-wrap: wrap;
 }
 
 .filter-group {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 0.5rem;
+    min-width: 180px;
+}
+
+.filter-group label {
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    color: var(--primary-navy);
+}
+
+.filter-group select {
+    padding: 0.8rem 1.2rem;
+    border: var(--border-main);
+    border-radius: var(--radius-md);
+    background: transparent;
+    font-family: var(--font-primary);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary-navy);
+    cursor: pointer;
+}
+
+.filter-group select:focus {
+    outline: none;
+    background: var(--white);
 }
 
 .forum-actions {
@@ -78,42 +56,49 @@
 }
 
 /* ==========================================================================
-   Post Cards (List View)
+   Posts List (Card Stack)
    ========================================================================== */
 .posts-list {
     display: flex;
     flex-direction: column;
-    border-top: var(--border-main);
-    border-left: var(--border-main);
-    border-right: var(--border-main);
+    gap: 0;
+    border: var(--border-main);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
 }
 
 .post-card {
-    padding: 2rem;
+    display: block;
+    padding: 2rem 2.5rem;
     border-bottom: var(--border-main);
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-    transition: var(--transition-fast);
     text-decoration: none;
     color: inherit;
+    transition: var(--transition-fast);
     background: transparent;
+}
+
+.post-card:last-child {
+    border-bottom: none;
 }
 
 .post-card:hover {
     background-color: var(--primary-navy);
-    color: var(--bg-neutral);
 }
 
 .post-card:hover .post-title,
-.post-card:hover .post-meta,
-.post-card:hover .post-excerpt {
+.post-card:hover .post-excerpt,
+.post-card:hover .post-meta {
     color: var(--bg-neutral);
 }
 
-.post-card:hover .forum-badge {
+.post-card:hover .post-meta {
+    opacity: 1;
+}
+
+.post-card:hover .status-badge {
     border-color: var(--bg-neutral);
     color: var(--bg-neutral);
+    background: transparent;
 }
 
 .post-card-header {
@@ -121,15 +106,16 @@
     justify-content: space-between;
     align-items: flex-start;
     gap: 1rem;
+    margin-bottom: 0.8rem;
     flex-wrap: wrap;
 }
 
 .post-title {
-    font-size: 1.5rem;
-    font-weight: 800;
+    font-weight: 900;
+    font-size: 1.3rem;
     color: var(--primary-navy);
     transition: var(--transition-fast);
-    line-height: 1.2;
+    flex: 1;
 }
 
 .post-badges {
@@ -138,63 +124,10 @@
     flex-shrink: 0;
 }
 
-.forum-badge {
-    padding: 0.3rem 0.8rem;
-    font-size: 0.75rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border: var(--border-main);
-    background: transparent;
-    color: var(--primary-navy);
-    transition: var(--transition-fast);
-}
-
-.badge-pinned {
-    background: var(--accent-blue);
-    color: var(--white);
-    border-color: var(--accent-blue);
-}
-
-.badge-closed {
-    background: var(--secondary-grey);
-    color: var(--primary-navy);
-    border-color: var(--secondary-grey);
-}
-
-.badge-open {
-    background: var(--success);
-    color: var(--white);
-    border-color: var(--success);
-}
-
-.badge-infrastructure {
-    border-color: #E67E22;
-    color: #E67E22;
-}
-
-.badge-health {
-    border-color: #27AE60;
-    color: #27AE60;
-}
-
-.badge-education {
-    border-color: #8E44AD;
-    color: #8E44AD;
-}
-
-.post-card:hover .badge-infrastructure,
-.post-card:hover .badge-health,
-.post-card:hover .badge-education {
-    color: var(--bg-neutral);
-    border-color: var(--bg-neutral);
-    background: transparent;
-}
-
 .post-excerpt {
     font-size: 1rem;
-    line-height: 1.6;
     color: var(--text-dark);
+    margin-bottom: 1rem;
     transition: var(--transition-fast);
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -213,171 +146,64 @@
     flex-wrap: wrap;
 }
 
-.post-card:hover .post-meta {
-    opacity: 1;
-}
-
 /* ==========================================================================
    Single Post View
    ========================================================================== */
-.single-post {
+.forum-single-post {
     border: var(--border-main);
+    border-radius: var(--radius-lg);
     padding: 3rem;
     margin-bottom: 3rem;
     background: var(--white);
 }
 
-.single-post .post-title {
-    font-size: clamp(1.5rem, 3vw, 2.5rem);
-    margin-bottom: 1rem;
-}
-
-.single-post .post-meta {
-    margin-bottom: 1.5rem;
-    padding-bottom: 1.5rem;
-    border-bottom: var(--border-light);
-}
-
-.single-post .post-content {
-    font-size: 1.1rem;
-    line-height: 1.8;
-    margin-bottom: 2rem;
-    color: var(--text-dark);
-}
-
-.post-action-bar {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: var(--border-light);
-}
-
 /* ==========================================================================
-   Comments Section
+   Comments
    ========================================================================== */
-.comments-section {
-    margin-top: 2rem;
-}
-
-.comments-section h2 {
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-}
-
-.comments-list {
+.forum-comments-list {
     border: var(--border-main);
+    border-radius: var(--radius-lg);
     border-bottom: none;
+    overflow: hidden;
 }
 
-.comment-item {
+.forum-comment-item {
     padding: 1.5rem 2rem;
     border-bottom: var(--border-main);
     transition: var(--transition-fast);
 }
 
-.comment-item:hover {
+.forum-comment-item:hover {
     background: rgba(29, 42, 68, 0.03);
 }
 
-.comment-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.8rem;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.comment-author {
-    font-weight: 800;
-    font-size: 0.95rem;
-    color: var(--primary-navy);
-}
-
-.comment-date {
-    font-size: 0.8rem;
-    color: var(--primary-navy);
-    opacity: 0.5;
-    font-weight: 600;
-}
-
-.comment-content {
-    font-size: 1rem;
-    line-height: 1.6;
-    color: var(--text-dark);
-}
-
-.comment-actions {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 0.8rem;
-}
-
-/* Comment Form */
-.comment-form {
+.forum-comment-form {
     margin-top: 2rem;
     border: var(--border-main);
+    border-radius: var(--radius-lg);
     padding: 2rem;
     background: var(--bg-neutral);
 }
 
-.comment-form h3 {
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.comment-form textarea {
-    width: 100%;
-    padding: 1.2rem;
-    border: var(--border-main);
-    background: transparent;
-    font-family: inherit;
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--primary-navy);
-    resize: vertical;
-    min-height: 100px;
-}
-
-.comment-form textarea:focus {
-    outline: none;
-    background: var(--white);
-}
-
-.comment-form .btn {
-    margin-top: 1rem;
-}
-
 /* ==========================================================================
-   Forum Form (Create/Edit Post)
+   Alerts
    ========================================================================== */
-.forum-form-container {
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-/* ==========================================================================
-   Alerts / Error Messages
-   ========================================================================== */
-.alert {
+.forum-alert {
     padding: 1.2rem 1.5rem;
     border: var(--border-main);
+    border-radius: var(--radius-md);
     margin-bottom: 1.5rem;
     font-weight: 700;
     font-size: 0.95rem;
 }
 
-.alert-danger {
+.forum-alert-danger {
     border-color: var(--danger);
     color: var(--danger);
     background: rgba(231, 76, 60, 0.05);
 }
 
-.alert-success {
+.forum-alert-success {
     border-color: var(--success);
     color: var(--success);
     background: rgba(39, 174, 96, 0.05);
@@ -386,146 +212,29 @@
 /* ==========================================================================
    Empty State
    ========================================================================== */
-.empty-state {
+.forum-empty-state {
     text-align: center;
     padding: 5rem 2rem;
     border: var(--border-main);
+    border-radius: var(--radius-lg);
     border-style: dashed;
 }
 
-.empty-state h3 {
+.forum-empty-state h3 {
     font-size: 1.5rem;
     margin-bottom: 1rem;
 }
 
-.empty-state p {
+.forum-empty-state p {
     opacity: 0.6;
     margin-bottom: 2rem;
-}
-
-/* ==========================================================================
-   Admin Dashboard Specific
-   ========================================================================== */
-.admin-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 0;
-    border-top: var(--border-main);
-    border-left: var(--border-main);
-    margin-bottom: 3rem;
-}
-
-.stat-card {
-    padding: 2rem;
-    border-bottom: var(--border-main);
-    border-right: var(--border-main);
-    text-align: center;
-    transition: var(--transition-fast);
-}
-
-.stat-card:hover {
-    background: var(--primary-navy);
-    color: var(--bg-neutral);
-}
-
-.stat-card:hover .stat-number,
-.stat-card:hover .stat-label {
-    color: var(--bg-neutral);
-}
-
-.stat-number {
-    font-size: 3rem;
-    font-weight: 900;
-    color: var(--primary-navy);
-    transition: var(--transition-fast);
-}
-
-.stat-label {
-    font-weight: 800;
-    text-transform: uppercase;
-    font-size: 0.8rem;
-    letter-spacing: 1px;
-    margin-top: 0.5rem;
-    color: var(--primary-navy);
-    opacity: 0.6;
-    transition: var(--transition-fast);
-}
-
-.admin-section {
-    margin-bottom: 3rem;
-}
-
-.admin-section h2 {
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
-/* Admin table action buttons */
-.table-actions {
-    display: flex;
-    gap: 0.3rem;
-    flex-wrap: wrap;
-}
-
-.table-actions .btn {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.75rem;
-}
-
-/* Tabs for admin dashboard */
-.admin-tabs {
-    display: flex;
-    border: var(--border-main);
-    border-bottom: none;
-    margin-bottom: 0;
-}
-
-.admin-tab {
-    flex: 1;
-    padding: 1.2rem;
-    text-align: center;
-    font-weight: 800;
-    text-transform: uppercase;
-    font-size: 0.9rem;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: var(--transition-fast);
-    border: none;
-    border-right: var(--border-main);
-    background: transparent;
-    color: var(--primary-navy);
-    font-family: inherit;
-}
-
-.admin-tab:last-child {
-    border-right: none;
-}
-
-.admin-tab:hover {
-    background: var(--secondary-grey);
-}
-
-.admin-tab.active {
-    background: var(--primary-navy);
-    color: var(--bg-neutral);
-}
-
-.tab-content {
-    display: none;
-    border: var(--border-main);
-    border-top: none;
-}
-
-.tab-content.active {
-    display: block;
 }
 
 /* ==========================================================================
    Back Link
    ========================================================================== */
-.back-link {
+.forum-back-link {
     display: inline-block;
-    margin-bottom: 2rem;
     font-weight: 800;
     text-transform: uppercase;
     font-size: 0.9rem;
@@ -535,62 +244,70 @@
     letter-spacing: 0.5px;
 }
 
-.back-link:hover {
+.forum-back-link:hover {
     text-decoration: underline;
     text-decoration-thickness: 2px;
     text-underline-offset: 4px;
 }
 
-.back-link::before {
-    content: '← ';
-}
-
 /* ==========================================================================
-   Responsive Overrides
+   Responsive
    ========================================================================== */
 @media (max-width: 768px) {
-    .forum-container {
-        padding: 2rem 4%;
-    }
-    
     .forum-filters {
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .forum-actions {
         margin-left: 0;
     }
-    
-    .single-post {
+
+    .forum-single-post {
         padding: 2rem 1.5rem;
-        border-left: none;
-        border-right: none;
     }
-    
-    .posts-list {
-        border-left: none;
-        border-right: none;
-    }
-    
+
     .post-card {
         padding: 1.5rem;
     }
-    
+
     .post-card-header {
         flex-direction: column;
     }
-    
-    .admin-stats {
-        grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 480px) {
+    .post-card {
+        padding: 1rem;
     }
-    
-    .admin-tabs {
-        flex-direction: column;
+
+    .post-title {
+        font-size: 1.1rem;
     }
-    
-    .admin-tab {
-        border-right: none;
-        border-bottom: var(--border-main);
+
+    .post-excerpt {
+        font-size: 0.9rem;
+    }
+
+    .post-meta {
+        font-size: 0.75rem;
+        gap: 0.8rem;
+    }
+
+    .forum-single-post {
+        padding: 1.5rem 1rem;
+        border-radius: var(--radius-md);
+    }
+
+    .forum-comment-form {
+        padding: 1.5rem;
+    }
+
+    .forum-filters {
+        padding: 1.2rem;
+    }
+
+    .filter-group {
+        min-width: unset;
     }
 }
