@@ -2,13 +2,17 @@
 /**
  * createPost.php — View/FrontOffice/createPost.php
  * Create a new forum post with full input validation.
+ * Auth-guarded: redirects to login if no session.
+ * Re-skinned for Parks & Recreation UI.
  */
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-if (!isset($_SESSION['user_id'])) {
-    $_SESSION['user_id']   = 1;
-    $_SESSION['user_name'] = 'John Citizen';
-    $_SESSION['user_role'] = 'citizen';
+// Auth guard — must be logged in to create a post
+if (empty($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
 }
 
 require_once __DIR__ . '/../../Controller/ForumPostController.php';
@@ -66,6 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Post | Citizens Forum</title>
     <meta name="description" content="Start a new discussion on the Citizens Forum.">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/forum.css">
 </head>
@@ -73,64 +78,87 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- Navigation -->
     <nav>
-        <div class="nav-brand">CivicPortal</div>
+        <div class="nav-brand">
+            <i class="bi bi-building"></i> CivicPortal
+        </div>
+        <div class="nav-backdrop"></div>
+        <button class="nav-hamburger" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
         <ul class="nav-links">
             <li><a href="index.php">home</a></li>
-            <li><a href="forum.php">forum</a></li>
+            <li><a href="forum.php" class="active">forum</a></li>
         </ul>
         <div class="user-controls">
-            <span class="user-role-badge"><?php echo htmlspecialchars($_SESSION['user_role']); ?></span>
-            <span style="font-weight:700;"><?php echo htmlspecialchars($_SESSION['user_name']); ?></span>
+            <div class="user-role-badge"><?= htmlspecialchars($_SESSION['user_role'] ?? 'citizen') ?></div>
         </div>
     </nav>
 
-    <main class="forum-container">
-        <a href="forum.php" class="back-link">Back to Forum</a>
-
-        <div class="forum-form-container">
-            <div class="forum-header">
-                <h1>New Post</h1>
-                <p>Share a topic with the community.</p>
+    <main>
+        <section class="page-container">
+            <div style="margin-bottom: 2rem;">
+                <a href="forum.php" class="forum-back-link"><i class="bi bi-arrow-left"></i> Back to Forum</a>
             </div>
 
-            <?php if (!empty($errors)): ?>
-                <div class="alert alert-danger">
-                    <?php foreach ($errors as $err): ?>
-                        <div><?php echo htmlspecialchars($err); ?></div>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
+            <div style="max-width: 800px; margin: 0 auto;">
+                <h2>New Post</h2>
+                <p style="margin-bottom: 2rem;">Share a topic with the community.</p>
 
-            <form method="POST" class="form-card">
-                <div class="form-group">
-                    <label for="post-title">Title</label>
-                    <input type="text" id="post-title" name="title" maxlength="255" required
-                           value="<?php echo htmlspecialchars($title); ?>"
-                           placeholder="Enter a descriptive title...">
-                </div>
-
-                <div class="form-group">
-                    <label for="post-category">Category</label>
-                    <select id="post-category" name="category" required>
-                        <option value="">Select a category</option>
-                        <?php foreach ($allowedCats as $cat): ?>
-                            <option value="<?php echo $cat; ?>" <?php echo $category === $cat ? 'selected' : ''; ?>>
-                                <?php echo $cat; ?>
-                            </option>
+                <?php if (!empty($errors)): ?>
+                    <div class="forum-alert forum-alert-danger" style="margin-bottom: 2rem;">
+                        <?php foreach ($errors as $err): ?>
+                            <div><i class="bi bi-exclamation-triangle"></i> <?= htmlspecialchars($err) ?></div>
                         <?php endforeach; ?>
-                    </select>
-                </div>
+                    </div>
+                <?php endif; ?>
 
-                <div class="form-group">
-                    <label for="post-content">Content</label>
-                    <textarea id="post-content" name="content" required minlength="10" rows="8"
-                              placeholder="Describe your topic in detail (minimum 10 characters)..."><?php echo htmlspecialchars($content); ?></textarea>
-                </div>
+                <form method="POST" class="form-card">
+                    <div class="form-group">
+                        <label for="post-title">Title</label>
+                        <input type="text" id="post-title" name="title" maxlength="255" required
+                               value="<?= htmlspecialchars($title) ?>"
+                               placeholder="Enter a descriptive title...">
+                    </div>
 
-                <button type="submit" class="btn btn-primary" style="width:100%;">Publish Post</button>
-            </form>
-        </div>
+                    <div class="form-group">
+                        <label for="post-category">Category</label>
+                        <select id="post-category" name="category" required>
+                            <option value="">Select a category</option>
+                            <?php foreach ($allowedCats as $cat): ?>
+                                <option value="<?= $cat ?>" <?= $category === $cat ? 'selected' : '' ?>>
+                                    <?= $cat ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="post-content">Content</label>
+                        <textarea id="post-content" name="content" required minlength="10" rows="8"
+                                  placeholder="Describe your topic in detail (minimum 10 characters)..."><?= htmlspecialchars($content) ?></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width:100%;">Publish Post</button>
+                </form>
+            </div>
+        </section>
     </main>
 
+    <script>
+    (function() {
+        const nav = document.querySelector('nav');
+        const hamburger = nav.querySelector('.nav-hamburger');
+        const backdrop = nav.querySelector('.nav-backdrop');
+        if (hamburger) {
+            const toggle = () => nav.classList.toggle('nav-open');
+            hamburger.addEventListener('click', toggle);
+            if (backdrop) backdrop.addEventListener('click', toggle);
+            nav.querySelectorAll('.nav-links a').forEach(a => {
+                a.addEventListener('click', () => nav.classList.remove('nav-open'));
+            });
+        }
+    })();
+    </script>
+    <script src="../assets/js/glass-animations.js"></script>
 </body>
 </html>
