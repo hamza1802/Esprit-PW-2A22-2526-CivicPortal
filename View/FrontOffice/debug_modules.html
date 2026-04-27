@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CivicPortal Module Test</title>
+    <style>
+        body { font-family: monospace; padding: 2rem; }
+        .success { color: green; }
+        .error { color: red; }
+        .section { margin: 2rem 0; padding: 1rem; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>CivicPortal Module Loading Test</h1>
+    
+    <div class="section">
+        <h3>1. Test Direct API Call</h3>
+        <button onclick="testDirectAPI()">Test API</button>
+        <div id="api-result"></div>
+    </div>
+    
+    <div class="section">
+        <h3>2. Test Module Imports</h3>
+        <div id="module-result">
+            <p>Attempting to import modules...</p>
+        </div>
+    </div>
+
+    <script>
+        async function testDirectAPI() {
+            const result = document.getElementById('api-result');
+            result.innerHTML = '<p>Testing API call...</p>';
+            
+            try {
+                const response = await fetch('../../Verification.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_service_types', data: {} })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    result.innerHTML = '<p class="success">✓ API call successful!</p><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                } else {
+                    result.innerHTML = '<p class="error">✗ API returned error: ' + data.error + '</p>';
+                }
+            } catch (error) {
+                result.innerHTML = '<p class="error">✗ API call failed: ' + error.message + '</p>';
+            }
+        }
+    </script>
+
+    <script type="module">
+        const moduleResult = document.getElementById('module-result');
+        
+        try {
+            moduleResult.innerHTML = '<p>Importing model.js...</p>';
+            import('./model.js').then(mod => {
+                moduleResult.innerHTML += '<p class="success">✓ model.js loaded</p>';
+            }).catch(err => {
+                moduleResult.innerHTML += '<p class="error">✗ model.js failed: ' + err.message + '</p>';
+            });
+            
+            moduleResult.innerHTML += '<p>Importing view.js...</p>';
+            import('./view.js').then(mod => {
+                moduleResult.innerHTML += '<p class="success">✓ view.js loaded</p>';
+            }).catch(err => {
+                moduleResult.innerHTML += '<p class="error">✗ view.js failed: ' + err.message + '</p>';
+            });
+            
+            moduleResult.innerHTML += '<p>Importing controller.js...</p>';
+            import('./controller.js').then(mod => {
+                moduleResult.innerHTML += '<p class="success">✓ controller.js loaded</p>';
+            }).catch(err => {
+                moduleResult.innerHTML += '<p class="error">✗ controller.js failed: ' + err.message + '</p>';
+            });
+        } catch (error) {
+            moduleResult.innerHTML = '<p class="error">✗ Module loading failed: ' + error.message + '</p>';
+        }
+    </script>
+</body>
+</html>

@@ -5,6 +5,22 @@
 
 import controller from './controller.js';
 
+// Global error handler for unhandled promise rejections
+window.addEventListener('unhandledrejection', event => {
+    console.error('Unhandled Promise Rejection:', event.reason);
+    const app = document.getElementById('app');
+    if (app) {
+        app.innerHTML = `
+            <div style="padding: 2rem; text-align: center; color: #c00;">
+                <h2>Error Loading CivicPortal</h2>
+                <p>${event.reason?.message || 'Unknown error occurred'}</p>
+                <p style="font-size: 0.9rem; color: #999;">Please refresh the page or contact support.</p>
+                <button onclick="location.reload()" style="padding: 0.5rem 1rem; margin-top: 1rem;">Refresh</button>
+            </div>
+        `;
+    }
+});
+
 // Setup Intersection Observer for Scroll Animations
 const setupScrollAnimations = () => {
     const observerOptions = {
@@ -31,5 +47,4 @@ window.initScrollObserver = setupScrollAnimations;
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize the controller
     controller.init();
-    console.log('CivicPortal Citizen FrontOffice Initialized');
 });

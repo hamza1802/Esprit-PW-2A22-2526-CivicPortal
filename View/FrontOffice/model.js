@@ -1,93 +1,263 @@
 /**
- * model.js 
- * Client-side Model for CivicPortal FrontOffice
- * Syncs with PHP backend API
+ * model.js
+ * Client-side Model for CivicPortal FrontOffice.
+ * Modules: Programs, Service Requests, Transport, Appointments, Notifications.
+ * Complaints/Grievances REMOVED.
  */
 
 const model = {
     state: {
-        currentUser: { id: 1, name: 'John Citizen', role: 'citizen', email: 'john@example.com' },
-        programs: [
-            { id: 101, title: 'Summer Pottery Workshop', category: 'Arts', description: 'Learn basic pottery techniques for all ages.', image: 'pottery.jpg' },
-            { id: 102, title: 'Youth Swimming Program', category: 'Sports', description: 'Daily swimming lessons at the Municipal Pool.', image: 'swimming.jpg' },
-            { id: 103, title: 'Community Gardening', category: 'Environment', description: 'Join our local group in the North Park garden.', image: 'gardening.jpg' }
-        ],
+        currentUser: window.SERVER_USER ?? {
+            id: 0, name: 'Citizen', role: 'citizen', email: '',
+            bio: '', phoneNumber: '', dateOfBirth: ''
+        },
+        programs: [],
         serviceRequests: [],
         enrollments: [],
-        complaints: []
+        transportTypes: [],
+        myTickets: [],
+        myAppointments: [],
+        notifications: [],
+        serviceTypes: []
     },
 
+    // -------------------------------------------------------------------------
+    // Core API helper — routes through Verification.php
+    // -------------------------------------------------------------------------
     async apiCall(action, data = {}) {
         try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+            
             const response = await fetch('../../Verification.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action, data })
+                body: JSON.stringify({ action, data }),
+                signal: controller.signal
             });
+            clearTimeout(timeout);
+            
             const result = await response.json();
             if (!result.success) throw new Error(result.error);
             return result.data;
         } catch (error) {
-            console.error("API Error:", error);
+            if (error.name === 'AbortError') {
+                console.error('API Timeout:', action);
+            } else {
+                console.error('API Error:', error);
+            }
             return null;
         }
     },
 
+    /**
+     * Multipart API call for file uploads.
+     */
+    async apiUpload(action, formData) {
+        try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 15000); // 15 second timeout for uploads
+            
+            formData.append('action', action);
+            const response = await fetch('../../Verification.php', {
+                method: 'POST',
+                body: formData,
+                signal: controller.signal
+            });
+            clearTimeout(timeout);
+            
+            const result = await response.json();
+            if (!result.success) throw new Error(result.error);
+            return result.data;
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                console.error('Upload Timeout:', action);
+            } else {
+                console.error('Upload Error:', error);
+            }
+            return null;
+        }
+    },
+
+    // -------------------------------------------------------------------------
+    // Transport API helper
+    // -------------------------------------------------------------------------
+    async transportApi(action, data = {}) {
+        try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+            
+            const response = await fetch('../../api_transport.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, ...data }),
+                signal: controller.signal
+            });
+            clearTimeout(timeout);
+            
+            const result = await response.json();
+            if (!result.success) throw new Error(result.error);
+            return result.data;
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                console.error('Transport API Timeout:', action);
+            } else {
+                console.error('Transport API Error:', error);
+            }
+            return null;
+        }
+    },
+
+    // -------------------------------------------------------------------------
+    // Sync: fetch all data the front-office needs on load
+    // -------------------------------------------------------------------------
     async sync() {
-        const requests = await this.apiCall('get_requests');
-        if (requests) this.state.serviceRequests = requests;
+        console.log('Model: Starting sync...');
         
-        // Front office users generally don't get all complaints, but let's sync to emulate the backend state if needed.
-        // Even better, avoid loading them if unneeded.
-    },
-
-    getPrograms() {
-        return this.state.programs;
-    },
-
-    getServiceRequests() {
-        // Filter requests for just this user (simulate isolation in UI)
-        return this.state.serviceRequests.filter(r => r.userId === this.state.currentUser.id);
-    },
-
-    getEnrollments(userId) {
-        return this.state.enrollments.filter(e => e.userId === userId);
-    },
-
-    async addServiceRequest(request) {
-        const response = await this.apiCall('add_request', request);
-        if (response) {
-            this.state.serviceRequests.push(response);
-            return response;
+        try {
+            const promises = [
+                this.apiCall('get_my_requests'),
+                this.apiCall('get_programs'),
+                this.apiCall('get_enrollments', { userId: this.state.currentUser.id }),
+                this.transportApi('list_transport_types'),
+                this.apiCall('get_service_types'),
+            ];
+            
+            console.log('Model: Waiting for all API calls...');
+            const [requests, programs, enrollments, types, svcTypes] = await Promise.all(promises);
+            
+            console.log('Model: API calls complete');
+            console.log('  - requests:', requests);
+            console.log('  - programs:', programs);
+            console.log('  - enrollments:', enrollments);
+            console.log('  - types:', types);
+            console.log('  - svcTypes:', svcTypes);
+            
+            if (requests) this.state.serviceRequests = requests;
+            if (programs) this.state.programs = programs;
+            if (enrollments) this.state.enrollments = enrollments;
+            if (types) this.state.transportTypes = types;
+            if (svcTypes) this.state.serviceTypes = svcTypes;
+            
+            console.log('Model: Sync complete, state updated');
+        } catch (error) {
+            console.error('Model: Error during sync:', error);
+            throw error; // Re-throw so controller can handle it
         }
     },
 
-    addEnrollment(userId, programId) {
-        const exists = this.state.enrollments.find(e => e.userId === userId && e.programId === programId);
-        if (!exists) {
-            this.state.enrollments.push({ userId, programId });
-        }
+    // -------------------------------------------------------------------------
+    // Programs
+    // -------------------------------------------------------------------------
+    getPrograms() { return this.state.programs; },
+    getEnrollments(userId) { return this.state.enrollments.filter(e => e.user_id == userId); },
+
+    async addEnrollment(userId, programId) {
+        const result = await this.apiCall('enroll_user', { userId, programId });
+        if (result) { this.state.enrollments.push({ user_id: userId, program_id: programId }); return true; }
+        return false;
     },
 
-    getCurrentUser() {
-        return this.state.currentUser;
+    // -------------------------------------------------------------------------
+    // Service Requests
+    // -------------------------------------------------------------------------
+    getServiceRequests() { return this.state.serviceRequests; },
+
+    async addServiceRequest(formData) {
+        const result = await this.apiUpload('add_request', formData);
+        if (result) { this.state.serviceRequests.unshift(result); return result; }
+        return null;
     },
 
-    async addComplaint(subject, body, userId) {
-        const response = await this.apiCall('add_complaint', { subject, body, userId });
-        if (response) {
-            this.state.complaints.push(response);
-            return response;
-        }
+    async getMyRequests() {
+        const data = await this.apiCall('get_my_requests');
+        if (data) this.state.serviceRequests = data;
+        return data;
     },
 
-    updateUser(data) {
-        this.state.currentUser.name = data.name;
-        this.state.currentUser.email = data.email;
+    // -------------------------------------------------------------------------
+    // Profile
+    // -------------------------------------------------------------------------
+    getCurrentUser() { return this.state.currentUser; },
+    updateUser(data) { Object.assign(this.state.currentUser, data); },
+
+    async uploadProfilePic(file) {
+        const fd = new FormData();
+        fd.append('profile_pic', file);
+        return await this.apiUpload('upload_profile_pic', fd);
     },
 
-    deleteUser() {
-        this.state.currentUser = null;
+    async updatePassword(data) {
+        return await this.apiCall('update_profile', data);
+    },
+
+    // -------------------------------------------------------------------------
+    // Transport
+    // -------------------------------------------------------------------------
+    getTransportTypes() { return this.state.transportTypes; },
+
+    async getTrajetsByTypeAndSort(type, sortBy, order) {
+        return await this.transportApi('list_trajets', { type, sortBy, order });
+    },
+
+    async getMyTickets() {
+        return await this.transportApi('list_tickets_enriched');
+    },
+
+    async bookTicket(idTrajet, citizenName) {
+        try {
+            const response = await fetch('../../api_transport.php', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'book_ticket', idTrajet, citizenName })
+            });
+            return await response.json();
+        } catch (error) { return { success: false, error: 'Network error.' }; }
+    },
+
+    async cancelTicket(idTicket) {
+        try {
+            const response = await fetch('../../api_transport.php', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'cancel_ticket', idTicket })
+            });
+            return await response.json();
+        } catch (error) { return { success: false, error: 'Network error.' }; }
+    },
+
+    // -------------------------------------------------------------------------
+    // Appointments
+    // -------------------------------------------------------------------------
+    async bookAppointment(data) {
+        return await this.apiCall('book_appointment', data);
+    },
+
+    async getMyAppointments() {
+        const data = await this.apiCall('get_my_appointments');
+        if (data) this.state.myAppointments = data;
+        return data;
+    },
+
+    async cancelAppointment(id) {
+        return await this.apiCall('cancel_appointment', { id });
+    },
+
+    async getAvailableSlots(serviceType, date) {
+        return await this.apiCall('get_available_slots', { service_type: serviceType, date });
+    },
+
+    getServiceTypes() { return this.state.serviceTypes; },
+
+    // -------------------------------------------------------------------------
+    // Notifications
+    // -------------------------------------------------------------------------
+    async getNotifications() {
+        const data = await this.apiCall('get_notifications');
+        if (data) this.state.notifications = data;
+        return data;
+    },
+
+    async markNotificationRead(id) {
+        return await this.apiCall('mark_notification_read', { id });
     }
 };
 
