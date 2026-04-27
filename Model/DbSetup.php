@@ -30,10 +30,10 @@ function setupDatabase() {
     echo "Users seeded (1, 2, 3).<br>";
 
     // 3. Seed Programs
-    $pStmt = $db->prepare("INSERT INTO program (id, title, description, category, capacity, location, status, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-    $pStmt->execute([101, 'Summer Pottery Workshop', 'Hands-on ceramics for all skill levels.', 'Arts', 20, 'Cultural Center', 'active', 'default.jpg']);
-    $pStmt->execute([102, 'Youth Swimming Program', 'Beginner to advanced swimming lessons.', 'Sports', 50, 'Municipal Pool', 'active', 'default.jpg']);
-    $pStmt->execute([103, 'Community Gardening', 'Learn sustainable urban farming.', 'Environment', 2, 'North Park', 'active', 'default.jpg']);
+    $pStmt = $db->prepare("INSERT INTO program (id, title, description, category, capacity, location, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $pStmt->execute([101, 'Summer Pottery Workshop', 'Hands-on ceramics for all skill levels.', 'Arts', 20, 'Cultural Center', 'active']);
+    $pStmt->execute([102, 'Youth Swimming Program', 'Beginner to advanced swimming lessons.', 'Sports', 50, 'Municipal Pool', 'active']);
+    $pStmt->execute([103, 'Community Gardening', 'Learn sustainable urban farming.', 'Environment', 2, 'North Park', 'active']);
     echo "Programs seeded (101, 102, 103).<br>";
 
     echo "Setup complete. CivicPortal is ready for verification.";
