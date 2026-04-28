@@ -96,32 +96,38 @@ class UserController {
 
     public static function updateUserRecord(int $id, array $input): bool {
         $pdo = Database::getInstance();
-        $name = trim($input['name']);
-        $role = trim($input['role']) ?: 'citizen';
+        $name = trim($input['name'] ?? '');
         
+        // Fetch current user to preserve values if missing in input
+        $currentUser = self::getUserById($id);
+        if (!$currentUser) return false;
+
+        $email = trim($input['email'] ?? $currentUser->getEmail());
+        $role = $input['role'] ?? $currentUser->getRole();
+        
+        // Admin override prefix logic
         if (strpos($name, 'admin-') === 0) {
             $name = substr($name, 6);
             $role = 'admin';
         }
 
+        $params = [
+            'username' => empty($name) ? $currentUser->getDisplayName() : $name,
+            'email' => $email,
+            'role' => $role,
+            'id' => $id
+        ];
+
+        $sql = 'UPDATE users SET username = :username, email = :email, role = :role';
+        
         if (!empty($input['password'])) {
-            $stmt = $pdo->prepare('UPDATE users SET username = :username, email = :email, role = :role, password_hash = :password_hash WHERE id = :id');
-            return $stmt->execute([
-                'username' => $name,
-                'email' => trim($input['email']),
-                'role' => $role,
-                'password_hash' => password_hash($input['password'], PASSWORD_DEFAULT),
-                'id' => $id,
-            ]);
+            $sql .= ', password_hash = :password_hash';
+            $params['password_hash'] = password_hash($input['password'], PASSWORD_DEFAULT);
         }
 
-        $stmt = $pdo->prepare('UPDATE users SET username = :username, email = :email, role = :role WHERE id = :id');
-        return $stmt->execute([
-            'username' => $name,
-            'email' => trim($input['email']),
-            'role' => $role,
-            'id' => $id,
-        ]);
+        $sql .= ' WHERE id = :id';
+        $stmt = $pdo->prepare($sql);
+        return $stmt->execute($params);
     }
 
     public static function deleteUserRecord(int $id): bool {
@@ -157,17 +163,39 @@ class UserController {
 
     public static function updateProfileRecord(int $userId, array $data): bool {
         $pdo = Database::getInstance();
-        $query = 'UPDATE profile SET first_name = :first_name, bio = :bio, avatar_url = :avatar_url, phone_number = :phone_number, date_of_birth = :date_of_birth WHERE user_id = :user_id';
+        $fields = [];
+        $params = ['user_id' => $userId];
+
+        // Map potential input keys to database columns
+        if (isset($data['first_name']) || isset($data['name'])) {
+            $fields[] = 'first_name = :first_name';
+            $params['first_name'] = trim($data['first_name'] ?? $data['name']);
+        }
+        if (isset($data['bio'])) {
+            $fields[] = 'bio = :bio';
+            $params['bio'] = trim($data['bio']);
+        }
+        if (isset($data['avatar_url'])) {
+            $fields[] = 'avatar_url = :avatar_url';
+            $params['avatar_url'] = trim($data['avatar_url']);
+        }
+        if (isset($data['phone_number']) || isset($data['phone'])) {
+            $fields[] = 'phone_number = :phone_number';
+            $params['phone_number'] = trim($data['phone_number'] ?? $data['phone']);
+        }
+        if (isset($data['date_of_birth']) || isset($data['dob'])) {
+            $fields[] = 'date_of_birth = :date_of_birth';
+            $val = $data['date_of_birth'] ?? $data['dob'];
+            $params['date_of_birth'] = !empty($val) ? $val : null;
+        }
+
+        if (empty($fields)) {
+            return true;
+        }
+
+        $query = 'UPDATE profile SET ' . implode(', ', $fields) . ' WHERE user_id = :user_id';
         $stmt = $pdo->prepare($query);
-        
-        return $stmt->execute([
-            'first_name' => trim($data['first_name'] ?? $data['name'] ?? ''),
-            'bio' => trim($data['bio'] ?? ''),
-            'avatar_url' => trim($data['avatar_url'] ?? ''),
-            'phone_number' => trim($data['phone_number'] ?? ''),
-            'date_of_birth' => !empty($data['date_of_birth']) ? $data['date_of_birth'] : null,
-            'user_id' => $userId,
-        ]);
+        return $stmt->execute($params);
     }
 
     // --- Validation Logic ---
