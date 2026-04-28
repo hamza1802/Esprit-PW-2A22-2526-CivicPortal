@@ -591,6 +591,58 @@ nav {
     font-weight: bold;
 }
 
+/* Portal switcher: available in both Front and Back Office */
+/* portal-switcher styles removed (unified into role switcher) */
+
+.context-toggle-btn {
+    cursor: pointer;
+    border: var(--border-main);
+    background: var(--primary-navy);
+    color: var(--bg-neutral);
+}
+
+.context-toggle-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.context-menu-wrapper {
+    position: relative;
+}
+
+.context-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 150px;
+    background: var(--primary-navy);
+    border: var(--border-main);
+    z-index: 2200;
+    display: flex;
+    flex-direction: column;
+}
+
+.context-menu-item {
+    background: transparent;
+    color: var(--bg-neutral);
+    border: none;
+    border-bottom: var(--border-main);
+    padding: 0.6rem 0.8rem;
+    text-align: left;
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.context-menu-item:last-child {
+    border-bottom: none;
+}
+
+.context-menu-item:hover {
+    background: var(--bg-neutral);
+    color: var(--primary-navy);
+}
+
 /* ==========================================================================
    Request Cards (My Requests List)
    ========================================================================== */

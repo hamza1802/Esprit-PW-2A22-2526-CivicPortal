@@ -60,7 +60,16 @@ const view = {
                 <li><a href="#profile">profile</a></li>
             </ul>
             <div class="user-controls">
-                <div class="user-role-badge">Citizen</div>
+                <div class="context-menu-wrapper">
+                    <button id="context-toggle-btn" class="user-role-badge context-toggle-btn" type="button" title="Switch portal/role">
+                        Citizen
+                    </button>
+                    <div id="context-menu" class="context-menu" style="display:none;">
+                        <button type="button" data-role="citizen" class="context-menu-item">Citizen</button>
+                        <button type="button" data-role="worker" class="context-menu-item">Worker</button>
+                        <button type="button" data-role="admin" class="context-menu-item">Admin</button>
+                    </div>
+                </div>
             </div>
         `;
         nav.innerHTML = links;
@@ -307,7 +316,6 @@ const view = {
                 <td>-</td>
                 <td>${new Date(d.uploadedAt).toLocaleDateString()}</td>
                 <td>
-                    <button class="btn btn-small" data-action="replace-document" data-doc-id="${d.id}" data-request-id="${request.id}" data-doc-type="${d.type}">REPLACE</button>
                     <button class="btn btn-small btn-danger" data-action="delete-document" data-doc-id="${d.id}" data-request-id="${request.id}" style="margin-left:5px;">DELETE</button>
                 </td>
             </tr>
@@ -400,7 +408,19 @@ const view = {
 
     // ── Edit Request Form ────────────────────────────────────────
 
-    renderEditRequestForm(request) {
+    renderEditRequestForm(request, documents = []) {
+        const docsRows = documents.length > 0 ? documents.map((d) => `
+            <tr>
+                <td><strong>${d.filePath}</strong></td>
+                <td><span class="category-badge">${d.type}</span></td>
+                <td>${new Date(d.uploadedAt).toLocaleDateString()}</td>
+                <td>
+                    <button class="btn btn-small" data-action="replace-document" data-doc-id="${d.id}" data-request-id="${request.id}" data-doc-type="${d.type}">REPLACE</button>
+                    <button class="btn btn-small btn-danger" data-action="delete-document" data-doc-id="${d.id}" data-request-id="${request.id}" style="margin-left:5px;">DELETE</button>
+                </td>
+            </tr>
+        `).join('') : '<tr><td colspan="4" style="text-align:center; padding:1.5rem;">No documents attached.</td></tr>';
+
         this.app.innerHTML = `
             <section class="page-container">
                 <a href="#my-requests" class="btn btn-small reveal" style="margin-bottom: 1.5rem; display:inline-block;">← BACK TO REQUESTS</a>
@@ -422,6 +442,28 @@ const view = {
                             <a href="#my-requests" class="btn" style="flex:1; text-align:center;">CANCEL</a>
                         </div>
                     </form>
+                </div>
+
+                <div class="documents-section reveal" style="margin-top:1rem;">
+                    <div class="documents-header">
+                        <h3>Manage Documents</h3>
+                        <button class="btn btn-small btn-primary" data-action="upload-document" data-request-id="${request.id}">+ ADD DOCUMENT</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>File Name</th>
+                                    <th>Type</th>
+                                    <th>Upload Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${docsRows}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
         `;

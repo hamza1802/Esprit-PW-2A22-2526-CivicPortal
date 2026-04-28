@@ -37,16 +37,6 @@ AppModel::ensureDefaultUser();
     <!-- Toast Notifications Container -->
     <div id="toast-container" class="toast-container"></div>
 
-    <!-- Role Switcher (For Staff Demonstration Purposes) -->
-    <div class="role-switcher-container">
-        <label for="demo-role-switcher">Switch Staff Role:</label>
-        <select id="demo-role-switcher">
-            <option value="worker" selected>Worker (Staff)</option>
-            <option value="admin">Admin</option>
-        </select>
-        <small style="display: block; margin-top: 5px; opacity: 0.8; font-size: 0.6rem;">*Staff MVC Testing Mode</small>
-    </div>
-
     <!-- Scripts -->
     <script type="module" src="app.js"></script>
 </body>

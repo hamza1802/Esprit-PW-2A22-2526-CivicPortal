@@ -29,18 +29,43 @@ const setupScrollAnimations = () => {
 window.initScrollObserver = setupScrollAnimations;
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize the controller
-    controller.init();
+    const params = new URLSearchParams(window.location.search);
+    const requestedRole = (params.get('role') || 'worker').toLowerCase();
+    const initialRole = requestedRole === 'admin' ? 'admin' : 'worker';
 
-    // Link the role switcher (Staff Demo-only logic)
-    const roleSwitcher = document.getElementById('demo-role-switcher');
-    if (roleSwitcher) {
-        roleSwitcher.addEventListener('change', (e) => {
-            const newRole = e.target.value;
-            // Trigger role change in controller
-            controller.handleRoleChange(newRole);
-        });
-    }
+    // Initialize the controller with requested backoffice role
+    controller.init(initialRole);
 
     console.log('CivicPortal Staff BackOffice Initialized');
+});
+
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('#context-toggle-btn');
+    const menuItem = e.target.closest('.context-menu-item');
+    const menu = document.getElementById('context-menu');
+
+    if (btn && menu) {
+        const isOpen = menu.style.display === 'block';
+        menu.style.display = isOpen ? 'none' : 'block';
+        return;
+    }
+
+    if (menuItem) {
+        const selectedRole = menuItem.dataset.role;
+        if (selectedRole === 'citizen') {
+            window.location.href = '../FrontOffice/index.php';
+            return;
+        }
+        controller.handleRoleChange(selectedRole);
+        const params = new URLSearchParams(window.location.search);
+        params.set('role', selectedRole);
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+        window.history.replaceState({}, '', newUrl);
+        if (menu) menu.style.display = 'none';
+        return;
+    }
+
+    if (menu && !e.target.closest('.context-menu-wrapper')) {
+        menu.style.display = 'none';
+    }
 });

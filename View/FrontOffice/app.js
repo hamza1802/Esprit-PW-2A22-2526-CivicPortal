@@ -31,5 +31,32 @@ window.initScrollObserver = setupScrollAnimations;
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize the controller
     controller.init();
+
     console.log('CivicPortal Citizen FrontOffice Initialized');
+});
+
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('#context-toggle-btn');
+    const menuItem = e.target.closest('.context-menu-item');
+    const menu = document.getElementById('context-menu');
+
+    if (btn && menu) {
+        const isOpen = menu.style.display === 'block';
+        menu.style.display = isOpen ? 'none' : 'block';
+        return;
+    }
+
+    if (menuItem) {
+        const selectedRole = menuItem.dataset.role;
+        if (selectedRole === 'citizen') {
+            window.location.href = '../FrontOffice/index.php';
+            return;
+        }
+        window.location.href = `../BackOffice/index.php?role=${encodeURIComponent(selectedRole)}`;
+        return;
+    }
+
+    if (menu && !e.target.closest('.context-menu-wrapper')) {
+        menu.style.display = 'none';
+    }
 });

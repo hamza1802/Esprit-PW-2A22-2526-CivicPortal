@@ -196,6 +196,19 @@ class AppModel {
             ':id'          => $requestId
         ]);
 
+        $before = trim((string)($current['description'] ?? ''));
+        $after = trim($newDescription);
+        if ($before !== $after) {
+            self::addAuditLog(
+                $requestId,
+                'request_edited',
+                $current['status'] ?? null,
+                $current['status'] ?? null,
+                "Description updated: \"{$before}\" -> \"{$after}\"",
+                'citizen'
+            );
+        }
+
         return self::getRequestById($requestId);
     }
 
@@ -348,6 +361,14 @@ class AppModel {
         ]);
 
         $newId = (int)$db->lastInsertId();
+        self::addAuditLog(
+            $requestId,
+            'document_added',
+            null,
+            null,
+            "Document added: {$filePath} ({$type})",
+            'citizen'
+        );
         return self::getDocumentById($newId);
     }
 
@@ -380,6 +401,15 @@ class AppModel {
             ':id'       => $documentId
         ]);
 
+        self::addAuditLog(
+            (int)$current['requestId'],
+            'document_replaced',
+            null,
+            null,
+            "Document replaced: {$current['filePath']} -> {$filePath} ({$type})",
+            'citizen'
+        );
+
         return self::getDocumentById($documentId);
     }
 
@@ -401,6 +431,15 @@ class AppModel {
 
         $stmt = $db->prepare("DELETE FROM documents WHERE id = :id");
         $stmt->execute([':id' => $documentId]);
+
+        self::addAuditLog(
+            (int)$doc['requestId'],
+            'document_deleted',
+            null,
+            null,
+            "Document deleted: {$doc['filePath']} ({$doc['type']})",
+            'citizen'
+        );
 
         return $stmt->rowCount() > 0;
     }

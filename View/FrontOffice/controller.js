@@ -158,7 +158,7 @@ const controller = {
         }
         if (hash.startsWith('#edit-request-')) {
             const requestId = parseInt(hash.replace('#edit-request-', ''));
-            this.showEditRequest(requestId);
+            await this.showEditRequest(requestId);
             return;
         }
 
@@ -274,7 +274,7 @@ const controller = {
         });
     },
 
-    showEditRequest(requestId) {
+    async showEditRequest(requestId) {
         const requests = model.getServiceRequests();
         const request = requests.find(r => r.id === requestId);
         if (!request) {
@@ -287,7 +287,8 @@ const controller = {
             window.location.hash = '#my-requests';
             return;
         }
-        view.renderEditRequestForm(request);
+        const documents = await model.getDocuments(requestId);
+        view.renderEditRequestForm(request, documents || []);
     },
 
     async handleEditRequest(form) {

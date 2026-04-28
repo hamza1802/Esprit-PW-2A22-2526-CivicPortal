@@ -13,10 +13,10 @@ const controller = {
         sortBy: 'date_desc'
     },
 
-    async init() {
+    async init(initialRole = 'worker') {
         await model.sync();
         this.setupEventListeners();
-        this.handleRoleChange('worker', false); 
+        this.handleRoleChange(initialRole, false);
     },
 
     preserveInputFocus(renderFn) {

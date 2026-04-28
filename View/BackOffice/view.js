@@ -38,7 +38,16 @@ const view = {
                 <li><a href="#profile">profile</a></li>
             </ul>
             <div class="user-controls">
-                <div class="user-role-badge" style="background:var(--primary-red);color:white;">${role}</div>
+                <div class="context-menu-wrapper">
+                    <button id="context-toggle-btn" class="user-role-badge context-toggle-btn" type="button" title="Switch portal/role">
+                        ${role}
+                    </button>
+                    <div id="context-menu" class="context-menu" style="display:none;">
+                        <button type="button" data-role="citizen" class="context-menu-item">Citizen</button>
+                        <button type="button" data-role="worker" class="context-menu-item">Worker</button>
+                        <button type="button" data-role="admin" class="context-menu-item">Admin</button>
+                    </div>
+                </div>
             </div>
         `;
         nav.innerHTML = links;
