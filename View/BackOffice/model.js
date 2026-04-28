@@ -305,8 +305,33 @@ const model = {
     async deleteTrajet(idTrajet) { return await this.apiCall('delete_trajet', { idTrajet }); },
 
     async getTickets() { return await this.apiCall('list_tickets_enriched'); },
-    async cancelTicket(idTicket) { return await this.apiCall('cancel_ticket', { idTicket }); }
+    async cancelTicket(idTicket) { return await this.apiCall('cancel_ticket', { idTicket }); },
+
+    // -------------------------------------------------------------------------
+    // Forum Moderation (admin)
+    // -------------------------------------------------------------------------
+    async getForumPosts(category = null, status = null) {
+        const data = {};
+        if (category) data.category = category;
+        if (status) data.status = status;
+        return await this.apiCall('get_forum_posts', data);
+    },
+
+    async getForumComments(postId = null) {
+        return await this.apiCall('get_forum_comments', postId ? { post_id: postId } : {});
+    },
+
+    async forumUpdateStatus(postId, status) {
+        return await this.apiCall('forum_update_status', { post_id: postId, status });
+    },
+
+    async forumDeletePost(postId) {
+        return await this.apiCall('forum_delete_post', { post_id: postId });
+    },
+
+    async forumDeleteComment(commentId) {
+        return await this.apiCall('forum_delete_comment', { comment_id: commentId });
+    }
 };
 
 export default model;
-

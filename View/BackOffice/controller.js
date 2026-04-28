@@ -163,6 +163,23 @@ const controller = {
                 case 'complete-appointment':
                     this.handleAppointmentStatus(parseInt(id), 'completed');
                     break;
+
+                // Forum moderation actions (admin)
+                case 'forum-save-status': {
+                    const select = document.querySelector(`.forum-status-select[data-post-id="${id}"]`);
+                    if (select) this.handleForumStatusUpdate(parseInt(id), select.value);
+                    break;
+                }
+                case 'forum-delete-post':
+                    if (confirm('Delete this post and all its comments? This cannot be undone.')) {
+                        this.handleForumDeletePost(parseInt(id));
+                    }
+                    break;
+                case 'forum-delete-comment':
+                    if (confirm('Remove this comment?')) {
+                        this.handleForumDeleteComment(parseInt(id));
+                    }
+                    break;
             }
         });
 
@@ -286,6 +303,18 @@ const controller = {
                         model.getAgents()
                     ]);
                     view.renderSlotManagement(slots || [], agents || [], model.getServiceTypes());
+                } else {
+                    window.location.hash = '#home';
+                }
+                break;
+
+            case '#forum-moderation':
+                if (user.role === 'admin') {
+                    const [forumPosts, forumComments] = await Promise.all([
+                        model.getForumPosts(),
+                        model.getForumComments()
+                    ]);
+                    view.renderForumModeration(forumPosts || [], forumComments || []);
                 } else {
                     window.location.hash = '#home';
                 }
@@ -710,6 +739,47 @@ const controller = {
             view.renderCategoryManager(model.getCategories());
         } else {
             view.renderToast('Failed to delete category. It may be in use.', 'error');
+        }
+    },
+
+    /* =========================================================================
+       FORUM MODERATION
+       ========================================================================= */
+    async _refreshForum() {
+        const [posts, comments] = await Promise.all([
+            model.getForumPosts(),
+            model.getForumComments()
+        ]);
+        view.renderForumModeration(posts || [], comments || []);
+    },
+
+    async handleForumStatusUpdate(postId, status) {
+        const result = await model.forumUpdateStatus(postId, status);
+        if (result) {
+            view.renderToast(`Post status changed to "${status}".`);
+            await this._refreshForum();
+        } else {
+            view.renderToast('Failed to update post status.', 'error');
+        }
+    },
+
+    async handleForumDeletePost(postId) {
+        const result = await model.forumDeletePost(postId);
+        if (result) {
+            view.renderToast('Post deleted.');
+            await this._refreshForum();
+        } else {
+            view.renderToast('Failed to delete post.', 'error');
+        }
+    },
+
+    async handleForumDeleteComment(commentId) {
+        const result = await model.forumDeleteComment(commentId);
+        if (result) {
+            view.renderToast('Comment removed.');
+            await this._refreshForum();
+        } else {
+            view.renderToast('Failed to remove comment.', 'error');
         }
     }
 };

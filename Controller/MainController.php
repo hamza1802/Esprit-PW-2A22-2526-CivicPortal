@@ -13,6 +13,8 @@ require_once __DIR__ . '/../Model/TransportType.php';
 require_once __DIR__ . '/../Model/Trajet.php';
 require_once __DIR__ . '/../Model/Ticket.php';
 require_once __DIR__ . '/UserController.php';
+require_once __DIR__ . '/ForumPostController.php';
+require_once __DIR__ . '/ForumCommentController.php';
 
 class MainController {
 
@@ -96,6 +98,13 @@ class MainController {
             'add_trajet'           => 'admin',
             'update_trajet'        => 'admin',
             'delete_trajet'        => 'admin',
+
+            // Forum moderation (admin)
+            'get_forum_posts'      => 'admin',
+            'get_forum_comments'   => 'admin',
+            'forum_update_status'  => 'admin',
+            'forum_delete_post'    => 'admin',
+            'forum_delete_comment' => 'admin',
         ];
 
         $required = $map[$action] ?? 'admin';
@@ -308,6 +317,30 @@ class MainController {
                 return ['success' => 'Slot deleted.'];
             case 'get_all_slots':
                 return AppModel::getAllSlots();
+
+            // --- Forum Moderation (Admin) ---
+            case 'get_forum_posts':
+                return ForumPostController::getAllPosts(
+                    $data['category'] ?? null,
+                    $data['status']   ?? null
+                );
+            case 'get_forum_comments':
+                if (!empty($data['post_id'])) {
+                    return ForumCommentController::getCommentsByPost((int)$data['post_id']);
+                }
+                return ForumCommentController::getAllComments();
+            case 'forum_update_status':
+                $result = ForumPostController::updateStatus((int)$data['post_id'], $data['status']);
+                if (!$result) throw new Exception('Failed to update post status.');
+                return ['success' => 'Post status updated.'];
+            case 'forum_delete_post':
+                $result = ForumPostController::deletePost((int)$data['post_id'], 0, true);
+                if (!$result) throw new Exception('Failed to delete post.');
+                return ['success' => 'Post deleted.'];
+            case 'forum_delete_comment':
+                $result = ForumCommentController::deleteComment((int)$data['comment_id'], 0, true);
+                if (!$result) throw new Exception('Failed to delete comment.');
+                return ['success' => 'Comment deleted.'];
 
             // --- Notifications ---
             case 'get_notifications':

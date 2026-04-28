@@ -41,6 +41,7 @@ const view = {
             <li><a href="#manage-programs"><i class="bi bi-tree"></i> Programs ${totalBadge}</a></li>
             <li><a href="#appointments"><i class="bi bi-calendar-check"></i> Appointments</a></li>
             <li><a href="#transport-management"><i class="bi bi-bus-front"></i> Transport</a></li>
+            <li><a href="#forum-moderation"><i class="bi bi-chat-square-text"></i> Forum</a></li>
             <li><a href="#slot-management"><i class="bi bi-clock-history"></i> Slots</a></li>
             <li><a href="#user-management"><i class="bi bi-people"></i> Users</a></li>
         `;
@@ -125,6 +126,11 @@ const view = {
                 <h3>Slot Management</h3>
                 <p>Configure agent availability windows. Define which agents handle which services and when.</p>
                 <a href="#slot-management" class="btn" style="align-self:flex-start;margin-top:auto;">Manage Slots</a>
+            </div>
+            <div class="editorial-card editorial-highlight reveal">
+                <h3>Forum Moderation</h3>
+                <p>Moderate citizen discussions. Pin important posts, close threads, and remove inappropriate content.</p>
+                <a href="#forum-moderation" class="btn btn-primary" style="align-self:flex-start;margin-top:auto;">Moderate Forum</a>
             </div>
             <div class="editorial-card reveal">
                 <h3>User Management</h3>
@@ -1022,6 +1028,118 @@ const view = {
             </section>
         `;
         this.triggerObserver();
+    },
+
+    /* =========================================================================
+       FORUM MODERATION (admin only)
+       ========================================================================= */
+    renderForumModeration(posts, comments) {
+        const statusClass = s => s === 'open' ? 'pending' : s === 'pinned' ? 'validated' : 'rejected';
+
+        const postRows = (posts || []).map(p => {
+            const date = p.created_at
+                ? new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                : '—';
+            return `
+                <tr>
+                    <td><strong>#${p.post_id}</strong></td>
+                    <td>
+                        <strong>${this._esc(p.title)}</strong><br>
+                        <span style="font-size:0.82rem;opacity:0.65;">${this._esc(p.author_name)}</span>
+                    </td>
+                    <td><span class="status-badge">${this._esc(p.category)}</span></td>
+                    <td><span class="status-badge status-${statusClass(p.status)}">${p.status.toUpperCase()}</span></td>
+                    <td style="font-size:0.82rem;">${p.comment_count ?? 0}</td>
+                    <td style="font-size:0.82rem;">${date}</td>
+                    <td style="white-space:nowrap;">
+                        <select class="forum-status-select" data-post-id="${p.post_id}"
+                                style="padding:0.3rem 0.5rem;border:2px solid var(--border-main);font-weight:700;font-size:0.8rem;margin-right:4px;">
+                            <option value="open"   ${p.status === 'open'   ? 'selected' : ''}>Open</option>
+                            <option value="pinned" ${p.status === 'pinned' ? 'selected' : ''}>Pinned</option>
+                            <option value="closed" ${p.status === 'closed' ? 'selected' : ''}>Closed</option>
+                        </select>
+                        <button class="btn btn-small btn-success" data-action="forum-save-status" data-id="${p.post_id}"
+                                style="margin-right:4px;padding:0.3rem 0.6rem;">✓</button>
+                        <button class="btn btn-small btn-danger" data-action="forum-delete-post" data-id="${p.post_id}">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        const commentRows = (comments || []).map(c => {
+            const date = c.created_at
+                ? new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                : '—';
+            const excerpt = c.content.length > 120 ? c.content.substring(0, 120) + '…' : c.content;
+            return `
+                <tr>
+                    <td><strong>#${c.comment_id}</strong></td>
+                    <td style="font-size:0.85rem;">${this._esc(excerpt)}</td>
+                    <td style="font-size:0.82rem;">${this._esc(c.author_name)}</td>
+                    <td style="font-size:0.82rem;">${this._esc(c.post_title || '—')}</td>
+                    <td style="font-size:0.82rem;">${date}</td>
+                    <td>
+                        <button class="btn btn-small btn-danger" data-action="forum-delete-comment" data-id="${c.comment_id}">
+                            <i class="bi bi-trash3"></i> REMOVE
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        this.app.innerHTML = `
+            <section class="page-container">
+                <h2 class="reveal">Forum Moderation</h2>
+                <p class="reveal" style="margin-bottom:2rem;opacity:0.7;">Manage citizen forum posts and comments. Pin important discussions, close resolved threads, and remove inappropriate content.</p>
+
+                <h3 class="reveal" style="text-transform:uppercase;letter-spacing:1px;font-size:1rem;margin-bottom:1rem;">
+                    <i class="bi bi-megaphone"></i> Posts (${(posts || []).length})
+                </h3>
+                <div class="reveal" style="margin-bottom:3rem;">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th><th>Title / Author</th><th>Category</th><th>Status</th><th>Comments</th><th>Date</th><th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${postRows.length > 0 ? postRows : '<tr><td colspan="7" style="text-align:center;padding:2rem;">No forum posts yet.</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <h3 class="reveal" style="text-transform:uppercase;letter-spacing:1px;font-size:1rem;margin-bottom:1rem;">
+                    <i class="bi bi-chat-dots"></i> Recent Comments (${(comments || []).length})
+                </h3>
+                <div class="reveal">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th><th>Content</th><th>Author</th><th>Post</th><th>Date</th><th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${commentRows.length > 0 ? commentRows : '<tr><td colspan="6" style="text-align:center;padding:2rem;">No comments yet.</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    },
+
+    /** Minimal HTML escape helper */
+    _esc(str) {
+        if (!str) return '';
+        const el = document.createElement('span');
+        el.textContent = str;
+        return el.innerHTML;
     }
 };
 
