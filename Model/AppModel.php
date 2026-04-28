@@ -323,7 +323,17 @@ class AppModel {
      */
     public static function getDocumentsByRequest(int $requestId): array {
         $db = self::db();
-        $stmt = $db->prepare("SELECT id, request_id AS requestId, file_path AS filePath, type, uploaded_at AS uploadedAt FROM documents WHERE request_id = :requestId ORDER BY uploaded_at ASC");
+        $stmt = $db->prepare("
+            SELECT
+                id,
+                request_id AS requestId,
+                CAST(file_path AS CHAR) AS filePath,
+                type,
+                uploaded_at AS uploadedAt
+            FROM documents
+            WHERE request_id = :requestId
+            ORDER BY uploaded_at ASC
+        ");
         $stmt->execute([':requestId' => $requestId]);
         return $stmt->fetchAll();
     }
@@ -333,7 +343,16 @@ class AppModel {
      */
     public static function getDocumentById(int $documentId): ?array {
         $db = self::db();
-        $stmt = $db->prepare("SELECT id, request_id AS requestId, file_path AS filePath, type, uploaded_at AS uploadedAt FROM documents WHERE id = :id");
+        $stmt = $db->prepare("
+            SELECT
+                id,
+                request_id AS requestId,
+                CAST(file_path AS CHAR) AS filePath,
+                type,
+                uploaded_at AS uploadedAt
+            FROM documents
+            WHERE id = :id
+        ");
         $stmt->execute([':id' => $documentId]);
         $row = $stmt->fetch();
         return $row ?: null;
@@ -354,11 +373,10 @@ class AppModel {
         $docObj = new Document(null, $requestId, $filePath, $type);
 
         $stmt = $db->prepare("INSERT INTO documents (request_id, file_path, type) VALUES (:requestId, :filePath, :type)");
-        $stmt->execute([
-            ':requestId' => $docObj->getRequestId(),
-            ':filePath'  => $docObj->getFilePath(),
-            ':type'      => $docObj->getType()
-        ]);
+        $stmt->bindValue(':requestId', $docObj->getRequestId(), PDO::PARAM_INT);
+        $stmt->bindValue(':filePath', $docObj->getFilePath(), PDO::PARAM_LOB);
+        $stmt->bindValue(':type', $docObj->getType(), PDO::PARAM_STR);
+        $stmt->execute();
 
         $newId = (int)$db->lastInsertId();
         self::addAuditLog(
@@ -395,11 +413,10 @@ class AppModel {
         $docObj->setType($type);
 
         $stmt = $db->prepare("UPDATE documents SET file_path = :filePath, type = :type WHERE id = :id");
-        $stmt->execute([
-            ':filePath' => $docObj->getFilePath(),
-            ':type'     => $docObj->getType(),
-            ':id'       => $documentId
-        ]);
+        $stmt->bindValue(':filePath', $docObj->getFilePath(), PDO::PARAM_LOB);
+        $stmt->bindValue(':type', $docObj->getType(), PDO::PARAM_STR);
+        $stmt->bindValue(':id', $documentId, PDO::PARAM_INT);
+        $stmt->execute();
 
         self::addAuditLog(
             (int)$current['requestId'],

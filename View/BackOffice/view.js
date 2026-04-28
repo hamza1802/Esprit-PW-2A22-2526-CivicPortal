@@ -28,7 +28,7 @@ const view = {
     renderNavBar(role) {
         const nav = document.querySelector('nav');
         const links = `
-            <div class="nav-brand" style="color:var(--primary-red);">
+            <div class="nav-brand">
                 CivicPortal Staff
             </div>
             <ul class="nav-links">

@@ -14,10 +14,7 @@ AppModel::ensureDefaultUser();
     <title>CivicPortal | Staff Portal</title>
     <meta name="description" content="Administrative and Worker functionalities for CivicPortal.">
     <link rel="stylesheet" href="../assets/css/style.css">
-    <style>
-        /* Quick override for staff portal header styling if needed */
-        .nav-brand { color: var(--primary-red); }
-    </style>
+    <link rel="stylesheet" href="../assets/css/admin.css">
 </head>
 <body>
 
@@ -29,8 +26,13 @@ AppModel::ensureDefaultUser();
     <!-- Main Content Area -->
     <main id="app">
         <!-- Dynamic content injected here -->
-        <div style="padding: 100px; text-align: center;">
-            <p>Loading CivicPortal Back Office...</p>
+        <div class="uv-loader-wrapper">
+            <div class="uv-loader">
+                <div class="uv-loader-orbit"></div>
+                <div class="uv-loader-orbit"></div>
+                <div class="uv-loader-orbit"></div>
+            </div>
+            <p class="uv-loader-text">Loading Staff Portal</p>
         </div>
     </main>
 

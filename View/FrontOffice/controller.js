@@ -46,6 +46,71 @@ const controller = {
         }
     },
 
+    setFieldError(fieldId, message) {
+        const errorEl = document.getElementById(`${fieldId}-error`);
+        const fieldEl = document.getElementById(fieldId);
+        if (errorEl) {
+            errorEl.textContent = message || '';
+            errorEl.style.display = message ? 'block' : 'none';
+        }
+        if (fieldEl) {
+            if (message) fieldEl.classList.add('input-invalid');
+            else fieldEl.classList.remove('input-invalid');
+        }
+    },
+
+    validateServiceRequestForm(form) {
+        let isValid = true;
+        const titleEl = form.querySelector('#request-title');
+        const descriptionEl = form.querySelector('#request-description');
+        const fileInputs = form.querySelectorAll('.doc-file-input');
+
+        const title = (titleEl?.value || '').trim();
+        const description = (descriptionEl?.value || '').trim();
+
+        this.setFieldError('request-title', '');
+        this.setFieldError('request-description', '');
+
+        if (!title) {
+            this.setFieldError('request-title', 'Please select a service type.');
+            isValid = false;
+        }
+
+        if (!description) {
+            this.setFieldError('request-description', 'Description is required.');
+            isValid = false;
+        } else if (description.length < 10) {
+            this.setFieldError('request-description', 'Description must be at least 10 characters.');
+            isValid = false;
+        } else if (description.length > 600) {
+            this.setFieldError('request-description', 'Description must not exceed 600 characters.');
+            isValid = false;
+        }
+
+        const allowedExt = ['pdf', 'jpg', 'jpeg', 'png'];
+        const maxSizeBytes = 5 * 1024 * 1024;
+        fileInputs.forEach((input) => {
+            const file = input.files?.[0];
+            this.setFieldError(input.id, '');
+            if (!file) {
+                this.setFieldError(input.id, 'This supporting document is required.');
+                isValid = false;
+                return;
+            }
+
+            const ext = (file.name.split('.').pop() || '').toLowerCase();
+            if (!allowedExt.includes(ext)) {
+                this.setFieldError(input.id, 'Only PDF, JPG, JPEG or PNG files are allowed.');
+                isValid = false;
+            } else if (file.size > maxSizeBytes) {
+                this.setFieldError(input.id, 'File size must be 5MB or less.');
+                isValid = false;
+            }
+        });
+
+        return isValid;
+    },
+
     setupEventListeners() {
         // ── Click Delegation ─────────────────────────────────────
         document.addEventListener('click', async (e) => {
@@ -193,6 +258,12 @@ const controller = {
     // ═════════════════════════════════════════════════════════════
 
     async handleServiceRequest(form) {
+        const isValid = this.validateServiceRequestForm(form);
+        if (!isValid) {
+            view.renderToast('Please correct highlighted fields.', 'danger');
+            return;
+        }
+
         const user = model.getCurrentUser();
         const title = form.querySelector('[name="title"]').value;
         const description = form.querySelector('[name="description"]').value;
@@ -347,7 +418,11 @@ const controller = {
 
         if (result) {
             view.renderToast(docId ? 'Document replaced successfully!' : 'Document uploaded successfully!');
-            await this.showRequestDetail(requestId);
+            if ((window.location.hash || '').startsWith('#edit-request-')) {
+                await this.showEditRequest(requestId);
+            } else {
+                await this.showRequestDetail(requestId);
+            }
         } else {
             view.renderToast('Failed to process document.', 'danger');
         }

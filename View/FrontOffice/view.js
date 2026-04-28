@@ -173,14 +173,19 @@ const view = {
                     <form id="service-request-form">
                         <div class="form-group reveal">
                             <label for="request-title">Service Type (Title)</label>
-                            <select id="request-title" name="title" required>
+                            <select id="request-title" name="title" required aria-describedby="request-title-error">
                                 ${titleOptions}
                             </select>
+                            <small id="request-title-error" class="form-error" style="display:none;"></small>
                         </div>
                         <div class="form-group reveal">
                             <label for="request-description">Description</label>
                             <textarea id="request-description" name="description" rows="4" required
+                                minlength="10"
+                                maxlength="600"
+                                aria-describedby="request-description-error"
                                 placeholder="Describe the details of your request..."></textarea>
+                            <small id="request-description-error" class="form-error" style="display:none;"></small>
                         </div>
 
                         <div id="documents-section" class="reveal">
@@ -221,6 +226,7 @@ const view = {
                         class="doc-file-input"
                         data-label="${doc.label}"
                         data-doctype="${doc.docType}">
+                    <small id="doc-file-${idx}-error" class="form-error" style="display:none;"></small>
                     <div class="file-selected" id="file-selected-${idx}" style="display:none;">
                         <span class="file-selected-name"></span>
                         <span class="file-selected-size"></span>
@@ -360,11 +366,11 @@ const view = {
                         ${request.status === 'rejected' && request.rejectionReason ? `
                         <div class="detail-row">
                             <span class="detail-label">REJECTION REASON</span>
-                            <span class="detail-value" style="color:var(--primary-red);">${request.rejectionReason}</span>
+                            <span class="detail-value" style="color:var(--danger);">${request.rejectionReason}</span>
                         </div>
                         ` : ''}
                         ${request.status === 'pending' ? `
-                        <div class="detail-actions">
+                        <div class="detail-actions detail-actions-spaced">
                             <button class="btn btn-small btn-primary" data-action="edit-request" data-id="${request.id}">EDIT REQUEST</button>
                             <button class="btn btn-small btn-danger" data-action="delete-request" data-id="${request.id}">DELETE REQUEST</button>
                         </div>
@@ -411,12 +417,15 @@ const view = {
     renderEditRequestForm(request, documents = []) {
         const docsRows = documents.length > 0 ? documents.map((d) => `
             <tr>
-                <td><strong>${d.filePath}</strong></td>
+                <td>
+                    <strong>${d.filePath}</strong><br>
+                    <a href="../../uploads/${d.filePath}" target="_blank" rel="noopener noreferrer" class="doc-open-link">Open</a>
+                </td>
                 <td><span class="category-badge">${d.type}</span></td>
                 <td>${new Date(d.uploadedAt).toLocaleDateString()}</td>
                 <td>
-                    <button class="btn btn-small" data-action="replace-document" data-doc-id="${d.id}" data-request-id="${request.id}" data-doc-type="${d.type}">REPLACE</button>
-                    <button class="btn btn-small btn-danger" data-action="delete-document" data-doc-id="${d.id}" data-request-id="${request.id}" style="margin-left:5px;">DELETE</button>
+                    <button type="button" class="btn btn-small" data-action="replace-document" data-doc-id="${d.id}" data-request-id="${request.id}" data-doc-type="${d.type}">REPLACE</button>
+                    <button type="button" class="btn btn-small btn-danger" data-action="delete-document" data-doc-id="${d.id}" data-request-id="${request.id}" style="margin-left:5px;">DELETE</button>
                 </td>
             </tr>
         `).join('') : '<tr><td colspan="4" style="text-align:center; padding:1.5rem;">No documents attached.</td></tr>';
@@ -447,7 +456,7 @@ const view = {
                 <div class="documents-section reveal" style="margin-top:1rem;">
                     <div class="documents-header">
                         <h3>Manage Documents</h3>
-                        <button class="btn btn-small btn-primary" data-action="upload-document" data-request-id="${request.id}">+ ADD DOCUMENT</button>
+                        <button type="button" class="btn btn-small btn-primary" data-action="upload-document" data-request-id="${request.id}">+ ADD DOCUMENT</button>
                     </div>
                     <div class="table-responsive">
                         <table class="data-table">
@@ -473,6 +482,9 @@ const view = {
     // ── Document Upload Modal (for adding extra docs from detail view) ───
 
     showDocumentUploadModal(requestId, existingDocId = null, docType = 'other') {
+        const existing = document.getElementById('document-modal');
+        if (existing) existing.remove();
+
         const isReplace = existingDocId !== null;
         const title = isReplace ? 'Replace Document' : 'Upload Document';
         
