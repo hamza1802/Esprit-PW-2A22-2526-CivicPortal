@@ -7,10 +7,43 @@ import model from './model.js';
 import view from './view.js';
 
 const controller = {
+    dashboardFilters: {
+        query: '',
+        status: 'all',
+        sortBy: 'date_desc'
+    },
+
     async init() {
         await model.sync();
         this.setupEventListeners();
         this.handleRoleChange('worker', false); 
+    },
+
+    preserveInputFocus(renderFn) {
+        const active = document.activeElement;
+        const activeId = active?.id || null;
+        const isInput = !!active && (
+            active.tagName === 'INPUT' ||
+            active.tagName === 'TEXTAREA'
+        );
+        const selectionStart = isInput ? active.selectionStart : null;
+        const selectionEnd = isInput ? active.selectionEnd : null;
+
+        renderFn();
+
+        if (activeId) {
+            const nextEl = document.getElementById(activeId);
+            if (nextEl) {
+                nextEl.focus();
+                if (
+                    typeof selectionStart === 'number' &&
+                    typeof selectionEnd === 'number' &&
+                    typeof nextEl.setSelectionRange === 'function'
+                ) {
+                    nextEl.setSelectionRange(selectionStart, selectionEnd);
+                }
+            }
+        }
     },
 
     setupEventListeners() {
@@ -23,10 +56,15 @@ const controller = {
                 await this.handleStatusUpdate(id, 'approved');
             } else if (action === 'reject') {
                 await this.handleStatusUpdate(id, 'rejected');
+            } else if (action === 'start-review') {
+                await this.handleStatusUpdate(id, 'under review');
             } else if (action === 'view-docs') {
                 await this.handleViewDocuments(parseInt(id));
             } else if (action === 'close-docs') {
                 view.hideDocsPanel();
+            } else if (action === 'reset-dashboard-filters') {
+                this.dashboardFilters = { query: '', status: 'all', sortBy: 'date_desc' };
+                this.renderFilteredWorkerDashboard();
             }
         });
 
@@ -38,6 +76,23 @@ const controller = {
             e.preventDefault();
             if (e.target.id === 'profile-form') {
                 this.handleProfileUpdate(new FormData(e.target));
+            }
+        });
+
+        document.addEventListener('input', (e) => {
+            if (e.target.id === 'dashboard-search') {
+                this.dashboardFilters.query = e.target.value;
+                this.renderFilteredWorkerDashboard();
+            }
+        });
+
+        document.addEventListener('change', (e) => {
+            if (e.target.id === 'dashboard-status-filter') {
+                this.dashboardFilters.status = e.target.value;
+                this.renderFilteredWorkerDashboard();
+            } else if (e.target.id === 'dashboard-sort') {
+                this.dashboardFilters.sortBy = e.target.value;
+                this.renderFilteredWorkerDashboard();
             }
         });
     },
@@ -52,7 +107,8 @@ const controller = {
                 break;
             case '#worker-dashboard':
                 if (user.role === 'worker') {
-                    view.renderWorkerDashboard(model.getServiceRequests());
+                    await model.sync();
+                    this.renderFilteredWorkerDashboard();
                 } else {
                     window.location.hash = '#home';
                 }
@@ -97,14 +153,67 @@ const controller = {
     },
 
     async handleStatusUpdate(requestId, status) {
-        await model.updateRequestStatus(parseInt(requestId), status);
-        view.renderToast(`Request ${status} successfully.`);
-        view.renderWorkerDashboard(model.getServiceRequests());
+        const id = parseInt(requestId);
+        const request = model.getServiceRequests().find(r => r.id === id);
+        if (!request) return;
+
+        let rejectionReason = null;
+        if (status === 'rejected') {
+            rejectionReason = await view.showRejectionReasonDialog();
+            if (rejectionReason === null) return;
+            if (!rejectionReason.trim()) {
+                view.renderToast('Rejection reason is required.', 'danger');
+                return;
+            }
+        }
+
+        const updated = await model.updateRequestStatus(id, status, rejectionReason);
+        if (!updated) {
+            view.renderToast('Status transition refused by workflow.', 'danger');
+            return;
+        }
+
+        await model.sync();
+        view.renderToast(`Request moved to "${status}".`);
+        this.renderFilteredWorkerDashboard();
     },
 
     async handleViewDocuments(requestId) {
         const documents = await model.getDocuments(requestId);
-        view.showDocsPanel(requestId, documents || []);
+        const logs = await model.getRequestAuditLogs(requestId);
+        view.showDocsPanel(requestId, documents || [], logs || []);
+    },
+
+    renderFilteredWorkerDashboard() {
+        const all = model.getServiceRequests();
+        const q = this.dashboardFilters.query.trim().toLowerCase();
+        const statusFilter = this.dashboardFilters.status;
+        const sortBy = this.dashboardFilters.sortBy;
+
+        let rows = all.filter((r) => {
+            const statusOk = statusFilter === 'all' ? true : (r.status === statusFilter);
+            if (!statusOk) return false;
+            if (!q) return true;
+            return (
+                String(r.id).includes(q) ||
+                (r.title || '').toLowerCase().includes(q) ||
+                (r.description || '').toLowerCase().includes(q) ||
+                (r.status || '').toLowerCase().includes(q)
+            );
+        });
+
+        rows.sort((a, b) => {
+            const da = new Date(a.createdAt).getTime();
+            const db = new Date(b.createdAt).getTime();
+            if (sortBy === 'date_asc') return da - db;
+            if (sortBy === 'status_asc') return (a.status || '').localeCompare(b.status || '');
+            if (sortBy === 'status_desc') return (b.status || '').localeCompare(a.status || '');
+            return db - da;
+        });
+
+        this.preserveInputFocus(() => {
+            view.renderWorkerDashboard(rows, this.dashboardFilters);
+        });
     },
 
     handleProfileUpdate(formData) {

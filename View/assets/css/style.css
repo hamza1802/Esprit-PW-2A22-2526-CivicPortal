@@ -426,6 +426,7 @@ nav {
 }
 
 .status-pending { background-color: transparent; color: var(--primary-navy); border-color: var(--primary-navy); }
+.status-under-review { background-color: #f5a524; color: var(--white); border-color: #f5a524; }
 .status-validated { background-color: var(--success); color: var(--white); border-color: var(--success); }
 .status-rejected { background-color: var(--danger); color: var(--white); border-color: var(--danger); }
 

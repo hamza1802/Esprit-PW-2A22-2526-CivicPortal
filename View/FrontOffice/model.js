@@ -103,6 +103,10 @@ const model = {
         return await this.apiCall('get_documents', { requestId });
     },
 
+    async getRequestAuditLogs(requestId) {
+        return await this.apiCall('get_request_audit_logs', { requestId });
+    },
+
     /**
      * Upload multiple files for a request.
      * @param {number} requestId

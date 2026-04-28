@@ -115,18 +115,21 @@ const view = {
         this.triggerObserver();
     },
 
-    renderWorkerDashboard(requests) {
+    renderWorkerDashboard(requests, filters = { query: '', status: 'all', sortBy: 'date_desc' }) {
         const tableRows = requests.map(r => `
             <tr>
                 <td><strong>#${r.id}</strong></td>
                 <td>${r.title}</td>
                 <td class="request-desc-cell">${r.description || '<em style="opacity:0.5">No description</em>'}</td>
                 <td>${new Date(r.createdAt).toLocaleDateString()}</td>
-                <td><span class="status-badge status-${r.status === 'approved' ? 'approved' : r.status}">${r.status}</span></td>
+                <td><span class="status-badge status-${(r.status || '').replace(/\s+/g, '-')}">${r.status}</span></td>
                 <td>
                     <button class="btn btn-small" data-action="view-docs" data-id="${r.id}" style="margin-bottom: 5px;">DOCS</button>
-                    <button class="btn btn-small btn-success" data-action="validate" data-id="${r.id}" style="margin-bottom: 5px;">APPROVE</button>
-                    <button class="btn btn-small btn-danger" data-action="reject" data-id="${r.id}">REJECT</button>
+                    ${r.status === 'pending' ? `<button class="btn btn-small btn-primary" data-action="start-review" data-id="${r.id}" style="margin-bottom: 5px;">START REVIEW</button>` : ''}
+                    ${r.status === 'under review' ? `
+                        <button class="btn btn-small btn-success" data-action="validate" data-id="${r.id}" style="margin-bottom: 5px;">APPROVE</button>
+                        <button class="btn btn-small btn-danger" data-action="reject" data-id="${r.id}">REJECT</button>
+                    ` : ''}
                 </td>
             </tr>
         `).join('');
@@ -134,6 +137,34 @@ const view = {
         this.app.innerHTML = `
             <section class="page-container">
                 <h2 class="reveal">Worker Dashboard</h2>
+                <div class="form-card reveal" style="margin-bottom:1.25rem;">
+                    <div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:0.75rem;align-items:end;">
+                        <div class="form-group" style="margin:0;">
+                            <label for="dashboard-search">Search</label>
+                            <input id="dashboard-search" type="text" placeholder="ID, service, status..." value="${filters.query || ''}">
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label for="dashboard-status-filter">Status</label>
+                            <select id="dashboard-status-filter">
+                                <option value="all" ${filters.status === 'all' ? 'selected' : ''}>All</option>
+                                <option value="pending" ${filters.status === 'pending' ? 'selected' : ''}>Pending</option>
+                                <option value="under review" ${filters.status === 'under review' ? 'selected' : ''}>Under review</option>
+                                <option value="approved" ${filters.status === 'approved' ? 'selected' : ''}>Approved</option>
+                                <option value="rejected" ${filters.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label for="dashboard-sort">Sort</label>
+                            <select id="dashboard-sort">
+                                <option value="date_desc" ${filters.sortBy === 'date_desc' ? 'selected' : ''}>Newest</option>
+                                <option value="date_asc" ${filters.sortBy === 'date_asc' ? 'selected' : ''}>Oldest</option>
+                                <option value="status_asc" ${filters.sortBy === 'status_asc' ? 'selected' : ''}>Status A-Z</option>
+                                <option value="status_desc" ${filters.sortBy === 'status_desc' ? 'selected' : ''}>Status Z-A</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-small" data-action="reset-dashboard-filters">RESET</button>
+                    </div>
+                </div>
                 <div class="reveal">
                     <div class="table-responsive">
                         <table class="data-table">
@@ -182,7 +213,7 @@ const view = {
         this.triggerObserver();
     },
 
-    showDocsPanel(requestId, documents) {
+    showDocsPanel(requestId, documents, auditLogs = []) {
         const panel = document.getElementById('docs-panel');
         const title = document.getElementById('docs-panel-title');
         const tbody = document.getElementById('docs-panel-body');
@@ -192,7 +223,7 @@ const view = {
         if (documents && documents.length > 0) {
             tbody.innerHTML = documents.map(d => `
                 <tr>
-                    <td><strong>${d.filePath}</strong></td>
+                    <td><strong>${d.filePath}</strong><br><a href="../../uploads/${d.filePath}" target="_blank" rel="noopener noreferrer">Open</a></td>
                     <td><span class="category-badge">${d.type}</span></td>
                     <td>${new Date(d.uploadedAt).toLocaleDateString()}</td>
                 </tr>
@@ -203,6 +234,28 @@ const view = {
 
         panel.style.display = 'block';
         panel.scrollIntoView({ behavior: 'smooth' });
+
+        const existingTimeline = panel.querySelector('.docs-audit-timeline');
+        if (existingTimeline) existingTimeline.remove();
+        const timeline = document.createElement('div');
+        timeline.className = 'docs-audit-timeline';
+        timeline.style.marginTop = '1rem';
+        timeline.innerHTML = `
+            <h4>Activity</h4>
+            <ul style="padding-left:1rem; margin-top:0.5rem;">
+                ${(auditLogs.length > 0
+                    ? auditLogs.map((log) => `
+                        <li style="margin-bottom:0.35rem;">
+                            ${new Date(log.createdAt).toLocaleString()} - ${log.action}
+                            ${log.fromStatus ? `(${log.fromStatus} -> ${log.toStatus || '-'})` : ''}
+                            ${log.note ? `<br><span style="opacity:0.8;">${log.note}</span>` : ''}
+                        </li>
+                    `).join('')
+                    : '<li>No activity for this request.</li>'
+                )}
+            </ul>
+        `;
+        panel.querySelector('.page-container')?.appendChild(timeline);
     },
 
     hideDocsPanel() {
@@ -211,6 +264,9 @@ const view = {
     },
 
     renderAdminStats(stats) {
+        const breakdown = stats.statusBreakdown || {};
+        const topServices = stats.topServices || [];
+        const recent = stats.recentActivity || [];
         this.app.innerHTML = `
             <section class="page-container">
                 <h2 class="reveal">System Statistics</h2>
@@ -240,9 +296,75 @@ const view = {
                         <p class="stats-number">${stats.complaintsCount}</p>
                     </div>
                 </div>
+                <div class="editorial-grid" style="margin-top:1rem;">
+                    <div class="editorial-card reveal">
+                        <h3>Status Breakdown</h3>
+                        <p>Pending: <strong>${breakdown['pending'] || 0}</strong></p>
+                        <p>Under review: <strong>${breakdown['under review'] || 0}</strong></p>
+                        <p>Approved: <strong>${breakdown['approved'] || 0}</strong></p>
+                        <p>Rejected: <strong>${breakdown['rejected'] || 0}</strong></p>
+                    </div>
+                    <div class="editorial-card reveal">
+                        <h3>Top Services</h3>
+                        ${topServices.length > 0 ? topServices.map((s) => `<p>${s.title}: <strong>${s.total}</strong></p>`).join('') : '<p>No data yet.</p>'}
+                    </div>
+                </div>
+                <div class="form-card reveal" style="margin-top:1rem;">
+                    <h3 style="margin-bottom:0.75rem;">Recent Activity</h3>
+                    <div style="max-height:260px; overflow:auto;">
+                        ${recent.length > 0 ? recent.map((item) => `
+                            <div style="padding:0.5rem 0; border-bottom:1px solid rgba(255,255,255,0.08);">
+                                <strong>#${item.requestId}</strong> - ${item.action}
+                                ${item.fromStatus ? `(${item.fromStatus} -> ${item.toStatus || '-'})` : ''}
+                                ${item.note ? `<br><span style="opacity:0.8;">${item.note}</span>` : ''}
+                            </div>
+                        `).join('') : '<p>No recent activity.</p>'}
+                    </div>
+                </div>
             </section>
         `;
         this.triggerObserver();
+    },
+
+    showRejectionReasonDialog() {
+        return new Promise((resolve) => {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.id = 'reject-reason-modal';
+            modal.innerHTML = `
+                <div class="modal-card">
+                    <div class="modal-header">
+                        <h3>Reject Request</h3>
+                        <button class="modal-close" id="reject-reason-close">&times;</button>
+                    </div>
+                    <div class="form-group">
+                        <label for="reject-reason-input">Reason (required)</label>
+                        <textarea id="reject-reason-input" rows="5" placeholder="Explain why this request is rejected..."></textarea>
+                    </div>
+                    <div style="display:flex; gap:0.75rem;">
+                        <button class="btn btn-danger" id="reject-reason-submit" style="flex:1;">CONFIRM REJECTION</button>
+                        <button class="btn" id="reject-reason-cancel" style="flex:1;">CANCEL</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            const close = () => {
+                modal.remove();
+                resolve(null);
+            };
+
+            modal.querySelector('#reject-reason-close')?.addEventListener('click', close);
+            modal.querySelector('#reject-reason-cancel')?.addEventListener('click', close);
+            modal.querySelector('#reject-reason-submit')?.addEventListener('click', () => {
+                const reason = modal.querySelector('#reject-reason-input')?.value ?? '';
+                modal.remove();
+                resolve(reason);
+            });
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) close();
+            });
+        });
     },
 
     renderAdminInbox(complaints) {

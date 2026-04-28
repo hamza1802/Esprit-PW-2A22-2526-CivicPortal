@@ -47,18 +47,28 @@ const model = {
         return this.state.serviceRequests;
     },
 
-    async updateRequestStatus(requestId, status) {
-        const response = await this.apiCall('update_status', { id: requestId, status });
+    async updateRequestStatus(requestId, status, rejectionReason = null) {
+        const response = await this.apiCall('update_status', {
+            id: requestId,
+            status,
+            rejectionReason,
+            actorRole: this.state.currentUser?.role || 'worker'
+        });
         if (response) {
             const request = this.state.serviceRequests.find(r => r.id === requestId);
             if (request) request.status = status;
         }
+        return response;
     },
 
     // ── Document access for BackOffice ───────────────────────────
 
     async getDocuments(requestId) {
         return await this.apiCall('get_documents', { requestId });
+    },
+
+    async getRequestAuditLogs(requestId) {
+        return await this.apiCall('get_request_audit_logs', { requestId });
     },
 
     setCurrentUser(role) {

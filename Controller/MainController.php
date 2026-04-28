@@ -48,7 +48,15 @@ class MainController {
                 );
 
             case 'update_status':
-                return AppModel::updateRequestStatus((int)$data['id'], $data['status']);
+                return AppModel::updateRequestStatus(
+                    (int)$data['id'],
+                    $data['status'],
+                    $data['rejectionReason'] ?? null,
+                    $data['actorRole'] ?? 'worker'
+                );
+
+            case 'get_request_audit_logs':
+                return AppModel::getRequestAuditLogs((int)$data['requestId']);
 
             case 'delete_request':
                 return AppModel::deleteRequest((int)$data['id']);

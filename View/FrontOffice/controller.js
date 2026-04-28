@@ -7,11 +7,43 @@ import model from './model.js';
 import view from './view.js';
 
 const controller = {
+    listFilters: {
+        query: '',
+        sortBy: 'date_desc'
+    },
+
     async init() {
         await model.sync();
         this.setupEventListeners();
         this.handleRouting();
         view.renderNavBar(model.getCurrentUser().role);
+    },
+
+    preserveInputFocus(renderFn) {
+        const active = document.activeElement;
+        const activeId = active?.id || null;
+        const isInput = !!active && (
+            active.tagName === 'INPUT' ||
+            active.tagName === 'TEXTAREA'
+        );
+        const selectionStart = isInput ? active.selectionStart : null;
+        const selectionEnd = isInput ? active.selectionEnd : null;
+
+        renderFn();
+
+        if (activeId) {
+            const nextEl = document.getElementById(activeId);
+            if (nextEl) {
+                nextEl.focus();
+                if (
+                    typeof selectionStart === 'number' &&
+                    typeof selectionEnd === 'number' &&
+                    typeof nextEl.setSelectionRange === 'function'
+                ) {
+                    nextEl.setSelectionRange(selectionStart, selectionEnd);
+                }
+            }
+        }
     },
 
     setupEventListeners() {
@@ -52,6 +84,9 @@ const controller = {
             }
             else if (action === 'close-modal') {
                 view.closeModal();
+            } else if (action === 'reset-request-filters') {
+                this.listFilters = { query: '', sortBy: 'date_desc' };
+                this.renderFilteredRequests();
             }
         });
 
@@ -93,6 +128,17 @@ const controller = {
                     preview.querySelector('.file-selected-size').textContent = `(${(file.size / 1024).toFixed(1)} KB)`;
                 }
             }
+            if (e.target.id === 'request-sort') {
+                this.listFilters.sortBy = e.target.value;
+                this.renderFilteredRequests();
+            }
+        });
+
+        document.addEventListener('input', (e) => {
+            if (e.target.id === 'request-search') {
+                this.listFilters.query = e.target.value;
+                this.renderFilteredRequests();
+            }
         });
     },
 
@@ -127,7 +173,8 @@ const controller = {
                 view.renderServiceRequestForm();
                 break;
             case '#my-requests':
-                view.renderMyRequests(model.getServiceRequests());
+                await model.sync();
+                this.renderFilteredRequests();
                 break;
             case '#profile':
                 view.renderProfile(user);
@@ -184,6 +231,7 @@ const controller = {
     },
 
     async showRequestDetail(requestId) {
+        await model.sync();
         const requests = model.getServiceRequests();
         const request = requests.find(r => r.id === requestId);
         if (!request) {
@@ -192,7 +240,38 @@ const controller = {
             return;
         }
         const documents = await model.getDocuments(requestId);
-        view.renderRequestDetail(request, documents || []);
+        const logs = await model.getRequestAuditLogs(requestId);
+        view.renderRequestDetail(request, documents || [], logs || []);
+    },
+
+    renderFilteredRequests() {
+        const requests = model.getServiceRequests();
+        const q = this.listFilters.query.trim().toLowerCase();
+        const sortBy = this.listFilters.sortBy;
+
+        let filtered = requests.filter((r) => {
+            if (!q) return true;
+            return (
+                String(r.id).includes(q) ||
+                (r.title || '').toLowerCase().includes(q) ||
+                (r.description || '').toLowerCase().includes(q) ||
+                (r.status || '').toLowerCase().includes(q)
+            );
+        });
+
+        filtered.sort((a, b) => {
+            const da = new Date(a.createdAt).getTime();
+            const db = new Date(b.createdAt).getTime();
+
+            if (sortBy === 'date_asc') return da - db;
+            if (sortBy === 'status_asc') return (a.status || '').localeCompare(b.status || '');
+            if (sortBy === 'status_desc') return (b.status || '').localeCompare(a.status || '');
+            return db - da; // default date_desc
+        });
+
+        this.preserveInputFocus(() => {
+            view.renderMyRequests(filtered, this.listFilters);
+        });
     },
 
     showEditRequest(requestId) {

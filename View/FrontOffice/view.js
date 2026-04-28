@@ -224,10 +224,11 @@ const view = {
 
     // ── My Requests List ─────────────────────────────────────────
 
-    renderMyRequests(requests) {
+    renderMyRequests(requests, filters = { query: '', sortBy: 'date_desc' }) {
         const requestCards = requests.length > 0 ? requests.map(r => {
             const statusClass = r.status === 'approved' ? 'status-approved' :
                                 r.status === 'rejected' ? 'status-rejected' :
+                                r.status === 'under review' ? 'status-under-review' :
                                 'status-pending';
             return `
                 <div class="request-card reveal">
@@ -262,6 +263,24 @@ const view = {
         this.app.innerHTML = `
             <section class="page-container">
                 <h2 class="reveal">My Requests</h2>
+                <div class="form-card reveal" style="margin-bottom:1.25rem;">
+                    <div style="display:grid;grid-template-columns:2fr 1fr auto;gap:0.75rem;align-items:end;">
+                        <div class="form-group" style="margin:0;">
+                            <label for="request-search">Search (ID / keyword)</label>
+                            <input id="request-search" type="text" placeholder="Ex: 12, birth, rejected..." value="${filters.query || ''}">
+                        </div>
+                        <div class="form-group" style="margin:0;">
+                            <label for="request-sort">Sort by</label>
+                            <select id="request-sort">
+                                <option value="date_desc" ${filters.sortBy === 'date_desc' ? 'selected' : ''}>Newest first</option>
+                                <option value="date_asc" ${filters.sortBy === 'date_asc' ? 'selected' : ''}>Oldest first</option>
+                                <option value="status_asc" ${filters.sortBy === 'status_asc' ? 'selected' : ''}>Status A-Z</option>
+                                <option value="status_desc" ${filters.sortBy === 'status_desc' ? 'selected' : ''}>Status Z-A</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-small" data-action="reset-request-filters">RESET</button>
+                    </div>
+                </div>
                 <div class="requests-list">
                     ${requestCards}
                 </div>
@@ -272,14 +291,18 @@ const view = {
 
     // ── Request Detail with Documents ────────────────────────────
 
-    renderRequestDetail(request, documents) {
+    renderRequestDetail(request, documents, auditLogs = []) {
         const statusClass = request.status === 'approved' ? 'status-approved' :
                             request.status === 'rejected' ? 'status-rejected' :
+                            request.status === 'under review' ? 'status-under-review' :
                             'status-pending';
 
         const docRows = documents && documents.length > 0 ? documents.map(d => `
             <tr>
-                <td><strong>${d.filePath}</strong></td>
+                <td>
+                    <strong>${d.filePath}</strong><br>
+                    <a href="../../uploads/${d.filePath}" target="_blank" rel="noopener noreferrer">Open</a>
+                </td>
                 <td><span class="category-badge">${d.type}</span></td>
                 <td>-</td>
                 <td>${new Date(d.uploadedAt).toLocaleDateString()}</td>
@@ -289,6 +312,17 @@ const view = {
                 </td>
             </tr>
         `).join('') : `<tr><td colspan="5" style="text-align:center; padding: 2rem;">No documents attached yet.</td></tr>`;
+
+        const timeline = auditLogs.length > 0
+            ? auditLogs.map((log) => `
+                <li style="margin-bottom:0.5rem;">
+                    <strong>${new Date(log.createdAt).toLocaleString()}</strong> -
+                    ${log.action}
+                    ${log.fromStatus ? `(${log.fromStatus} -> ${log.toStatus || '-'})` : ''}
+                    ${log.note ? `<br><span style="opacity:0.85;">${log.note}</span>` : ''}
+                </li>
+            `).join('')
+            : '<li>No activity logged yet.</li>';
 
         this.app.innerHTML = `
             <section class="page-container">
@@ -315,6 +349,12 @@ const view = {
                             <span class="detail-label">DESCRIPTION</span>
                             <span class="detail-value">${request.description || 'No description provided.'}</span>
                         </div>
+                        ${request.status === 'rejected' && request.rejectionReason ? `
+                        <div class="detail-row">
+                            <span class="detail-label">REJECTION REASON</span>
+                            <span class="detail-value" style="color:var(--primary-red);">${request.rejectionReason}</span>
+                        </div>
+                        ` : ''}
                         ${request.status === 'pending' ? `
                         <div class="detail-actions">
                             <button class="btn btn-small btn-primary" data-action="edit-request" data-id="${request.id}">EDIT REQUEST</button>
@@ -345,6 +385,13 @@ const view = {
                             </tbody>
                         </table>
                     </div>
+                </div>
+
+                <div class="documents-section reveal" style="margin-top:1.25rem;">
+                    <h3>Request History</h3>
+                    <ul style="padding-left:1rem; margin-top:0.75rem;">
+                        ${timeline}
+                    </ul>
                 </div>
             </section>
         `;
