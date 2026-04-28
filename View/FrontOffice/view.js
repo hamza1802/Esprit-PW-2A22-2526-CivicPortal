@@ -17,44 +17,41 @@ const view = {
         if (!container) return;
         
         const toast = document.createElement('div');
-        toast.className = `custom-backoffice-toast ${type === 'error' ? 'toast-error' : ''}`;
-        toast.textContent = message.toUpperCase();
+        toast.className = `toast toast-${type}`;
+        toast.innerHTML = `<i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i> ${message}`;
         
-        if (type === 'error') toast.style.backgroundColor = '#A4161A';
+        container.appendChild(toast);
         
-        document.body.appendChild(toast);
-        
-        setTimeout(() => toast.classList.add('visible'), 100);
         setTimeout(() => {
-            toast.classList.remove('visible');
-            setTimeout(() => toast.remove(), 500);
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 400);
         }, 3000);
     },
 
     renderNavBar(role) {
         const nav = document.querySelector('nav');
-        const backofficeBtn = (role === 'admin') ? `<a href="index.php?page=back_users_list" class="nav-btn nav-btn-outlined">BACKOFFICE</a>` : '';
+        // Clear old inline styles from nav
+        nav.removeAttribute('style');
+        
+        const backofficeBtn = (role === 'admin') ? `<a href="index.php?page=back_dashboard" class="btn btn-small" style="padding: 0.4rem 1.2rem; font-size: 0.8rem;">BACKOFFICE</a>` : '';
         const links = `
-            <a href="#home" class="nav-brand" style="text-decoration:none; text-transform:uppercase; color:#1a1a1a; font-weight:900; font-size:1.5rem;">CIVICPORTAL</a>
-            <ul class="nav-links" style="display:flex; list-style:none; margin:0; padding:0; gap:1.5rem; align-items: center;">
-                <li><a href="#home">home</a></li>
-                <li><a href="#programs">programs</a></li>
-                <li><a href="#service-requests">service requests</a></li>
-                <li><a href="#grievances">grievances</a></li>
-                <li><a href="#transport">transport</a></li>
-                <li><a href="#profile">profile</a></li>
-                <li><a href="index.php?action=logout" style="color: #ffcccc;">logout</a></li>
+            <div class="nav-brand">
+                <i class="bi bi-building"></i> CIVICPORTAL
+            </div>
+            <ul class="nav-links">
+                <li><a href="#home"><i class="bi bi-house-door"></i> home</a></li>
+                <li><a href="#programs"><i class="bi bi-grid"></i> programs</a></li>
+                <li><a href="#service-requests"><i class="bi bi-file-earmark-text"></i> service requests</a></li>
+                <li><a href="#grievances"><i class="bi bi-megaphone"></i> grievances</a></li>
+                <li><a href="#transport"><i class="bi bi-truck"></i> transport</a></li>
+                <li><a href="#profile"><i class="bi bi-person-circle"></i> profile</a></li>
+                <li><a href="index.php?action=logout"><i class="bi bi-box-arrow-right"></i> logout</a></li>
             </ul>
-            <div class="nav-actions" style="display:flex; gap:1rem; align-items:center;">
+            <div class="user-controls" style="display: flex; gap: 0.5rem; align-items: center;">
                 ${backofficeBtn}
-                <span class="nav-btn nav-btn-filled" style="cursor: default; opacity: 0.9; padding:0.4rem 1rem; border-radius:4px; font-weight:bold; font-size:0.9rem; letter-spacing:1px; color:#fff; border:1px solid transparent;">${role.toUpperCase()}</span>
+                <div class="user-role-badge">${role.toUpperCase()}</div>
             </div>
         `;
-        nav.style.display = 'flex';
-        nav.style.alignItems = 'center';
-        nav.style.justifyContent = 'space-between';
-        nav.style.paddingLeft = '2rem';
-        nav.style.paddingRight = '2rem';
         nav.innerHTML = links;
     },
 
@@ -62,37 +59,43 @@ const view = {
         const content = `
             <div class="hero-container reveal">
                 <section class="hero-section">
-                    <h1>CivicPortal</h1>
-                    <p>Welcome, ${user.name}. Manage your services, programs, transport, grievances, and profile all in one secure dashboard.</p>
+                    <h1>CIVICPORTAL</h1>
+                    <p>Welcome back, ${user.name}. Navigate municipal services with unmatched clarity and precision.</p>
                     <div class="search-container">
-                        <input type="text" class="search-bar" placeholder="Search services, programs, transport...">
-                        <button class="search-btn" onclick="console.log('Search simulated!')">Search</button>
+                        <input type="text" class="search-bar" placeholder="search services, programs, documents...">
+                        <button class="search-btn" onclick="console.log('Search simulated!')"><i class="bi bi-search"></i> Search</button>
                     </div>
                 </section>
             </div>
             <section class="page-container">
+                <h2 class="reveal">Directory of Services</h2>
                 <div class="editorial-grid">
                     <div class="editorial-card editorial-highlight reveal">
+                        <i class="bi bi-file-earmark-text" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
                         <h3>Service Requests</h3>
                         <p>Submit requests for permits, certificates, inspections, and municipal services.</p>
                         <a href="#service-requests" class="btn btn-primary" style="align-self: flex-start; margin-top: auto;">Submit Request</a>
                     </div>
                     <div class="editorial-card reveal">
+                        <i class="bi bi-people" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
                         <h3>Programs</h3>
                         <p>Join local programs tailored to your community and interests.</p>
                         <a href="#programs" class="btn" style="align-self: flex-start; margin-top: auto;">View Programs</a>
                     </div>
                     <div class="editorial-card reveal">
+                        <i class="bi bi-truck" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
                         <h3>Transport</h3>
                         <p>Check local transportation services and plan your next commute.</p>
                         <a href="#transport" class="btn" style="align-self: flex-start; margin-top: auto;">View Transport</a>
                     </div>
                     <div class="editorial-card reveal">
+                        <i class="bi bi-megaphone" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
                         <h3>Grievances</h3>
                         <p>Submit complaints or concerns about municipal services and issues.</p>
                         <a href="#grievances" class="btn" style="align-self: flex-start; margin-top: auto;">Submit Grievance</a>
                     </div>
                     <div class="editorial-card reveal">
+                        <i class="bi bi-person-badge" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
                         <h3>Profile</h3>
                         <p>Edit your profile in one click and keep all your important information.</p>
                         <a href="#profile" class="btn" style="align-self: flex-start; margin-top: auto;">View Profile</a>
@@ -186,7 +189,7 @@ const view = {
     
 
         const detailCards = detailRows.map(d => `
-            <div class="pf-detail-card">
+            <div class="pf-detail-card reveal">
                 <span class="pf-detail-icon">${d.icon}</span>
                 <div class="pf-detail-body">
                     <span class="pf-detail-label">${d.label}</span>
@@ -195,17 +198,23 @@ const view = {
             </div>
         `).join('');
 
+        const bioContent = user.bio ? `
+            <div class="pf-bio reveal">
+                <p>${user.bio}</p>
+            </div>
+        ` : '';
+
         const profileSummary = `
             <div class="pf-details-grid">
                 ${detailCards}
             </div>
-            <div style="margin-top:2rem; text-align:right;">
+            <div style="margin-top:2rem; text-align:center;">
                 <button class="btn btn-primary" data-action="toggle-profile-edit" style="padding:0.8rem 2.5rem;">Edit Profile</button>
             </div>
         `;
 
         const editForm = `
-            <div class="pf-edit-form-wrap">
+            <div class="pf-edit-form-wrap reveal">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
                     <h3 style="font-size:1.4rem; font-weight:900; text-transform:uppercase; letter-spacing:-0.5px; color:#1D2A44;">Edit Profile</h3>
                     <button type="button" class="btn" style="font-size:0.75rem; padding:0.4rem 1.2rem;" data-action="toggle-profile-edit">Cancel</button>
@@ -243,11 +252,8 @@ const view = {
             </div>
         `;
 
-        const bioText = user.bio ? `<p style="font-size:1.1rem; color:#1D2A44; font-weight:700; margin-top:0.5rem; max-width:600px; line-height:1.5;">${user.bio}</p>` : '';
-
         this.app.innerHTML = `
-            <section class="pf-page">
-
+            <section class="pf-page reveal">
                 <!-- Cover -->
                 <div class="pf-cover">
                     <div class="pf-cover-gradient"></div>
@@ -258,18 +264,18 @@ const view = {
                     <div class="pf-avatar-wrap">
                         <img src="${avatarSrc}" alt="${user.name}" class="pf-avatar">
                     </div>
-                    <div class="pf-header-info">
+                    <div class="pf-header-info reveal">
                         <h2 class="pf-name">${user.name}</h2>
                         <span class="pf-role-badge">${roleLabel}</span>
                     </div>
-                    ${bioText}
+                    
+                    ${bioContent}
                 </div>
 
-                <!-- Content -->
+                <!-- Content Area -->
                 <div class="pf-content">
                     ${editMode ? editForm : profileSummary}
                 </div>
-
             </section>
         `;
         this.triggerObserver();

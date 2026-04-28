@@ -1,17 +1,17 @@
 <?php require_once __DIR__ . '/../../includes/header.php'; ?>
 <section class="page-container">
-    <div class="hero-section" style="border-bottom: 2px solid #1D2A44; margin-bottom: 3rem; padding-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end;">
+    <div class="hero-section" style="display: flex; justify-content: space-between; align-items: flex-end;">
         <div>
-            <h1 style="font-size: 3.5rem;">User Management</h1>
-            <p style="font-size: 1.2rem; margin-top: 1rem; color: #1D2A44;">Administration panel for managing portal accounts.</p>
+            <h1>User Management</h1>
+            <p>Administration panel for managing portal accounts.</p>
         </div>
-        <button id="show-register-form" class="btn btn-primary" style="padding: 1.2rem 2.5rem; font-size: 1.1rem; box-shadow: 8px 8px 0px #1D2A44;">+ NEW REGISTRATION</button>
+        <button id="show-register-form" class="btn btn-primary">+ NEW REGISTRATION</button>
     </div>
 
     <!-- Static notifications removed to prioritize toasts and inline errors -->
 
 
-    <div class="table-responsive" style="margin-bottom: 4rem; background: #fff; box-shadow: 10px 10px 0px #1D2A44;">
+    <div class="table-responsive" style="margin-bottom: 4rem;">
         <table class="data-table" id="users-table">
             <thead>
                 <tr>
@@ -52,8 +52,8 @@
     </div>
 
     <!-- Registration/Edit Section (Replaces Modal) -->
-    <div id="user-registration-section" class="form-card" style="display: <?= !empty($editingUser) ? 'block' : 'none' ?>; margin-top: 4rem; box-shadow: 20px 20px 0px #1D2A44; border: 4px solid #1D2A44;">
-        <h2 style="margin-bottom: 2.5rem; border-bottom: 4px solid #1D2A44; padding-bottom: 1rem; text-transform: uppercase;">
+    <div id="user-registration-section" class="form-card" style="display: <?= !empty($editingUser) ? 'block' : 'none' ?>; margin-top: 4rem;">
+        <h2 style="margin-bottom: 2.5rem;">
             <?= !empty($editingUser) ? 'Update Profile' : 'New Registration' ?>
         </h2>
 
@@ -113,10 +113,10 @@
             </div>
 
             <div style="margin-top: 2rem;">
-                <button id="submit-btn" class="btn btn-primary" type="submit" style="width: 100%; padding: 1.5rem; font-size: 1.2rem;">
+                <button id="submit-btn" class="btn btn-primary" type="submit" style="width: 100%;">
                     <?= !empty($editingUser) ? 'SAVE CHANGES' : 'COMPLETE REGISTRATION' ?>
                 </button>
-                <button type="button" id="cancel-btn" class="btn" style="width: 100%; margin-top: 1rem; border-color: transparent;">CANCEL AND CLOSE</button>
+                <button type="button" id="cancel-btn" class="btn" style="width: 100%; margin-top: 1rem;">CANCEL AND CLOSE</button>
             </div>
         </form>
     </div>

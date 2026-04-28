@@ -48,6 +48,7 @@ unset($_SESSION['success'], $_SESSION['errors']);
     <title>CivicPortal | Citizen Services</title>
     <meta name="description" content="Access municipal services, programs, and submit requests online through CivicPortal.">
     <base href="/proj/">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="View/assets/css/style.css">
 </head>
 <body>
@@ -60,8 +61,13 @@ unset($_SESSION['success'], $_SESSION['errors']);
     <!-- Main Content Area -->
     <main id="app">
         <!-- Dynamic content injected here -->
-        <div style="padding: 100px; text-align: center;">
-            <p>Loading CivicPortal Front Office...</p>
+        <div class="uv-loader-wrapper">
+            <div class="uv-loader">
+                <div class="uv-loader-orbit"></div>
+                <div class="uv-loader-orbit"></div>
+                <div class="uv-loader-orbit"></div>
+            </div>
+            <p class="uv-loader-text">Loading CivicPortal</p>
         </div>
     </main>
 
@@ -78,5 +84,6 @@ unset($_SESSION['success'], $_SESSION['errors']);
 
     <!-- Scripts -->
     <script type="module" src="View/FrontOffice/app.js"></script>
+    <script src="View/assets/js/glass-animations.js"></script>
 </body>
 </html>

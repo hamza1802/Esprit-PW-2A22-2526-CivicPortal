@@ -8,8 +8,10 @@ import view from './view.js';
 
 const controller = {
     async init() {
+        console.log("Controller: Synchronizing model...");
         await model.sync();
         this.setupEventListeners();
+        console.log("Controller: Setting default role to admin");
         this.handleRoleChange('admin', false);
     },
 
@@ -31,8 +33,8 @@ const controller = {
         });
 
         document.addEventListener('submit', (e) => {
-            e.preventDefault();
             if (e.target.id === 'profile-form') {
+                e.preventDefault();
                 this.handleProfileUpdate(new FormData(e.target));
             }
         });
@@ -41,13 +43,20 @@ const controller = {
     async handleRouting() {
         const hash = window.location.hash || '#home';
         const user = model.getCurrentUser();
+        console.log(`Controller: Routing to ${hash} for user:`, user);
+
+        if (!user) {
+            console.warn("Controller: No current user set, rendering empty home");
+            view.renderHome(null);
+            return;
+        }
 
         switch (hash) {
             case '#home':
                 view.renderHome(user);
                 break;
             case '#worker-dashboard':
-                window.location.hash = '#home';
+                view.renderWorkerDashboard(model.getServiceRequests());
                 break;
             case '#profile':
                 view.renderProfile(user);
@@ -74,6 +83,7 @@ const controller = {
     },
 
     handleRoleChange(role, triggerRouting = true) {
+        console.log(`Controller: Role changing to ${role}`);
         model.setCurrentUser(role);
         view.renderNavBar(role);
 
@@ -101,7 +111,7 @@ const controller = {
         };
         model.updateUser(data);
         view.renderToast('Staff profile updated!');
-        window.location.hash = '#home';
+        view.renderProfile(model.getCurrentUser()); // Stay on profile or go home
     }
 };
 

@@ -17,6 +17,7 @@ $success = $_SESSION['success'] ?? '';
 $old = $_SESSION['old'] ?? [];
 
 $page = $_GET['page'] ?? null;
+$tab = $_GET['tab'] ?? null;
 if ($page === null) {
     $page = !empty($_SESSION['user_id']) ? 'front_home' : 'front_login';
 }
@@ -53,7 +54,7 @@ if ($friendSearch !== '') {
     }));
 }
 
-$protectedRoutes = ['front_home', 'front_profile', 'back_users_list'];
+$protectedRoutes = ['front_home', 'front_profile', 'back_dashboard'];
 if (in_array($page, $protectedRoutes, true) && (empty($_SESSION['user_id']) || $currentUser === null)) {
     header('Location: index.php?page=front_login');
     exit;
@@ -148,6 +149,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: index.php?page=front_profile');
             exit;
 
+        case 'update_status':
+            // Only admin or worker can update status
+            if (!in_array($_SESSION['user_role'] ?? '', ['admin', 'worker', 'agent'])) {
+                header('Location: index.php?page=front_home');
+                exit;
+            }
+            $result = AppModel::updateRequestStatus($_POST['data']['id'], $_POST['data']['status']);
+            $_SESSION['success'] = 'Status updated successfully.';
+            header('Location: index.php?page=back_dashboard&tab=queue');
+            exit;
+
         case 'get_user':
         case 'create_user':
         case 'update_user':
@@ -182,11 +194,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!empty($result['errors'])) {
                     $_SESSION['errors'] = $result['errors'];
                     $_SESSION['old'] = $_POST;
-                    header('Location: index.php?page=back_users_list');
+                    header('Location: index.php?page=back_dashboard&tab=users');
                     exit;
                 }
                 $_SESSION['success'] = $result['success'];
-                header('Location: index.php?page=back_users_list');
+                header('Location: index.php?page=back_dashboard&tab=users');
                 exit;
             }
 
@@ -201,11 +213,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!empty($result['errors'])) {
                     $_SESSION['errors'] = $result['errors'];
                     $_SESSION['old'] = $_POST;
-                    header('Location: index.php?page=back_users_list&edit=' . $userId);
+                    header('Location: index.php?page=back_dashboard&tab=users&edit=' . $userId);
                     exit;
                 }
                 $_SESSION['success'] = $result['success'];
-                header('Location: index.php?page=back_users_list');
+                header('Location: index.php?page=back_dashboard&tab=users');
                 exit;
             }
 
@@ -229,7 +241,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         exit;
                     }
                 }
-                header('Location: index.php?page=back_users_list');
+                header('Location: index.php?page=back_dashboard&tab=users');
                 exit;
             }
             break;
@@ -238,7 +250,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $users = [];
 $editingUser = null;
-if ($page === 'back_users_list') {
+if ($page === 'back_dashboard' && $tab === 'users') {
     $users = UserController::getAllUsers();
     if (isset($_GET['edit'])) {
         $editingUser = UserController::getUserById((int)$_GET['edit']);
@@ -266,8 +278,8 @@ switch ($page) {
         $currentUser = $currentUserArray;
         include __DIR__ . '/View/FrontOffice/index.php';
         break;
-    case 'back_users_list':
-        include __DIR__ . '/View/BackOffice/users_list.php';
+    case 'back_dashboard':
+        include __DIR__ . '/View/BackOffice/index.php';
         break;
     case 'front_login':
     default:
