@@ -187,6 +187,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($action === 'create_user') {
                 $result = UserController::createUser($_POST);
                 if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+                    if (empty($result['errors']) && !empty($result['user_id'])) {
+                        $user = UserController::getUserById((int)$result['user_id']);
+                        $result['user'] = [
+                            'id' => $user->getId(),
+                            'name' => $user->getDisplayName(),
+                            'email' => $user->getEmail(),
+                            'role' => $user->getRole(),
+                            'created_at' => $user->getCreatedAt()
+                        ];
+                    }
                     header('Content-Type: application/json');
                     echo json_encode($result);
                     exit;
@@ -206,6 +216,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $userId = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 0;
                 $result = UserController::updateProfile($userId, $_POST);
                 if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+                    if (empty($result['errors'])) {
+                        $user = UserController::getUserById($userId);
+                        $result['user'] = [
+                            'id' => $user->getId(),
+                            'name' => $user->getDisplayName(),
+                            'email' => $user->getEmail(),
+                            'role' => $user->getRole(),
+                            'created_at' => $user->getCreatedAt()
+                        ];
+                    }
                     header('Content-Type: application/json');
                     echo json_encode($result);
                     exit;

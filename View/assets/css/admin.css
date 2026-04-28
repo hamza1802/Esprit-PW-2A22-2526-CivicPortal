@@ -347,3 +347,113 @@ h2.reveal {
     color: var(--text-dark);
     border: 1px solid var(--secondary-grey);
 }
+/* --- Professional Admin Dashboard UI Enhancements --- */
+
+/* Data Table Row Styling */
+.admin-row {
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.admin-row:hover {
+    background: rgba(29, 42, 68, 0.02) !important;
+}
+
+.id-tag {
+    font-family: var(--font-primary);
+    font-weight: 900;
+    color: var(--primary-navy);
+    opacity: 0.5;
+    font-size: 0.75rem;
+}
+
+.name-cell {
+    font-weight: 800;
+    color: var(--primary-navy);
+    font-size: 0.95rem;
+    letter-spacing: -0.2px;
+}
+
+.email-cell {
+    font-weight: 500;
+    opacity: 0.8;
+}
+
+.date-cell {
+    font-size: 0.8rem;
+    font-weight: 700;
+    opacity: 0.5;
+}
+
+/* Status & Role Badges */
+.role-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+}
+
+.badge-admin { 
+    background: var(--primary-navy); 
+    color: var(--white); 
+    box-shadow: 4px 4px 0 rgba(29, 42, 68, 0.1);
+}
+
+.badge-agent { 
+    background: #FFD93D; 
+    color: var(--primary-navy); 
+    box-shadow: 4px 4px 0 rgba(255, 217, 61, 0.1);
+}
+
+.badge-citizen { 
+    background: #BCC1C1; 
+    color: var(--primary-navy); 
+    opacity: 0.8;
+}
+
+/* Administrative Action Buttons */
+.action-flex {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+.btn-small {
+    transition: all 0.2s ease;
+}
+
+.btn-small:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+
+/* Success Highlighting */
+.row-updated {
+    animation: highlightSuccess 3s ease-out forwards;
+}
+
+@keyframes highlightSuccess {
+    0% { background: rgba(46, 213, 115, 0.3); }
+    100% { background: transparent; }
+}
+
+.row-new {
+    animation: slideInFromTop 0.5s ease-out;
+}
+
+@keyframes slideInFromTop {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Form Validation Feedback */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    50% { transform: translateX(10px); }
+    75% { transform: translateX(-10px); }
+}
+

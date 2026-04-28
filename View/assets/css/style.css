@@ -2385,4 +2385,18 @@ a:focus-visible {
     .pf-avatar-wrap { width: 140px; height: 140px; margin-top: -70px; }
     .pf-name { font-size: 1.8rem; }
     .pf-content { padding: 1.5rem; }
+}
+
+/* ==========================================================================
+   Animations
+   ========================================================================== */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-12px); }
+    50% { transform: translateX(12px); }
+    75% { transform: translateX(-12px); }
+}
+
+.shake {
+    animation: shake 0.4s ease-in-out;
 }

@@ -37,25 +37,23 @@ if (session_status() === PHP_SESSION_NONE) {
             <p style="font-weight: 700; text-transform: uppercase; opacity: 0.7;">Enter your details</p>
         </div>
 
-        <form method="post" action="index.php?page=front_register" class="form-grid" novalidate>
+        <form id="register-form" method="post" action="index.php?page=front_register" class="form-grid" novalidate>
             <input type="hidden" name="action" value="register">
-
-
 
             <div class="form-group full-width">
                 <label for="name">Full Name</label>
                 <input id="name" name="name" type="text" placeholder="YOUR NAME " value="<?= htmlspecialchars($old['name'] ?? '') ?>">
-                <?php if (isset($errors['name'])): ?>
-                    <span class="inline-error" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"><?= htmlspecialchars($errors['name']) ?></span>
-                <?php endif; ?>
+                <span class="inline-error" id="error-name" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;">
+                    <?= isset($errors['name']) ? htmlspecialchars($errors['name']) : '' ?>
+                </span>
             </div>
 
             <div class="form-group full-width">
                 <label for="email">Email</label>
                 <input id="email" name="email" type="text" placeholder="YOUR@EMAIL.COM" value="<?= htmlspecialchars($old['email'] ?? '') ?>">
-                <?php if (isset($errors['email'])): ?>
-                    <span class="inline-error" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"><?= htmlspecialchars($errors['email']) ?></span>
-                <?php endif; ?>
+                <span class="inline-error" id="error-email" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;">
+                    <?= isset($errors['email']) ? htmlspecialchars($errors['email']) : '' ?>
+                </span>
             </div>
 
             <div class="form-group full-width">
@@ -65,25 +63,25 @@ if (session_status() === PHP_SESSION_NONE) {
                     <option value="citizen" <?= $roleValue === 'citizen' ? 'selected' : '' ?>>Citizen</option>
                     <option value="agent" <?= $roleValue === 'agent' ? 'selected' : '' ?>>Agent</option>
                 </select>
-                <?php if (isset($errors['role'])): ?>
-                    <span class="inline-error" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"><?= htmlspecialchars($errors['role']) ?></span>
-                <?php endif; ?>
+                <span class="inline-error" id="error-role" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;">
+                    <?= isset($errors['role']) ? htmlspecialchars($errors['role']) : '' ?>
+                </span>
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
                 <input id="password" name="password" type="password" placeholder="••••••••">
-                <?php if (isset($errors['password'])): ?>
-                    <span class="inline-error" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"><?= htmlspecialchars($errors['password']) ?></span>
-                <?php endif; ?>
+                <span class="inline-error" id="error-password" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;">
+                    <?= isset($errors['password']) ? htmlspecialchars($errors['password']) : '' ?>
+                </span>
             </div>
 
             <div class="form-group">
                 <label for="confirm_password">Confirm</label>
                 <input id="confirm_password" name="confirm_password" type="password" placeholder="••••••••">
-                <?php if (isset($errors['confirm_password'])): ?>
-                    <span class="inline-error" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"><?= htmlspecialchars($errors['confirm_password']) ?></span>
-                <?php endif; ?>
+                <span class="inline-error" id="error-confirm_password" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;">
+                    <?= isset($errors['confirm_password']) ? htmlspecialchars($errors['confirm_password']) : '' ?>
+                </span>
             </div>
 
             <button class="btn btn-primary" type="submit" style="width: 100%; margin-top: 1rem; grid-column: span 2;">Get Started</button>
@@ -92,12 +90,55 @@ if (session_status() === PHP_SESSION_NONE) {
                 Already have an account? <a href="index.php?page=front_login" style="color: var(--primary-navy); margin-left: 0.5rem;">Sign in</a>
             </div>
         </form>
-    </div>
-</section>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Current registration is limited to Citizen and Agent roles.
+document.getElementById('register-form').addEventListener('submit', function(e) {
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const pass = document.getElementById('password').value;
+    const confirm = document.getElementById('confirm_password').value;
+    const card = this.closest('.form-card');
+    
+    // Clear previous errors
+    document.querySelectorAll('.inline-error').forEach(el => el.textContent = '');
+    
+    let clientErrors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    if (name === '') {
+        clientErrors.name = 'FULL NAME IS REQUIRED';
+    } else if (name.length < 3) {
+        clientErrors.name = 'NAME MUST BE AT LEAST 3 CHARACTERS';
+    } else if (/\d/.test(name)) {
+        clientErrors.name = 'NAME CANNOT CONTAIN NUMBERS';
+    }
+    
+    if (email === '') {
+        clientErrors.email = 'EMAIL IS REQUIRED';
+    } else if (!emailRegex.test(email)) {
+        clientErrors.email = 'INVALID EMAIL FORMAT';
+    }
+    
+    if (pass.length < 8) {
+        clientErrors.password = 'PASSWORD MUST BE AT LEAST 8 CHARACTERS';
+    }
+    
+    if (pass !== confirm) {
+        clientErrors.confirm_password = 'PASSWORDS DO NOT MATCH';
+    }
+    
+    if (Object.keys(clientErrors).length > 0) {
+        e.preventDefault();
+        for (const field in clientErrors) {
+            const errEl = document.getElementById(`error-${field}`);
+            if (errEl) errEl.textContent = clientErrors[field];
+        }
+        card.classList.remove('shake');
+        void card.offsetWidth;
+        card.classList.add('shake');
+    }
+});
+</script>and Agent roles.
 });
 </script>
 

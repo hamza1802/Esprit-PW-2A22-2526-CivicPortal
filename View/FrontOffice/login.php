@@ -54,27 +54,61 @@ if (!empty($_SESSION['user_id'])) {
 
 
 
-        <form method="post" action="index.php?page=front_login" novalidate>
+        <form id="login-form" method="post" action="index.php?page=front_login" novalidate>
             <input type="hidden" name="action" value="login">
 
             <div class="form-group">
                 <label for="email">Email</label>
                 <input id="email" name="email" type="text" placeholder="YOUR@EMAIL.COM" value="<?= htmlspecialchars($old['email'] ?? '') ?>">
-                <?php if (isset($errors['email'])): ?>
-                    <span class="inline-error" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"><?= htmlspecialchars($errors['email']) ?></span>
-                <?php endif; ?>
+                <span class="inline-error" id="error-email" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;">
+                    <?= isset($errors['email']) ? htmlspecialchars($errors['email']) : '' ?>
+                </span>
             </div>
 
             <div class="form-group">
                 <label for="password">Password</label>
                 <input id="password" name="password" type="password" placeholder="••••••••">
-                <?php if (isset($errors['password'])): ?>
-                    <span class="inline-error" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"><?= htmlspecialchars($errors['password']) ?></span>
-                <?php endif; ?>
+                <span class="inline-error" id="error-password" style="color: #ff4d4d; font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;">
+                    <?= isset($errors['password']) ? htmlspecialchars($errors['password']) : '' ?>
+                </span>
             </div>
 
             <button class="btn btn-primary" type="submit" style="width: 100%; margin-top: 1rem;">Sign In</button>
         </form>
+
+        <script>
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            const email = document.getElementById('email').value.trim();
+            const pass = document.getElementById('password').value;
+            const card = this.closest('.form-card');
+            
+            // Clear previous errors
+            document.querySelectorAll('.inline-error').forEach(el => el.textContent = '');
+            
+            let clientErrors = {};
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (email === '') {
+                clientErrors.email = 'EMAIL IS REQUIRED';
+            } else if (!emailRegex.test(email)) {
+                clientErrors.email = 'INVALID EMAIL FORMAT';
+            }
+            
+            if (pass === '') {
+                clientErrors.password = 'PASSWORD IS REQUIRED';
+            }
+            
+            if (Object.keys(clientErrors).length > 0) {
+                e.preventDefault();
+                for (const field in clientErrors) {
+                    document.getElementById(`error-${field}`).textContent = clientErrors[field];
+                }
+                card.classList.remove('shake');
+                void card.offsetWidth;
+                card.classList.add('shake');
+            }
+        });
+        </script>
 
         <div style="text-align: center; margin-top: 2rem; font-weight: 700; text-transform: uppercase; font-size: 0.9rem;">
             No account? <a href="index.php?page=front_register" style="color: var(--primary-navy); margin-left: 0.5rem;">Register</a>

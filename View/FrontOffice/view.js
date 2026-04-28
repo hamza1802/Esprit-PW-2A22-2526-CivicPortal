@@ -39,15 +39,14 @@ const view = {
                 <i class="bi bi-building"></i> CIVICPORTAL
             </div>
             <ul class="nav-links">
-                <li><a href="#home"><i class="bi bi-house-door"></i> home</a></li>
-                <li><a href="#programs"><i class="bi bi-grid"></i> programs</a></li>
-                <li><a href="#service-requests"><i class="bi bi-file-earmark-text"></i> service requests</a></li>
-                <li><a href="#grievances"><i class="bi bi-megaphone"></i> grievances</a></li>
-                <li><a href="#transport"><i class="bi bi-truck"></i> transport</a></li>
-                <li><a href="#profile"><i class="bi bi-person-circle"></i> profile</a></li>
-                <li><a href="index.php?action=logout"><i class="bi bi-box-arrow-right"></i> logout</a></li>
+                <li><a href="#home">home</a></li>
+                <li><a href="#programs">programs</a></li>
+                <li><a href="#service-requests">service requests</a></li>
+                <li><a href="#grievances">grievances</a></li>
+                <li><a href="#profile">profile</a></li>
             </ul>
-            <div class="user-controls" style="display: flex; gap: 0.5rem; align-items: center;">
+            <div class="user-controls" style="display: flex; gap: 1rem; align-items: center;">
+                <a href="index.php?action=logout" class="btn btn-small" style="background: transparent; border: 1px solid rgba(0,0,0,0.1); color: inherit; font-size: 0.75rem;">LOGOUT</a>
                 ${backofficeBtn}
                 <div class="user-role-badge">${role.toUpperCase()}</div>
             </div>

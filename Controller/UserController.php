@@ -11,19 +11,21 @@ class UserController {
         $pdo = Database::getInstance();
         $query = '
             SELECT u.id, u.username, u.email, u.role, u.created_at,
-                   p.bio, p.phone_number, p.date_of_birth
+                   p.first_name, p.bio, p.phone_number, p.date_of_birth, p.avatar_url
             FROM users u
             LEFT JOIN profile p ON u.id = p.user_id
-            ORDER BY u.id
+            ORDER BY u.id DESC
         ';
         $stmt = $pdo->query($query);
         $rows = $stmt->fetchAll();
         return array_map(fn($row) => [
             'user' => User::fromRow($row),
             'profile' => [
+                'first_name' => $row['first_name'],
                 'bio' => $row['bio'],
                 'phone' => $row['phone_number'],
-                'dob' => $row['date_of_birth']
+                'dob' => $row['date_of_birth'],
+                'avatar' => $row['avatar_url']
             ]
         ], $rows);
     }
@@ -46,32 +48,34 @@ class UserController {
 
     public static function emailExists(string $email, ?int $excludeId = null): bool {
         $pdo = Database::getInstance();
+        $sql = 'SELECT COUNT(*) FROM users WHERE email = :email';
+        $params = ['email' => $email];
         if ($excludeId !== null) {
-            $stmt = $pdo->prepare('SELECT COUNT(*) FROM users WHERE email = :email AND id != :id');
-            $stmt->execute(['email' => $email, 'id' => $excludeId]);
-        } else {
-            $stmt = $pdo->prepare('SELECT COUNT(*) FROM users WHERE email = :email');
-            $stmt->execute(['email' => $email]);
+            $sql .= ' AND id != :id';
+            $params['id'] = $excludeId;
         }
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
         return (int)$stmt->fetchColumn() > 0;
     }
 
     public static function usernameExists(string $username, ?int $excludeId = null): bool {
         $pdo = Database::getInstance();
+        $sql = 'SELECT COUNT(*) FROM users WHERE username = :username';
+        $params = ['username' => $username];
         if ($excludeId !== null) {
-            $stmt = $pdo->prepare('SELECT COUNT(*) FROM users WHERE username = :username AND id != :id');
-            $stmt->execute(['username' => $username, 'id' => $excludeId]);
-        } else {
-            $stmt = $pdo->prepare('SELECT COUNT(*) FROM users WHERE username = :username');
-            $stmt->execute(['username' => $username]);
+            $sql .= ' AND id != :id';
+            $params['id'] = $excludeId;
         }
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
         return (int)$stmt->fetchColumn() > 0;
     }
 
     public static function createUserRecord(array $input): User {
         $pdo = Database::getInstance();
         $stmt = $pdo->prepare('INSERT INTO users (username, email, password_hash, role) VALUES (:username, :email, :password_hash, :role)');
-        $passwordHash = password_hash($input['password'], PASSWORD_DEFAULT);
+        $passwordHash = password_hash($input['password'] ?? '', PASSWORD_DEFAULT);
         
         $name = trim($input['name']);
         $role = trim($input['role']) ?: 'citizen';
@@ -122,6 +126,8 @@ class UserController {
 
     public static function deleteUserRecord(int $id): bool {
         $pdo = Database::getInstance();
+        // Mandatory profile cleanup for foreign keys
+        $pdo->prepare('DELETE FROM profile WHERE user_id = :id')->execute(['id' => $id]);
         $stmt = $pdo->prepare('DELETE FROM users WHERE id = :id');
         return $stmt->execute(['id' => $id]);
     }
@@ -138,24 +144,14 @@ class UserController {
 
     public static function createProfileRecord(int $userId): Profile {
         $pdo = Database::getInstance();
-        $stmt = $pdo->prepare('INSERT INTO profile (user_id) VALUES (:user_id)');
+        $stmt = $pdo->prepare('INSERT INTO profile (user_id, first_name) SELECT id, username FROM users WHERE id = :user_id');
         $stmt->execute(['user_id' => $userId]);
         return self::getProfileByUserId($userId);
     }
 
     public static function ensureProfileExists(int $userId): ?Profile {
         $profile = self::getProfileByUserId($userId);
-        if ($profile) {
-            return $profile;
-        }
-        
-        $pdo = Database::getInstance();
-        $stmt = $pdo->prepare('SELECT id FROM users WHERE id = :id');
-        $stmt->execute(['id' => $userId]);
-        if (!$stmt->fetch()) {
-            return null;
-        }
-        
+        if ($profile) return $profile;
         return self::createProfileRecord($userId);
     }
 
@@ -163,17 +159,13 @@ class UserController {
         $pdo = Database::getInstance();
         $query = 'UPDATE profile SET first_name = :first_name, bio = :bio, avatar_url = :avatar_url, phone_number = :phone_number, date_of_birth = :date_of_birth WHERE user_id = :user_id';
         $stmt = $pdo->prepare($query);
-        $dateOfBirth = trim($data['date_of_birth'] ?? '');
-        if (empty($dateOfBirth)) {
-            $dateOfBirth = null;
-        }
-
+        
         return $stmt->execute([
-            'first_name' => trim($data['first_name'] ?? ''),
+            'first_name' => trim($data['first_name'] ?? $data['name'] ?? ''),
             'bio' => trim($data['bio'] ?? ''),
             'avatar_url' => trim($data['avatar_url'] ?? ''),
             'phone_number' => trim($data['phone_number'] ?? ''),
-            'date_of_birth' => $dateOfBirth,
+            'date_of_birth' => !empty($data['date_of_birth']) ? $data['date_of_birth'] : null,
             'user_id' => $userId,
         ]);
     }
@@ -184,7 +176,6 @@ class UserController {
         $errors = [];
         $name = trim($input['name'] ?? '');
         $email = trim($input['email'] ?? '');
-        $role = trim($input['role'] ?? 'citizen');
         $password = $input['password'] ?? '';
         $confirm = $input['confirm_password'] ?? '';
 
@@ -192,8 +183,6 @@ class UserController {
             $errors['name'] = 'Name is required.';
         } elseif (mb_strlen($name) < 3) {
             $errors['name'] = 'Name must be at least 3 characters long.';
-        } elseif (preg_match('/\d/', $name)) {
-            $errors['name'] = 'Name must not contain numbers.';
         }
 
         if ($email === '') {
@@ -202,17 +191,6 @@ class UserController {
             $errors['email'] = 'Email is not valid.';
         } elseif (self::emailExists($email, $userId)) {
             $errors['email'] = 'This email is already in use.';
-        }
-
-        $allowedRoles = ['citizen', 'agent'];
-        if (!$isNew || $role === 'admin') {
-             // Admin role is allowed for existing users (to preserve role) 
-             // or if explicitly handled by the admin- prefix logic.
-             $allowedRoles[] = 'admin';
-        }
-        
-        if (!in_array($role, $allowedRoles, true)) {
-            $errors['role'] = 'The selected role is invalid.';
         }
 
         if ($isNew || $password !== '') {
@@ -229,25 +207,19 @@ class UserController {
 
     public static function validateUserLogin(array $input): array {
         $errors = [];
-        if (trim($input['email'] ?? '') === '') {
-            $errors['email'] = 'Email is required.';
-        }
-        if (trim($input['password'] ?? '') === '') {
-            $errors['password'] = 'Password is required.';
-        }
+        if (trim($input['email'] ?? '') === '') $errors['email'] = 'Email is required.';
+        if (trim($input['password'] ?? '') === '') $errors['password'] = 'Password is required.';
         return $errors;
     }
 
-    // --- Core Controller Actions ---
+    // --- Actions ---
 
     public static function login(array $input): array {
         $errors = self::validateUserLogin($input);
-        if (!empty($errors)) {
-            return ['errors' => $errors];
-        }
+        if (!empty($errors)) return ['errors' => $errors];
 
         $user = self::getUserByEmail(trim($input['email']));
-        if ($user === null || $user->getPasswordHash() === null || !password_verify($input['password'], $user->getPasswordHash())) {
+        if (!$user || !password_verify($input['password'], $user->getPasswordHash())) {
             return ['errors' => ['email' => 'Invalid email or password.']];
         }
 
@@ -261,106 +233,53 @@ class UserController {
     }
 
     public static function logout(): void {
-        $_SESSION = [];
-        if (ini_get("session.use_cookies")) {
-            $params = session_get_cookie_params();
-            setcookie(session_name(), '', time() - 42000,
-                $params["path"], $params["domain"],
-                $params["secure"], $params["httponly"]
-            );
-        }
         session_destroy();
     }
 
     public static function register(array $input): array {
         $errors = self::validateUser($input, true);
-        if (!empty($errors)) {
-            return ['errors' => $errors];
-        }
+        if (!empty($errors)) return ['errors' => $errors];
 
         $user = self::createUserRecord($input);
         self::ensureProfileExists($user->getId());
-        
-        $cleanName = trim($input['name']);
-        if (strpos($cleanName, 'admin-') === 0) {
-            $cleanName = substr($cleanName, 6);
-        }
-        self::updateProfileRecord($user->getId(), ['first_name' => $cleanName]);
+        self::updateProfileRecord($user->getId(), $input);
         
         return ['success' => 'Registration successful.', 'user' => $user];
     }
 
     public static function updateProfile(int $id, array $input): array {
-        $user = self::getUserById($id);
-        if ($user === null) {
-            return ['errors' => ['general' => 'User not found.']];
-        }
-
-        if (!isset($input['role']) || trim($input['role']) === '') {
-            $input['role'] = $user->getRole();
-        }
-
         $errors = self::validateUser($input, false, $id);
-        if (!empty($input['first_name']) && preg_match('/\d/', $input['first_name'])) {
-            $errors['first_name'] = 'First name must not contain numbers.';
-        }
-        if (!empty($input['last_name']) && preg_match('/\d/', $input['last_name'])) {
-            $errors['last_name'] = 'Last name must not contain numbers.';
-        }
-        if (!empty($errors)) {
-            return ['errors' => $errors];
+        if (!empty($errors)) return ['errors' => $errors];
+
+        if (!self::updateUserRecord($id, $input)) {
+            return ['errors' => ['general' => 'Update failed.']];
         }
 
-        $updated = self::updateUserRecord($id, $input);
-        if (!$updated) {
-            return ['errors' => ['general' => 'Unable to update profile.']];
-        }
+        self::ensureProfileExists($id);
+        self::updateProfileRecord($id, $input);
 
         $updatedUser = self::getUserById($id);
-        $profile = self::ensureProfileExists($id);
-        
-        $cleanName = trim($input['name']);
-        if (strpos($cleanName, 'admin-') === 0) {
-            $cleanName = substr($cleanName, 6);
-        }
-        
-        $profileData = [
-            'first_name' => $cleanName ?? $input['first_name'] ?? $profile->getFirstName(),
-            'last_name' => $input['last_name'] ?? $profile->getLastName(),
-            'bio' => $input['bio'] ?? $profile->getBio(),
-            'avatar_url' => $input['avatar_url'] ?? $profile->getAvatarUrl(),
-            'phone_number' => $input['phone_number'] ?? $profile->getPhoneNumber(),
-            'date_of_birth' => $input['date_of_birth'] ?? $profile->getDateOfBirth(),
-        ];
-        self::updateProfileRecord($id, $profileData);
-
-        if (isset($_SESSION['user_id']) && $_SESSION['user_id'] === $id) {
-            $_SESSION['user_name'] = $updatedUser ? $updatedUser->getDisplayName() : $cleanName;
-            if (!empty($input['email'])) {
-                $_SESSION['user_email'] = $input['email'];
-            }
+        if ($updatedUser && isset($_SESSION['user_id']) && (int)$_SESSION['user_id'] === $id) {
+            $_SESSION['user_name'] = $updatedUser->getDisplayName();
+            $_SESSION['user_email'] = $updatedUser->getEmail();
         }
 
-        return ['success' => 'Profile updated successfully.'];
+        return ['success' => 'Profile updated successfully.', 'user' => $updatedUser];
     }
 
     public static function createUser(array $input): array {
         $errors = self::validateUser($input, true);
-        if (!empty($errors)) {
-            return ['errors' => $errors];
-        }
+        if (!empty($errors)) return ['errors' => $errors];
 
         $user = self::createUserRecord($input);
         self::ensureProfileExists($user->getId());
-        return ['success' => 'Profile added successfully.', 'user' => $user];
+        self::updateProfileRecord($user->getId(), $input);
+        
+        return ['success' => 'User added successfully.', 'user' => $user, 'user_id' => $user->getId()];
     }
 
     public static function deleteUser(int $id): array {
-        if (!self::deleteUserRecord($id)) {
-            return ['errors' => ['general' => 'Deletion failed.']];
-        }
-
+        if (!self::deleteUserRecord($id)) return ['errors' => ['general' => 'Deletion failed.']];
         return ['success' => 'User deleted successfully.'];
     }
 }
-
