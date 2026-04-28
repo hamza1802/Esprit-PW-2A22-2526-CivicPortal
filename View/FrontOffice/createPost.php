@@ -127,17 +127,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 <?php endif; ?>
 
-                <form method="POST" class="form-card">
+                <form method="POST" class="form-card" id="create-post-form" novalidate>
                     <div class="form-group">
                         <label for="post-title">Title</label>
-                        <input type="text" id="post-title" name="title" maxlength="255" required
+                        <input type="text" id="post-title" name="title"
                                value="<?= htmlspecialchars($title) ?>"
                                placeholder="Enter a descriptive title...">
+                        <span class="inline-error" id="err-title"></span>
                     </div>
 
                     <div class="form-group">
                         <label for="post-category">Category</label>
-                        <select id="post-category" name="category" required>
+                        <select id="post-category" name="category">
                             <option value="">Select a category</option>
                             <?php foreach ($allowedCats as $cat): ?>
                                 <option value="<?= $cat ?>" <?= $category === $cat ? 'selected' : '' ?>>
@@ -145,12 +146,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 </option>
                             <?php endforeach; ?>
                         </select>
+                        <span class="inline-error" id="err-category"></span>
                     </div>
 
                     <div class="form-group">
                         <label for="post-content">Content</label>
-                        <textarea id="post-content" name="content" required minlength="10" rows="8"
+                        <textarea id="post-content" name="content" rows="8"
                                   placeholder="Describe your topic in detail (minimum 10 characters)..."><?= htmlspecialchars($content) ?></textarea>
+                        <span class="inline-error" id="err-content"></span>
                     </div>
 
                     <button type="submit" class="btn btn-primary" style="width:100%;">Publish Post</button>
@@ -160,6 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </main>
 
     <script>
+    // Nav hamburger toggle
     (function() {
         const nav = document.querySelector('nav');
         const hamburger = nav.querySelector('.nav-hamburger');
@@ -173,6 +177,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             });
         }
     })();
+
+    // JS form validation — createPost
+    document.getElementById('create-post-form').addEventListener('submit', function(e) {
+        const title    = document.getElementById('post-title').value.trim();
+        const category = document.getElementById('post-category').value;
+        const content  = document.getElementById('post-content').value.trim();
+
+        // Clear previous errors
+        document.getElementById('err-title').textContent = '';
+        document.getElementById('err-category').textContent = '';
+        document.getElementById('err-content').textContent = '';
+
+        let valid = true;
+
+        if (title === '') {
+            document.getElementById('err-title').textContent = 'Title is required.';
+            valid = false;
+        } else if (title.length > 255) {
+            document.getElementById('err-title').textContent = 'Title must not exceed 255 characters.';
+            valid = false;
+        }
+
+        if (category === '') {
+            document.getElementById('err-category').textContent = 'Please select a category.';
+            valid = false;
+        }
+
+        if (content === '') {
+            document.getElementById('err-content').textContent = 'Content is required.';
+            valid = false;
+        } else if (content.length < 10) {
+            document.getElementById('err-content').textContent = 'Content must be at least 10 characters.';
+            valid = false;
+        }
+
+        if (!valid) {
+            e.preventDefault();
+        }
+    });
     </script>
     <script src="../assets/js/glass-animations.js"></script>
 </body>

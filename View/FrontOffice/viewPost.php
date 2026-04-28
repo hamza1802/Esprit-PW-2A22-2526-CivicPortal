@@ -191,11 +191,12 @@ $editCommentId = isset($_GET['edit_comment']) ? (int)$_GET['edit_comment'] : 0;
                             <div class="forum-comment-item" id="comment-<?= $comment['comment_id'] ?>">
                                 <?php if ($isLoggedIn && $editCommentId === $comment['comment_id'] && $comment['user_id'] == $_SESSION['user_id']): ?>
                                     <!-- Edit comment form -->
-                                    <form method="POST">
+                                    <form method="POST" class="edit-comment-form" novalidate>
                                         <input type="hidden" name="action" value="edit_comment">
                                         <input type="hidden" name="comment_id" value="<?= $comment['comment_id'] ?>">
                                         <div class="form-group" style="margin-bottom: 0.5rem;">
-                                            <textarea name="comment_content" required minlength="5" rows="3"><?= htmlspecialchars($comment['content']) ?></textarea>
+                                            <textarea name="comment_content" rows="3"><?= htmlspecialchars($comment['content']) ?></textarea>
+                                            <span class="inline-error edit-comment-error"></span>
                                         </div>
                                         <div style="display:flex; gap:0.5rem;">
                                             <button type="submit" class="btn btn-small btn-primary">Save</button>
@@ -230,10 +231,11 @@ $editCommentId = isset($_GET['edit_comment']) ? (int)$_GET['edit_comment'] : 0;
                 <?php if ($post['status'] !== 'closed' && $isLoggedIn): ?>
                     <div class="forum-comment-form">
                         <h3 style="font-size: 1.2rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.5px;">Leave a Comment</h3>
-                        <form method="POST">
+                        <form method="POST" id="add-comment-form" novalidate>
                             <input type="hidden" name="action" value="add_comment">
                             <div class="form-group">
-                                <textarea name="comment_content" placeholder="Share your thoughts..." required minlength="5" rows="4"></textarea>
+                                <textarea name="comment_content" id="add-comment-content" placeholder="Share your thoughts..." rows="4"></textarea>
+                                <span class="inline-error" id="err-add-comment"></span>
                             </div>
                             <button type="submit" class="btn btn-primary">Post Comment</button>
                         </form>
@@ -252,6 +254,7 @@ $editCommentId = isset($_GET['edit_comment']) ? (int)$_GET['edit_comment'] : 0;
     </main>
 
     <script>
+    // Nav hamburger toggle
     (function() {
         const nav = document.querySelector('nav');
         const hamburger = nav.querySelector('.nav-hamburger');
@@ -265,6 +268,42 @@ $editCommentId = isset($_GET['edit_comment']) ? (int)$_GET['edit_comment'] : 0;
             });
         }
     })();
+
+    // JS validation — add comment form
+    const addForm = document.getElementById('add-comment-form');
+    if (addForm) {
+        addForm.addEventListener('submit', function(e) {
+            const content = document.getElementById('add-comment-content').value.trim();
+            const errEl   = document.getElementById('err-add-comment');
+            errEl.textContent = '';
+
+            if (content === '') {
+                errEl.textContent = 'Comment cannot be empty.';
+                e.preventDefault();
+            } else if (content.length < 5) {
+                errEl.textContent = 'Comment must be at least 5 characters.';
+                e.preventDefault();
+            }
+        });
+    }
+
+    // JS validation — edit comment forms
+    document.querySelectorAll('.edit-comment-form').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            const textarea = form.querySelector('textarea[name="comment_content"]');
+            const errEl    = form.querySelector('.edit-comment-error');
+            const content  = textarea.value.trim();
+            errEl.textContent = '';
+
+            if (content === '') {
+                errEl.textContent = 'Comment cannot be empty.';
+                e.preventDefault();
+            } else if (content.length < 5) {
+                errEl.textContent = 'Comment must be at least 5 characters.';
+                e.preventDefault();
+            }
+        });
+    });
     </script>
     <script src="../assets/js/glass-animations.js"></script>
 </body>
