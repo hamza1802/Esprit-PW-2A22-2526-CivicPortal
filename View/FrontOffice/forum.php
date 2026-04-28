@@ -46,12 +46,22 @@ $successMsg = isset($_GET['success']) ? htmlspecialchars($_GET['success']) : '';
             <span></span><span></span><span></span>
         </button>
         <ul class="nav-links">
-            <li><a href="index.php">home</a></li>
+            <li><a href="index.php#home">home</a></li>
+            <li><a href="index.php#programs">programs</a></li>
             <li><a href="forum.php" class="active">forum</a></li>
+            <li><a href="index.php#request-service">requests</a></li>
+            <li><a href="index.php#appointments">appointments</a></li>
+            <li><a href="index.php#transport">transport</a></li>
+            <li><a href="index.php#my-tickets">my tickets</a></li>
+            <li><a href="index.php#profile">profile</a></li>
         </ul>
         <div class="user-controls">
-            <?php if ($isLoggedIn): ?>
-                <div class="user-role-badge"><?= htmlspecialchars($_SESSION['user_role'] ?? 'citizen') ?></div>
+            <?php if (!empty($_SESSION['user_id'])): ?>
+                <?php if (($_SESSION['user_role'] ?? 'citizen') === 'admin'): ?>
+                    <a href="../BackOffice/index.php" class="user-role-badge" style="text-decoration:none;">Admin Panel</a>
+                <?php else: ?>
+                    <div class="user-role-badge">Citizen</div>
+                <?php endif; ?>
                 <a href="#" onclick="event.preventDefault(); fetch('../../Verification.php', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action: 'logout'}) }).then(() => window.location.href='login.php')" class="logout-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
             <?php else: ?>
                 <a href="login.php" class="btn btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.9rem;">Login</a>
