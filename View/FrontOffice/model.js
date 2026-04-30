@@ -39,11 +39,10 @@ const model = {
     },
 
     async sync() {
+        if (this.state.currentUser.role === 'guest') return;
+
         const requests = await this.apiCall('get_requests');
         if (requests) this.state.serviceRequests = requests;
-        
-        // Front office users generally don't get all complaints, but let's sync to emulate the backend state if needed.
-        // Even better, avoid loading them if unneeded.
     },
 
     getPrograms() {

@@ -31,9 +31,11 @@ $userId = $_SESSION['user_id'] ?? 0;
 $userObj = UserController::getUserById((int)$userId);
 $userName = $userObj ? $userObj->getDisplayName() : ($_SESSION['user_name'] ?? 'Staff Member');
 
-// 3. Routing (Tab-based) - ONLY USERS REMAINING
-$tab = 'users';
-
+// 3. Routing (Tab-based)
+$tab = $_GET['tab'] ?? 'users';
+if (!in_array($tab, ['users', 'statistic'])) {
+    $tab = 'users';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -71,7 +73,16 @@ $tab = 'users';
         </div>
         <ul class="nav-links" style="list-style: none; padding: 0 1rem;">
             <?php if ($role === 'admin'): ?>
-                <li style="margin-bottom: 1rem;"><a href="index.php?page=back_dashboard&tab=users" class="active" style="color: white; text-decoration: none; display: flex; align-items: center; gap: 12px; padding: 1rem; border-radius: 12px; font-weight: 800; font-size: 0.9rem; transition: 0.3s; text-transform: uppercase;"><i class="bi bi-people" style="font-size: 1.2rem;"></i> USERS</a></li>
+                <li style="margin-bottom: 1rem;">
+                    <a href="index.php?page=back_dashboard&tab=users" class="<?= $tab === 'users' ? 'active' : '' ?>" style="color: white; text-decoration: none; display: flex; align-items: center; gap: 12px; padding: 1rem; border-radius: 12px; font-weight: 800; font-size: 0.9rem; transition: 0.3s; text-transform: uppercase;">
+                        <i class="bi bi-people" style="font-size: 1.2rem;"></i> USERS
+                    </a>
+                </li>
+                <li style="margin-bottom: 1rem;">
+                    <a href="index.php?page=back_dashboard&tab=statistic" class="<?= $tab === 'statistic' ? 'active' : '' ?>" style="color: white; text-decoration: none; display: flex; align-items: center; gap: 12px; padding: 1rem; border-radius: 12px; font-weight: 800; font-size: 0.9rem; transition: 0.3s; text-transform: uppercase;">
+                        <i class="bi bi-graph-up-arrow" style="font-size: 1.2rem;"></i> STATISTIC
+                    </a>
+                </li>
             <?php endif; ?>
         </ul>
         
@@ -85,8 +96,11 @@ $tab = 'users';
 
     <!-- Main Content Area -->
     <main id="app" style="flex-grow: 1; height: 100vh; overflow-y: auto; padding: 3rem;">
-        <!-- User Management -->
-        <?php include __DIR__ . '/users_list_partial.php'; ?>
+        <?php if ($tab === 'users'): ?>
+            <?php include __DIR__ . '/users_list_partial.php'; ?>
+        <?php elseif ($tab === 'statistic'): ?>
+            <?php include __DIR__ . '/stats_partial.php'; ?>
+        <?php endif; ?>
     </main>
 
     <!-- Toast Notifications Container -->

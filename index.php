@@ -19,7 +19,7 @@ $old = $_SESSION['old'] ?? [];
 $page = $_GET['page'] ?? null;
 $tab = $_GET['tab'] ?? null;
 if ($page === null) {
-    $page = !empty($_SESSION['user_id']) ? 'front_home' : 'front_login';
+    $page = 'front_home';
 }
 unset($_SESSION['errors'], $_SESSION['success'], $_SESSION['old']);
 
@@ -54,7 +54,7 @@ if ($friendSearch !== '') {
     }));
 }
 
-$protectedRoutes = ['front_home', 'front_profile', 'back_dashboard'];
+$protectedRoutes = ['front_profile', 'back_dashboard'];
 if (in_array($page, $protectedRoutes, true) && (empty($_SESSION['user_id']) || $currentUser === null)) {
     header('Location: index.php?page=front_login');
     exit;
@@ -68,7 +68,7 @@ if (strpos($page, 'back_') === 0 && ($_SESSION['user_role'] ?? '') !== 'admin') 
 
 if ($action === 'logout') {
     UserController::logout();
-    header('Location: index.php?page=front_login');
+    header('Location: index.php?page=front_home');
     exit;
 }
 
@@ -189,11 +189,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
                     if (empty($result['errors']) && !empty($result['user_id'])) {
                         $user = UserController::getUserById((int)$result['user_id']);
+                        $profile = UserController::getProfileByUserId($user->getId());
                         $result['user'] = [
                             'id' => $user->getId(),
                             'name' => $user->getDisplayName(),
                             'email' => $user->getEmail(),
                             'role' => $user->getRole(),
+                            'avatar' => $profile ? $profile->getAvatarUrl() : null,
                             'created_at' => $user->getCreatedAt()
                         ];
                     }
@@ -218,11 +220,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
                     if (empty($result['errors'])) {
                         $user = UserController::getUserById($userId);
+                        $profile = UserController::getProfileByUserId($user->getId());
                         $result['user'] = [
                             'id' => $user->getId(),
                             'name' => $user->getDisplayName(),
                             'email' => $user->getEmail(),
                             'role' => $user->getRole(),
+                            'avatar' => $profile ? $profile->getAvatarUrl() : null,
                             'created_at' => $user->getCreatedAt()
                         ];
                     }
@@ -257,7 +261,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['success'] = $result['success'];
                     if ($userId === (int)($_SESSION['user_id'] ?? 0)) {
                         UserController::logout();
-                        header('Location: index.php?page=front_login');
+                        header('Location: index.php?page=front_home');
                         exit;
                     }
                 }
@@ -285,17 +289,22 @@ switch ($page) {
         header('Location: View/FrontOffice/index.php#profile');
         exit;
     case 'front_home':
-        if ($currentUser === null) {
-            header('Location: index.php?page=front_login');
-            exit;
+        if ($currentUser !== null) {
+            $currentUserArray = [
+                'id' => $currentUser->getId(),
+                'name' => $currentUser->getDisplayName(),
+                'email' => $currentUser->getEmail(),
+                'role' => $currentUser->getRole()
+            ];
+            $currentUser = $currentUserArray;
+        } else {
+            $currentUser = [
+                'id' => null,
+                'name' => 'Guest',
+                'email' => '',
+                'role' => 'guest'
+            ];
         }
-        $currentUserArray = [
-            'id' => $currentUser->getId(),
-            'name' => $currentUser->getDisplayName(),
-            'email' => $currentUser->getEmail(),
-            'role' => $currentUser->getRole()
-        ];
-        $currentUser = $currentUserArray;
         include __DIR__ . '/View/FrontOffice/index.php';
         break;
     case 'back_dashboard':

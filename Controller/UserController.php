@@ -7,16 +7,41 @@ require_once __DIR__ . '/../config/database.php';
 class UserController {
     // --- User Data Access ---
 
-    public static function getAllUsers(): array {
+    public static function getAllUsers(string $search = '', string $orderBy = 'id DESC'): array {
         $pdo = Database::getInstance();
-        $query = '
+        $params = [];
+        $where = '';
+
+        if (!empty($search)) {
+            $where = " WHERE u.username LIKE :s1 OR u.email LIKE :s2 OR p.first_name LIKE :s3 ";
+            $searchTerm = '%' . $search . '%';
+            $params['s1'] = $searchTerm;
+            $params['s2'] = $searchTerm;
+            $params['s3'] = $searchTerm;
+        }
+
+        // Validate orderBy to prevent SQL injection
+        $allowedOrders = [
+            'id DESC', 'id ASC', 
+            'username ASC', 'username DESC', 
+            'email ASC', 'role ASC', 
+            'created_at DESC',
+            'p.first_name ASC', 'p.first_name DESC'
+        ];
+        if (!in_array($orderBy, $allowedOrders)) {
+            $orderBy = 'id DESC';
+        }
+
+        $query = "
             SELECT u.id, u.username, u.email, u.role, u.created_at,
                    p.first_name, p.bio, p.phone_number, p.date_of_birth, p.avatar_url
             FROM users u
             LEFT JOIN profile p ON u.id = p.user_id
-            ORDER BY u.id DESC
-        ';
-        $stmt = $pdo->query($query);
+            $where
+            ORDER BY $orderBy
+        ";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute($params);
         $rows = $stmt->fetchAll();
         return array_map(fn($row) => [
             'user' => User::fromRow($row),
@@ -136,6 +161,20 @@ class UserController {
         $pdo->prepare('DELETE FROM profile WHERE user_id = :id')->execute(['id' => $id]);
         $stmt = $pdo->prepare('DELETE FROM users WHERE id = :id');
         return $stmt->execute(['id' => $id]);
+    }
+
+    public static function getUserStats(): array {
+        $pdo = Database::getInstance();
+        $query = "SELECT role, COUNT(*) as count FROM users GROUP BY role";
+        $stmt = $pdo->query($query);
+        $stats = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+        
+        return [
+            'total' => array_sum($stats),
+            'admin' => $stats['admin'] ?? 0,
+            'agent' => $stats['agent'] ?? 0,
+            'citizen' => $stats['citizen'] ?? 0
+        ];
     }
 
     // --- Profile Data Access ---

@@ -30,10 +30,24 @@ const view = {
 
     renderNavBar(role) {
         const nav = document.querySelector('nav');
-        // Clear old inline styles from nav
         nav.removeAttribute('style');
         
         const backofficeBtn = (role === 'admin') ? `<a href="index.php?page=back_dashboard" class="btn btn-small" style="padding: 0.4rem 1.2rem; font-size: 0.8rem;">BACKOFFICE</a>` : '';
+        const profileLink = role === 'guest' ? '' : '<li><a href="#profile">profile</a></li>';
+        
+        let authLinks = '';
+        if (role === 'guest') {
+            authLinks = `
+                <a href="index.php?page=front_login" class="btn btn-small" style="background: #1D2A44; color: white; font-size: 0.75rem; padding: 0.6rem 1.5rem;">SIGN IN</a>
+            `;
+        } else {
+            authLinks = `
+                <a href="index.php?action=logout" class="btn btn-small" style="background: transparent; border: 1px solid rgba(0,0,0,0.1); color: inherit; font-size: 0.75rem;">LOGOUT</a>
+                ${backofficeBtn}
+                <div class="user-role-badge">${role.toUpperCase()}</div>
+            `;
+        }
+
         const links = `
             <div class="nav-brand">
                 <i class="bi bi-building"></i> CIVICPORTAL
@@ -43,23 +57,25 @@ const view = {
                 <li><a href="#programs">programs</a></li>
                 <li><a href="#service-requests">service requests</a></li>
                 <li><a href="#grievances">grievances</a></li>
-                <li><a href="#profile">profile</a></li>
+                ${profileLink}
             </ul>
-            <div class="user-controls" style="display: flex; gap: 1rem; align-items: center;">
-                <a href="index.php?action=logout" class="btn btn-small" style="background: transparent; border: 1px solid rgba(0,0,0,0.1); color: inherit; font-size: 0.75rem;">LOGOUT</a>
-                ${backofficeBtn}
-                <div class="user-role-badge">${role.toUpperCase()}</div>
+            <div class="user-controls" style="display: flex; gap: 0.5rem; align-items: center;">
+                ${authLinks}
             </div>
         `;
         nav.innerHTML = links;
     },
 
     renderHome(user) {
+        const welcomeText = user.role === 'guest' 
+            ? "Your gateway to municipal services. Join us to access more features."
+            : `Welcome back, ${user.name}. Navigate municipal services with unmatched clarity and precision.`;
+        
         const content = `
             <div class="hero-container reveal">
                 <section class="hero-section">
                     <h1>CIVICPORTAL</h1>
-                    <p>Welcome back, ${user.name}. Navigate municipal services with unmatched clarity and precision.</p>
+                    <p>${welcomeText}</p>
                     <div class="search-container">
                         <input type="text" class="search-bar" placeholder="search services, programs, documents...">
                         <button class="search-btn" onclick="console.log('Search simulated!')"><i class="bi bi-search"></i> Search</button>
@@ -93,12 +109,14 @@ const view = {
                         <p>Submit complaints or concerns about municipal services and issues.</p>
                         <a href="#grievances" class="btn" style="align-self: flex-start; margin-top: auto;">Submit Grievance</a>
                     </div>
+                    ${user.role !== 'guest' ? `
                     <div class="editorial-card reveal">
                         <i class="bi bi-person-badge" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
                         <h3>Profile</h3>
                         <p>Edit your profile in one click and keep all your important information.</p>
                         <a href="#profile" class="btn" style="align-self: flex-start; margin-top: auto;">View Profile</a>
                     </div>
+                    ` : ''}
                 </div>
             </section>
         `;
@@ -285,13 +303,24 @@ const view = {
     renderProgramCatalog(programs = [], enrollments = []) {
         const programItems = (programs || []).map(program => {
             const isEnrolled = enrollments.includes(program.id);
+            const user = model.getCurrentUser();
+            
+            let buttonHtml = '';
+            if (user.role === 'guest') {
+                buttonHtml = `<button class="btn btn-primary" data-action="enroll" data-id="${program.id}">LOGIN TO ENROLL</button>`;
+            } else {
+                buttonHtml = `
+                    <button class="btn ${isEnrolled ? 'btn-secondary' : 'btn-primary'}" data-action="enroll" data-id="${program.id}">
+                        ${isEnrolled ? 'Enrolled' : 'Enroll Now'}
+                    </button>
+                `;
+            }
+
             return `
                 <div class="editorial-card reveal">
                     <h3>${program.name || 'Program'}</h3>
                     <p>${program.description || 'No description available'}</p>
-                    <button class="btn ${isEnrolled ? 'btn-secondary' : 'btn-primary'}" data-action="enroll" data-id="${program.id}">
-                        ${isEnrolled ? 'Enrolled' : 'Enroll Now'}
-                    </button>
+                    ${buttonHtml}
                 </div>
             `;
         }).join('');
@@ -355,6 +384,9 @@ const view = {
     },
 
     renderServiceRequestForm() {
+        const user = model.getCurrentUser();
+        const isGuest = user.role === 'guest';
+
         this.app.innerHTML = `
             <section class="page-container">
                 <h2 class="reveal">Submit a Service Request</h2>
@@ -369,13 +401,15 @@ const view = {
                                 <option value="inspection">Inspection</option>
                                 <option value="other">Other</option>
                             </select>
-                            ${(window.SERVER_MESSAGES && window.SERVER_MESSAGES.errors && Object.keys(window.SERVER_MESSAGES.errors).length > 0) ? `<script>view.renderToast('${Object.values(window.SERVER_MESSAGES.errors).join('\\n')}', 'error');</script>` : ''}
                         </div>
                         <div class="form-group">
                             <label for="request-details">Details</label>
                             <textarea id="request-details" name="details" rows="6" placeholder="Describe your service request..."></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary" style="width:100%;">SUBMIT REQUEST</button>
+                        <button type="submit" class="btn btn-primary" style="width:100%;">
+                            ${isGuest ? 'LOGIN TO SUBMIT' : 'SUBMIT REQUEST'}
+                        </button>
+                        ${isGuest ? '<p style="text-align:center; margin-top:1rem; font-size:0.85rem; color:#666;">You must be logged in to submit a request.</p>' : ''}
                     </form>
                 </div>
             </section>
@@ -384,6 +418,9 @@ const view = {
     },
 
     renderComplaintForm() {
+        const user = model.getCurrentUser();
+        const isGuest = user.role === 'guest';
+
         this.app.innerHTML = `
             <section class="page-container">
                 <h2 class="reveal">Submit a Grievance</h2>
@@ -397,7 +434,10 @@ const view = {
                             <label for="complaint-body">Details</label>
                             <textarea id="complaint-body" name="body" rows="6"></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary" style="width:100%;">SUBMIT GRIEVANCE</button>
+                        <button type="submit" class="btn btn-primary" style="width:100%;">
+                            ${isGuest ? 'LOGIN TO SUBMIT' : 'SUBMIT GRIEVANCE'}
+                        </button>
+                        ${isGuest ? '<p style="text-align:center; margin-top:1rem; font-size:0.85rem; color:#666;">You must be logged in to submit a grievance.</p>' : ''}
                     </form>
                 </div>
             </section>

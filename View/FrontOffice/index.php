@@ -12,23 +12,18 @@ header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
 header("Expires: 0");
 
-if (empty($_SESSION['user_id'])) {
-    header('Location: ../../index.php?page=front_login');
-    exit;
-}
-
-require_once __DIR__ . '/../../Model/Profile.php';
-require_once __DIR__ . '/../../Controller/UserController.php';
-
 $currentProfile = null;
 if (!empty($_SESSION['user_id'])) {
+    require_once __DIR__ . '/../../Model/Profile.php';
+    require_once __DIR__ . '/../../Controller/UserController.php';
     $currentProfile = UserController::getProfileByUserId((int)$_SESSION['user_id']);
 }
 
 $currentUser = [
-    'name' => $_SESSION['user_name'] ?? 'User',
+    'id' => $_SESSION['user_id'] ?? null,
+    'name' => $_SESSION['user_name'] ?? 'Guest',
     'email' => $_SESSION['user_email'] ?? '',
-    'role' => $_SESSION['user_role'] ?? 'citizen',
+    'role' => $_SESSION['user_role'] ?? 'guest',
     'bio' => $currentProfile ? $currentProfile->getBio() : '',
     'phoneNumber' => $currentProfile ? $currentProfile->getPhoneNumber() : '',
     'dateOfBirth' => $currentProfile ? $currentProfile->getDateOfBirth() : '',

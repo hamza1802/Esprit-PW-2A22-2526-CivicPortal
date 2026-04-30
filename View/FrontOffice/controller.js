@@ -73,6 +73,14 @@ const controller = {
             this.profileEditMode = false;
         }
 
+        // Allow guests to see pages but block them from performing actions
+        // (Actions like submitting forms or enrolling are handled in event listeners)
+        const restrictedHashes = ['#profile'];
+        if (user.role === 'guest' && restrictedHashes.includes(hash)) {
+            window.location.href = 'index.php?page=front_login';
+            return;
+        }
+
         switch (hash) {
             case '#home':
                 view.renderHome(user);
@@ -117,6 +125,10 @@ const controller = {
 
     handleEnrollment(programId) {
         const user = model.getCurrentUser();
+        if (user.role === 'guest') {
+            window.location.href = 'index.php?page=front_login';
+            return;
+        }
         model.addEnrollment(user.id, parseInt(programId));
         view.renderToast('Enrolled in program!');
         view.renderProgramCatalog(model.getPrograms(), model.getEnrollments(user.id));
@@ -124,6 +136,10 @@ const controller = {
 
     async handleServiceRequest(formData) {
         const user = model.getCurrentUser();
+        if (user.role === 'guest') {
+            window.location.href = 'index.php?page=front_login';
+            return;
+        }
         const type = formData.get('type');
         await model.addServiceRequest({ type, userId: user.id });
         view.renderToast('Service Request Submitted Successfully!');
@@ -162,6 +178,10 @@ const controller = {
 
     async handleComplaintSubmission(formData) {
         const user = model.getCurrentUser();
+        if (user.role === 'guest') {
+            window.location.href = 'index.php?page=front_login';
+            return;
+        }
         const subject = formData.get('subject');
         const body = formData.get('body');
         await model.addComplaint(subject, body, user.id);
