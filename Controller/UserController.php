@@ -57,7 +57,7 @@ class UserController {
 
     public static function getUserById(int $id): ?User {
         $pdo = Database::getInstance();
-        $stmt = $pdo->prepare('SELECT id, username, email, role, password_hash, created_at FROM users WHERE id = :id');
+        $stmt = $pdo->prepare('SELECT id, username, email, role, password_hash, created_at, two_fa_enabled, otp_code, otp_expiry FROM users WHERE id = :id');
         $stmt->execute(['id' => $id]);
         $row = $stmt->fetch();
         return $row ? User::fromRow($row) : null;
@@ -65,7 +65,7 @@ class UserController {
 
     public static function getUserByEmail(string $email): ?User {
         $pdo = Database::getInstance();
-        $stmt = $pdo->prepare('SELECT id, username, email, role, password_hash, created_at FROM users WHERE email = :email');
+        $stmt = $pdo->prepare('SELECT id, username, email, role, password_hash, created_at, two_fa_enabled, otp_code, otp_expiry FROM users WHERE email = :email');
         $stmt->execute(['email' => $email]);
         $row = $stmt->fetch();
         return $row ? User::fromRow($row) : null;
@@ -228,6 +228,13 @@ class UserController {
             $params['date_of_birth'] = !empty($val) ? $val : null;
         }
 
+        if (isset($data['two_fa_enabled'])) {
+            $pdo->prepare('UPDATE users SET two_fa_enabled = :two_fa WHERE id = :id')->execute([
+                'two_fa' => (int)$data['two_fa_enabled'],
+                'id' => $userId
+            ]);
+        }
+
         if (empty($fields)) {
             return true;
         }
@@ -290,6 +297,12 @@ class UserController {
             return ['errors' => ['email' => 'Invalid email or password.']];
         }
 
+        if ($user->isTwoFaEnabled()) {
+            $_SESSION['pending_2fa_user_id'] = $user->getId();
+            self::generateOtp($user->getId());
+            return ['requires_2fa' => true];
+        }
+
         $_SESSION['user_id'] = $user->getId();
         $_SESSION['user_name'] = $user->getDisplayName();
         $_SESSION['user_email'] = $user->getEmail();
@@ -297,6 +310,92 @@ class UserController {
         self::ensureProfileExists($user->getId());
 
         return ['success' => 'Login successful.', 'user' => $user];
+    }
+
+    public static function generateOtp(int $userId): string {
+        $pdo = Database::getInstance();
+        $otp = (string)rand(100000, 999999);
+        $expiry = date('Y-m-d H:i:s', strtotime('+5 minutes'));
+        
+        $stmt = $pdo->prepare('UPDATE users SET otp_code = :otp, otp_expiry = :expiry WHERE id = :id');
+        $stmt->execute(['otp' => $otp, 'expiry' => $expiry, 'id' => $userId]);
+        
+        $user = self::getUserById($userId);
+        self::sendOtpEmail($user->getEmail(), $otp);
+        
+        return $otp;
+    }
+
+    private static function sendOtpEmail(string $email, string $otp): void {
+        $mailConfig = require __DIR__ . '/../config/mail.php';
+        
+        if ($mailConfig['username'] === 'votre-email@gmail.com') {
+            error_log("ERREUR : Vous devez configurer votre email Gmail dans config/mail.php");
+            return;
+        }
+
+        $phpMailerPath = __DIR__ . '/../lib/PHPMailer/src/PHPMailer.php';
+        $smtpPath = __DIR__ . '/../lib/PHPMailer/src/SMTP.php';
+        $exceptionPath = __DIR__ . '/../lib/PHPMailer/src/Exception.php';
+
+        if (file_exists($phpMailerPath) && file_exists($smtpPath) && file_exists($exceptionPath)) {
+            require_once $exceptionPath;
+            require_once $phpMailerPath;
+            require_once $smtpPath;
+
+            $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+
+            try {
+                //Server settings
+                $mail->isSMTP();
+                $mail->Host       = $mailConfig['host'];
+                $mail->SMTPAuth   = true;
+                $mail->Username   = $mailConfig['username'];
+                $mail->Password   = $mailConfig['password'];
+                $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;
+                $mail->Port       = 465;
+
+                // Debugging
+                $mail->SMTPDebug = 2;
+                $mail->Debugoutput = function($str, $level) {
+                    $_SESSION['smtp_debug'] = ($_SESSION['smtp_debug'] ?? '') . $str . "\n";
+                };
+                $_SESSION['smtp_debug'] = "";
+
+                //Recipients
+                $mail->setFrom($mailConfig['username'], $mailConfig['from_name']);
+                $mail->addAddress($email);
+
+                //Content
+                $mail->isHTML(true);
+                $mail->Subject = 'Votre code de verification CivicPortal';
+                $mail->Body    = "Votre code OTP est : <b>$otp</b>. Il expirera dans 5 minutes.";
+                $mail->AltBody = "Votre code OTP est : $otp. Il expirera dans 5 minutes.";
+
+                $mail->send();
+            } catch (Exception $e) {
+                $_SESSION['mail_error'] = "Mail Error: " . $mail->ErrorInfo . "\n\nDebug Log:\n" . ($_SESSION['smtp_debug'] ?? '');
+                error_log("Mail Error: {$mail->ErrorInfo}");
+            }
+        } else {
+            $_SESSION['mail_error'] = "PHPMailer files not found in lib/PHPMailer/src/";
+            error_log("PHPMailer non trouve. L'envoi d'email a echoue.");
+        }
+    }
+
+    public static function verifyOtp(int $userId, string $code): bool {
+        $user = self::getUserById($userId);
+        if (!$user || !$user->getOtpCode()) return false;
+        
+        if ($user->getOtpCode() !== $code) return false;
+        
+        if (strtotime($user->getOtpExpiry()) < time()) return false;
+        
+        // Code valide, on le nettoie
+        $pdo = Database::getInstance();
+        $pdo->prepare('UPDATE users SET otp_code = NULL, otp_expiry = NULL WHERE id = :id')->execute(['id' => $userId]);
+        
+        return true;
     }
 
     public static function logout(): void {

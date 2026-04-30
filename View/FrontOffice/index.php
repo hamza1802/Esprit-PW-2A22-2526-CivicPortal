@@ -13,10 +13,12 @@ header("Pragma: no-cache");
 header("Expires: 0");
 
 $currentProfile = null;
+$userModel = null;
 if (!empty($_SESSION['user_id'])) {
     require_once __DIR__ . '/../../Model/Profile.php';
     require_once __DIR__ . '/../../Controller/UserController.php';
     $currentProfile = UserController::getProfileByUserId((int)$_SESSION['user_id']);
+    $userModel = UserController::getUserById((int)$_SESSION['user_id']);
 }
 
 $currentUser = [
@@ -27,7 +29,8 @@ $currentUser = [
     'bio' => $currentProfile ? $currentProfile->getBio() : '',
     'phoneNumber' => $currentProfile ? $currentProfile->getPhoneNumber() : '',
     'dateOfBirth' => $currentProfile ? $currentProfile->getDateOfBirth() : '',
-    'avatar' => $currentProfile ? $currentProfile->getAvatarUrl() : ''
+    'avatar' => $currentProfile ? $currentProfile->getAvatarUrl() : '',
+    'two_fa_enabled' => $userModel ? $userModel->isTwoFaEnabled() : false
 ];
 
 $successMsg = $_SESSION['success'] ?? '';

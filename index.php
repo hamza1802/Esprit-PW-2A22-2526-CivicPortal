@@ -82,8 +82,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header('Location: index.php?page=front_login');
                 exit;
             }
+            if (!empty($result['requires_2fa'])) {
+                header('Location: index.php?page=front_verify_otp');
+                exit;
+            }
             header('Location: index.php?page=front_home');
             exit;
+
+        case 'verify_otp':
+            if (empty($_SESSION['pending_2fa_user_id'])) {
+                header('Location: index.php?page=front_login');
+                exit;
+            }
+            $userId = (int)$_SESSION['pending_2fa_user_id'];
+            $code = $_POST['otp_code'] ?? '';
+            
+            if (UserController::verifyOtp($userId, $code)) {
+                $user = UserController::getUserById($userId);
+                unset($_SESSION['pending_2fa_user_id']);
+                
+                $_SESSION['user_id'] = $user->getId();
+                $_SESSION['user_name'] = $user->getDisplayName();
+                $_SESSION['user_email'] = $user->getEmail();
+                $_SESSION['user_role'] = $user->getRole();
+                UserController::ensureProfileExists($user->getId());
+                
+                header('Location: index.php?page=front_home');
+                exit;
+            } else {
+                $_SESSION['errors'] = ['otp' => 'Code OTP invalide ou expiré.'];
+                header('Location: index.php?page=front_verify_otp');
+                exit;
+            }
 
         case 'register':
             $result = UserController::register($_POST);
@@ -120,6 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $profileData = $_POST;
+            $profileData['two_fa_enabled'] = isset($_POST['two_fa_enabled']) ? 1 : 0;
             if (!empty($_SESSION['user_avatar'])) {
                 $profileData['avatar_url'] = $_SESSION['user_avatar'];
             }
@@ -309,6 +340,13 @@ switch ($page) {
         break;
     case 'back_dashboard':
         include __DIR__ . '/View/BackOffice/index.php';
+        break;
+    case 'front_verify_otp':
+        if (empty($_SESSION['pending_2fa_user_id'])) {
+            header('Location: index.php?page=front_login');
+            exit;
+        }
+        include __DIR__ . '/View/FrontOffice/verify_otp.php';
         break;
     case 'front_login':
     default:

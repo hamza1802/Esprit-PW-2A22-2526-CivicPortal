@@ -202,6 +202,7 @@ const view = {
             { icon: '📞', label: 'Phone', value: user.phoneNumber || '—' },
             { icon: '🎂', label: 'Date of Birth', value: user.dateOfBirth || '—' },
             { icon: '🏷', label: 'Role', value: roleLabel },
+            { icon: '🛡', label: 'Double Verification', value: user.two_fa_enabled ? 'ENABLED' : 'DISABLED' },
         ];
     
 
@@ -258,6 +259,24 @@ const view = {
                         <div class="form-group" style="margin-bottom:1rem; grid-column:1/-1;">
                             <label for="profile-bio" style="font-size:0.78rem;">Biography</label>
                             <textarea id="profile-bio" name="bio" rows="3" placeholder="Write something about yourself..." style="padding:0.8rem 1rem; font-size:1rem; resize:vertical;">${user.bio || ''}</textarea>
+                        </div>
+                        <style>
+                            .toggle-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+                            .toggle-switch input { opacity: 0; width: 0; height: 0; }
+                            .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .3s; border-radius: 34px; }
+                            .toggle-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+                            .toggle-switch input:checked + .toggle-slider { background-color: #1D2A44; }
+                            .toggle-switch input:checked + .toggle-slider:before { transform: translateX(24px); }
+                        </style>
+                        <div class="form-group" style="margin-bottom: 1rem; grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.02); padding: 1rem 1.5rem; border-radius: 12px; border: 1px solid rgba(0,0,0,0.05);">
+                            <div style="display:flex; flex-direction:column;">
+                                <label for="two-fa-enabled" style="margin-bottom: 0; cursor: pointer; font-weight: 800; color: #1D2A44; font-size: 0.85rem; text-transform: uppercase;">Double Verification (2FA)</label>
+                                <span style="font-size: 0.75rem; color: #64748b; margin-top: 0.2rem;">Protect your account with an email code</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="two-fa-enabled" name="two_fa_enabled" value="1" ${user.two_fa_enabled ? 'checked' : ''}>
+                                <span class="toggle-slider"></span>
+                            </label>
                         </div>
                         <div class="form-group" style="margin-bottom:1rem; grid-column:1/-1;">
                             <label for="profile-avatar" style="font-size:0.78rem;">Profile Photo</label>
