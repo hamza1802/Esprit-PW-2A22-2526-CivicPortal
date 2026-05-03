@@ -406,4 +406,188 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+
+    // ─────────────────────────────────────────
+    //  TRANSPORT MANAGEMENT FORMS
+    // ─────────────────────────────────────────
+
+    // Add Transport Type Form
+    const addTypeForm = document.getElementById('add-type-form');
+    if (addTypeForm) {
+        const rules = [
+            {
+                field: 'input[name="name"]',
+                validate: (el) => Validator.required(el.value, 'Type name') || Validator.minLength(el.value, 2, 'Type name') || Validator.maxLength(el.value, 50, 'Type name')
+            },
+            {
+                field: 'input[name="type_image"]',
+                validate: (el) => el.files.length > 0 ? Validator.fileType(el, ['jpg', 'jpeg', 'png', 'gif', 'webp'], 'Image') : null
+            }
+        ];
+
+        Validator.attachLiveValidation(addTypeForm, rules);
+        addTypeForm.addEventListener('submit', (e) => {
+            if (!Validator.validateForm(addTypeForm, rules)) {
+                e.preventDefault();
+            }
+        });
+    }
+
+    // Add Vehicle Form
+    const addVehicleForm = document.getElementById('add-vehicle-form');
+    if (addVehicleForm) {
+        const rules = [
+            {
+                field: 'input[name="name"]',
+                validate: (el) => Validator.required(el.value, 'Vehicle name') || Validator.minLength(el.value, 2, 'Vehicle name')
+            },
+            {
+                field: 'input[name="type"]',
+                validate: (el) => Validator.required(el.value, 'Type label') || Validator.minLength(el.value, 2, 'Type label')
+            },
+            {
+                field: 'input[name="capacity"]',
+                validate: (el) => Validator.required(el.value, 'Capacity') || Validator.numberRange(el.value, 1, 500, 'Capacity')
+            },
+            {
+                field: 'select[name="status"]',
+                validate: (el) => Validator.selectRequired(el.value, 'status')
+            }
+        ];
+
+        Validator.attachLiveValidation(addVehicleForm, rules);
+        addVehicleForm.addEventListener('submit', (e) => {
+            if (!Validator.validateForm(addVehicleForm, rules)) {
+                e.preventDefault();
+            }
+        });
+    }
+
+    // Add Route Form
+    const addTrajetForm = document.getElementById('add-trajet-form');
+    if (addTrajetForm) {
+        const rules = [
+            {
+                field: 'input[name="departure"]',
+                validate: (el) => Validator.required(el.value, 'Departure location') || Validator.minLength(el.value, 2, 'Departure location')
+            },
+            {
+                field: 'input[name="destination"]',
+                validate: (el) => Validator.required(el.value, 'Destination location') || Validator.minLength(el.value, 2, 'Destination location')
+            },
+            {
+                field: 'input[name="departureTime"]',
+                validate: (el) => Validator.required(el.value, 'Departure time')
+            },
+            {
+                field: 'input[name="price"]',
+                validate: (el) => Validator.required(el.value, 'Price') || Validator.numberRange(el.value, 0, 1000, 'Price')
+            },
+            {
+                field: 'select[name="idTransport"]',
+                validate: (el) => Validator.selectRequired(el.value, 'vehicle')
+            }
+        ];
+
+        Validator.attachLiveValidation(addTrajetForm, rules);
+        addTrajetForm.addEventListener('submit', (e) => {
+            if (!Validator.validateForm(addTrajetForm, rules)) {
+                e.preventDefault();
+            }
+        });
+    }
+
 });
+
+// Export function to setup validations for dynamically added forms
+window.setupTransportValidations = function() {
+    // Add Transport Type Form
+    const addTypeForm = document.getElementById('add-type-form');
+    if (addTypeForm) {
+        const rules = [
+            {
+                field: 'input[name="name"]',
+                validate: (el) => Validator.required(el.value, 'Type name') || Validator.minLength(el.value, 2, 'Type name') || Validator.maxLength(el.value, 50, 'Type name')
+            },
+            {
+                field: 'input[name="type_image"]',
+                validate: (el) => el.files.length > 0 ? Validator.fileType(el, ['jpg', 'jpeg', 'png', 'gif', 'webp'], 'Image') : null
+            }
+        ];
+
+        Validator.attachLiveValidation(addTypeForm, rules);
+        addTypeForm.addEventListener('submit', (e) => {
+            if (!Validator.validateForm(addTypeForm, rules)) {
+                e.preventDefault();
+            }
+        });
+    }
+
+    // Add Vehicle Form
+    const addVehicleForm = document.getElementById('add-vehicle-form');
+    if (addVehicleForm) {
+        const rules = [
+            {
+                field: 'input[name="name"]',
+                validate: (el) => Validator.required(el.value, 'Vehicle name') || Validator.minLength(el.value, 2, 'Vehicle name')
+            },
+            {
+                field: 'input[name="type"]',
+                validate: (el) => Validator.required(el.value, 'Type label') || Validator.minLength(el.value, 2, 'Type label')
+            },
+            {
+                field: 'input[name="capacity"]',
+                validate: (el) => Validator.required(el.value, 'Capacity') || Validator.numberRange(el.value, 1, 500, 'Capacity')
+            },
+            {
+                field: 'select[name="status"]',
+                validate: (el) => Validator.selectRequired(el.value, 'status')
+            }
+        ];
+
+        Validator.attachLiveValidation(addVehicleForm, rules);
+        addVehicleForm.addEventListener('submit', (e) => {
+            if (!Validator.validateForm(addVehicleForm, rules)) {
+                e.preventDefault();
+            }
+        });
+    }
+
+    // Add Route Form
+    const addTrajetForm = document.getElementById('add-trajet-form');
+    if (addTrajetForm) {
+        const rules = [
+            {
+                field: 'input[name="departure"]',
+                validate: (el) => Validator.required(el.value, 'Departure location') || Validator.minLength(el.value, 2, 'Departure location')
+            },
+            {
+                field: 'input[name="destination"]',
+                validate: (el) => Validator.required(el.value, 'Destination location') || Validator.minLength(el.value, 2, 'Destination location')
+            },
+            {
+                field: 'input[name="departureDate"]',
+                validate: (el) => Validator.required(el.value, 'Departure date') || Validator.futureDate(el.value, 'Departure date')
+            },
+            {
+                field: 'input[name="departureTime"]',
+                validate: (el) => Validator.required(el.value, 'Departure time')
+            },
+            {
+                field: 'input[name="price"]',
+                validate: (el) => Validator.required(el.value, 'Price') || Validator.numberRange(el.value, 0, 1000, 'Price')
+            },
+            {
+                field: 'select[name="idTransport"]',
+                validate: (el) => Validator.selectRequired(el.value, 'vehicle')
+            }
+        ];
+
+        Validator.attachLiveValidation(addTrajetForm, rules);
+        addTrajetForm.addEventListener('submit', (e) => {
+            if (!Validator.validateForm(addTrajetForm, rules)) {
+                e.preventDefault();
+            }
+        });
+    }
+};

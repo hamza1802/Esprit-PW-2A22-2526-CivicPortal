@@ -140,6 +140,11 @@ try { switch ($action) {
             echo json_encode(['success' => true]);
             break;
 
+        case 'get_trajet':
+            $trajet = AppModel::getTrajet((int)($input['idTrajet'] ?? 0));
+            echo json_encode(['success' => true, 'data' => $trajet]);
+            break;
+
         case 'update_trajet':
             $trajet = [
                 'departure'     => $input['departure'],

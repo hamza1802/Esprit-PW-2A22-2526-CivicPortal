@@ -659,9 +659,14 @@ const view = {
                     <strong style="display:block;font-size:0.95rem;">${t.name}</strong>
                     ${t.description ? `<span style="font-size:0.82rem;opacity:0.65;">${t.description}</span>` : ''}
                 </div>
-                <button class="btn btn-small btn-danger" data-action="delete-transport-type" data-id="${t.idTransportType}">
-                    <i class="bi bi-trash3"></i>
-                </button>
+                <div style="display:flex;gap:8px;">
+                    <button class="btn btn-small" data-action="edit-transport-type" data-id="${t.idTransportType}">
+                        <i class="bi bi-pencil-square"></i> EDIT
+                    </button>
+                    <button class="btn btn-small btn-danger" data-action="delete-transport-type" data-id="${t.idTransportType}">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                </div>
             </div>
         `).join('');
 
@@ -685,6 +690,9 @@ const view = {
                 <td>${v.capacity}</td>
                 <td><span class="status-badge status-${v.status === 'Active' ? 'validated' : 'rejected'}">${v.status}</span></td>
                 <td>
+                    <button class="btn btn-small" data-action="edit-vehicle" data-id="${v.idTransport}" style="margin-right:4px;">
+                        <i class="bi bi-pencil-square"></i> EDIT
+                    </button>
                     <button class="btn btn-small btn-danger" data-action="delete-vehicle" data-id="${v.idTransport}">
                         <i class="bi bi-trash3"></i>
                     </button>
@@ -712,6 +720,9 @@ const view = {
                         </div>
                     </td>
                     <td>
+                        <button class="btn btn-small" data-action="edit-trajet" data-id="${t.idTrajet}" style="margin-right:4px;">
+                            <i class="bi bi-pencil-square"></i> EDIT
+                        </button>
                         <button class="btn btn-small btn-danger" data-action="delete-trajet" data-id="${t.idTrajet}">
                             <i class="bi bi-trash3"></i>
                         </button>
@@ -738,7 +749,7 @@ const view = {
                             <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
                                 <div class="form-group">
                                     <label>Type Name</label>
-                                    <input type="text" name="name" placeholder="e.g. Bus, Train, Metro" required>
+                                    <input type="text" name="name" placeholder="e.g. Bus, Train, Metro">
                                 </div>
                                 <div class="form-group">
                                     <label>Description</label>
@@ -772,15 +783,15 @@ const view = {
                             <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
                                 <div class="form-group">
                                     <label>Vehicle Name</label>
-                                    <input type="text" name="name" placeholder="e.g. City Express 01" required>
+                                    <input type="text" name="name" placeholder="e.g. City Express 01">
                                 </div>
                                 <div class="form-group">
                                     <label>Type Label</label>
-                                    <input type="text" name="type" placeholder="Bus / Train / Metro" required>
+                                    <input type="text" name="type" placeholder="Bus / Train / Metro">
                                 </div>
                                 <div class="form-group">
                                     <label>Capacity</label>
-                                    <input type="number" name="capacity" min="1" placeholder="50" required>
+                                    <input type="number" name="capacity" min="1" placeholder="50">
                                 </div>
                                 <div class="form-group">
                                     <label>Status</label>
@@ -826,23 +837,27 @@ const view = {
                             <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
                                 <div class="form-group">
                                     <label>Departure</label>
-                                    <input type="text" name="departure" placeholder="Search a location..." required autocomplete="off">
+                                    <input type="text" name="departure" placeholder="Search a location..." autocomplete="off">
                                 </div>
                                 <div class="form-group">
                                     <label>Destination</label>
-                                    <input type="text" name="destination" placeholder="Search a location..." required autocomplete="off">
+                                    <input type="text" name="destination" placeholder="Search a location..." autocomplete="off">
+                                </div>
+                                <div class="form-group">
+                                    <label>Departure Date</label>
+                                    <input type="date" name="departureDate" value="${new Date().toISOString().split('T')[0]}">
                                 </div>
                                 <div class="form-group">
                                     <label>Departure Time</label>
-                                    <input type="time" name="departureTime" required>
+                                    <input type="time" name="departureTime">
                                 </div>
                                 <div class="form-group">
                                     <label>Price</label>
-                                    <input type="number" name="price" min="0" step="0.01" placeholder="9.99" required>
+                                    <input type="number" name="price" min="0" step="0.01" placeholder="9.99">
                                 </div>
                                 <div class="form-group" style="grid-column:1/-1;">
                                     <label>Vehicle</label>
-                                    <select name="idTransport" required>
+                                    <select name="idTransport">
                                         <option value="" disabled selected>Select vehicle</option>
                                         ${vehicleOptions}
                                     </select>
@@ -854,6 +869,8 @@ const view = {
                                     <input type="hidden" name="depLng" id="depLng">
                                     <input type="hidden" name="destLat" id="destLat">
                                     <input type="hidden" name="destLng" id="destLng">
+                                    <input type="hidden" name="depAddress" id="depAddress">
+                                    <input type="hidden" name="destAddress" id="destAddress">
                                 </div>
                             </div>
                             <button type="submit" class="btn btn-primary" style="margin-top:0.5rem;">ADD ROUTE</button>
@@ -871,6 +888,10 @@ const view = {
                 </div>
             </section>
         `;
+        // Setup form validations for dynamically added forms
+        if (window.setupTransportValidations) {
+            setTimeout(() => window.setupTransportValidations(), 100);
+        }
         this.triggerObserver();
     },
 

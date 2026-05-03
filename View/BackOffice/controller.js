@@ -85,6 +85,9 @@ const controller = {
                     document.getElementById('add-type-panel')?.style.setProperty('display',
                         document.getElementById('add-type-panel').style.display === 'none' ? 'block' : 'none');
                     break;
+                case 'edit-transport-type':
+                    this.handleTransportTypeEdit(parseInt(id));
+                    break;
                 case 'delete-transport-type':
                     if (confirm('Delete this transport type? Vehicles using it will lose their type association.')) {
                         this.handleTransportTypeDelete(parseInt(id));
@@ -94,12 +97,19 @@ const controller = {
                 case 'toggle-add-vehicle':
                     document.getElementById('add-vehicle-panel')?.style.setProperty('display',
                         document.getElementById('add-vehicle-panel').style.display === 'none' ? 'block' : 'none');
+                    // Reset form when toggling
+                    if (document.getElementById('add-vehicle-panel').style.display === 'block') {
+                        this._resetVehicleForm();
+                    }
                     break;
                 case 'toggle-add-trajet': {
                     const trajetPanel = document.getElementById('add-trajet-panel');
                     if (trajetPanel) {
-                        trajetPanel.style.display = trajetPanel.style.display === 'none' ? 'block' : 'none';
-                        if (trajetPanel.style.display === 'block') {
+                        const wasHidden = trajetPanel.style.display === 'none';
+                        trajetPanel.style.display = wasHidden ? 'block' : 'none';
+                        if (wasHidden) {
+                            // Reset form when opening
+                            this._resetTrajetForm();
                             setTimeout(() => initRouteMap(), 50);
                         }
                     }
@@ -107,6 +117,12 @@ const controller = {
                 }
                 case 'delete-vehicle':
                     if (confirm('Delete this vehicle?')) this.handleVehicleDelete(parseInt(id));
+                    break;
+                case 'edit-vehicle':
+                    this.handleVehicleEdit(parseInt(id));
+                    break;
+                case 'edit-trajet':
+                    this.handleTrajetEdit(parseInt(id));
                     break;
                 case 'delete-trajet':
                     if (confirm('Delete this route? All booked tickets will be affected.')) this.handleTrajetDelete(parseInt(id));
@@ -492,6 +508,12 @@ const controller = {
         }
     },
 
+    async handleTransportTypeEdit(id) {
+        // For now, just show a message that editing transport types is not implemented
+        // In a full implementation, this would fetch the type data and populate the form
+        view.renderToast('Transport type editing not yet implemented.', 'error');
+    },
+
     async handleVehicleAdd(formData) {
         const name     = formData.get('name')?.trim();
         const type     = formData.get('type')?.trim();
@@ -504,12 +526,26 @@ const controller = {
             return;
         }
 
-        const result = await model.addVehicle({ name, type, capacity, status, idTransportType: typeId });
-        if (result !== null) {
-            view.renderToast('Vehicle added.');
-            await this._refreshTransport();
+        // Check if this is an edit operation
+        const submitBtn = document.querySelector('#add-vehicle-form button[type="submit"]');
+        const editId = submitBtn?.dataset.editId;
+
+        let result;
+        if (editId) {
+            // Update existing vehicle
+            result = await model.updateVehicle(editId, { name, type, capacity, status, idTransportType: typeId });
         } else {
-            view.renderToast('Failed to add vehicle.', 'error');
+            // Add new vehicle
+            result = await model.addVehicle({ name, type, capacity, status, idTransportType: typeId });
+        }
+
+        if (result !== null) {
+            view.renderToast(editId ? 'Vehicle updated.' : 'Vehicle added.');
+            await this._refreshTransport();
+            // Reset form after successful operation
+            this._resetVehicleForm();
+        } else {
+            view.renderToast(editId ? 'Failed to update vehicle.' : 'Failed to add vehicle.', 'error');
         }
     },
 
@@ -523,24 +559,86 @@ const controller = {
         }
     },
 
-    async handleTrajetAdd(formData) {
-        const departure    = formData.get('departure')?.trim();
-        const destination  = formData.get('destination')?.trim();
-        const depTime      = formData.get('departureTime');
-        const price        = parseFloat(formData.get('price'));
-        const idTransport  = formData.get('idTransport');
+    async handleVehicleEdit(id) {
+        // Get the vehicle data
+        const vehicle = await model.getVehicle(id);
+        if (!vehicle) {
+            view.renderToast('Vehicle not found.', 'error');
+            return;
+        }
 
-        if (!departure || !destination || !depTime || isNaN(price) || !idTransport) {
+        // Show the add-vehicle panel
+        const vehiclePanel = document.getElementById('add-vehicle-panel');
+        if (vehiclePanel) {
+            vehiclePanel.style.display = 'block';
+
+            // Pre-populate the form
+            const form = document.getElementById('add-vehicle-form');
+            if (form) {
+                form.querySelector('[name="name"]').value = vehicle.name || '';
+                form.querySelector('[name="type"]').value = vehicle.type || '';
+                form.querySelector('[name="capacity"]').value = vehicle.capacity || '';
+                form.querySelector('[name="status"]').value = vehicle.status || 'Active';
+                form.querySelector('[name="idTransportType"]').value = vehicle.idTransportType || '';
+
+                // Change button text and add data attribute for update
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.textContent = 'UPDATE VEHICLE';
+                    submitBtn.dataset.editId = id;
+                }
+            }
+        }
+    },
+
+    async handleTrajetAdd(formData) {
+        const departure     = formData.get('departure')?.trim();
+        const destination   = formData.get('destination')?.trim();
+        const depDate       = formData.get('departureDate');
+        const depTime       = formData.get('departureTime');
+        const price         = parseFloat(formData.get('price'));
+        const idTransport   = formData.get('idTransport');
+        const depLat        = formData.get('depLat') ? parseFloat(formData.get('depLat')) : null;
+        const depLng        = formData.get('depLng') ? parseFloat(formData.get('depLng')) : null;
+        const destLat       = formData.get('destLat') ? parseFloat(formData.get('destLat')) : null;
+        const destLng       = formData.get('destLng') ? parseFloat(formData.get('destLng')) : null;
+        const depAddress    = formData.get('depAddress');
+        const destAddress   = formData.get('destAddress');
+
+        if (!departure || !destination || !depDate || !depTime || isNaN(price) || !idTransport) {
             view.renderToast('Please fill in all route fields.', 'error');
             return;
         }
 
-        const result = await model.addTrajet({ departure, destination, departureTime: depTime, price, idTransport });
-        if (result !== null) {
-            view.renderToast('Route added.');
-            await this._refreshTransport();
+        // Combine date and time to create a datetime
+        const departureTime = `${depDate} ${depTime}:00`;
+
+        // Check if this is an edit operation
+        const submitBtn = document.querySelector('#add-trajet-form button[type="submit"]');
+        const editId = submitBtn?.dataset.editId;
+
+        let result;
+        if (editId) {
+            // Update existing trajet
+            result = await model.updateTrajet(editId, {
+                departure, destination, departureTime, price, idTransport,
+                depLat, depLng, destLat, destLng, depAddress, destAddress
+            });
         } else {
-            view.renderToast('Failed to add route.', 'error');
+            // Add new trajet
+            result = await model.addTrajet({
+                departure, destination, departureTime, price, idTransport,
+                depLat, depLng, destLat, destLng, depAddress, destAddress
+            });
+        }
+
+        if (result !== null) {
+            view.renderToast(editId ? 'Route updated.' : 'Route added.');
+            await this._refreshTransport();
+            // Reset form after successful operation
+            this._resetTrajetForm();
+        } else {
+            view.renderToast(editId ? 'Failed to update route.' : 'Failed to add route.', 'error');
         }
     },
 
@@ -551,6 +649,82 @@ const controller = {
             await this._refreshTransport();
         } else {
             view.renderToast('Failed to delete route.', 'error');
+        }
+    },
+
+    async handleTrajetEdit(id) {
+        // Get the trajet data
+        const trajet = await model.getTrajet(id);
+        if (!trajet) {
+            view.renderToast('Route not found.', 'error');
+            return;
+        }
+
+        // Show the add-trajet panel
+        const trajetPanel = document.getElementById('add-trajet-panel');
+        if (trajetPanel) {
+            trajetPanel.style.display = 'block';
+            setTimeout(() => initRouteMap(), 50);
+
+            // Pre-populate the form
+            const form = document.getElementById('add-trajet-form');
+            if (form) {
+                form.querySelector('[name="departure"]').value = trajet.departure || '';
+                form.querySelector('[name="destination"]').value = trajet.destination || '';
+                form.querySelector('[name="departureDate"]').value = trajet.departureTime ? trajet.departureTime.split(' ')[0] : '';
+                form.querySelector('[name="departureTime"]').value = trajet.departureTime ? trajet.departureTime.split(' ')[1].substring(0, 5) : '';
+                form.querySelector('[name="price"]').value = trajet.price || '';
+                form.querySelector('[name="idTransport"]').value = trajet.idTransport || '';
+
+                // Set coordinates if available
+                document.getElementById('depLat').value = trajet.depLat || '';
+                document.getElementById('depLng').value = trajet.depLng || '';
+                document.getElementById('destLat').value = trajet.destLat || '';
+                document.getElementById('destLng').value = trajet.destLng || '';
+                document.getElementById('depAddress').value = trajet.depAddress || '';
+                document.getElementById('destAddress').value = trajet.destAddress || '';
+
+                // Change button text and add data attribute for update
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.textContent = 'UPDATE ROUTE';
+                    submitBtn.dataset.editId = id;
+                }
+            }
+        }
+    },
+
+    _resetVehicleForm() {
+        const form = document.getElementById('add-vehicle-form');
+        if (form) {
+            form.reset();
+            // Reset button
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.textContent = 'ADD VEHICLE';
+                delete submitBtn.dataset.editId;
+            }
+        }
+    },
+
+    _resetTrajetForm() {
+        const form = document.getElementById('add-trajet-form');
+        if (form) {
+            form.reset();
+            // Reset hidden fields
+            document.getElementById('depLat').value = '';
+            document.getElementById('depLng').value = '';
+            document.getElementById('destLat').value = '';
+            document.getElementById('destLng').value = '';
+            document.getElementById('depAddress').value = '';
+            document.getElementById('destAddress').value = '';
+
+            // Reset button
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.textContent = 'ADD ROUTE';
+                delete submitBtn.dataset.editId;
+            }
         }
     },
 

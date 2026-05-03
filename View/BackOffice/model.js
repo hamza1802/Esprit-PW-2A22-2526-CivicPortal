@@ -220,8 +220,12 @@ const model = {
     },
 
     async addVehicle(data)          { return await this.transportApi('add_transport',   data); },
+    async getVehicle(id)           { return await this.transportApi('get_transport',   { idTransport: id }); },
+    async updateVehicle(id, data)  { return await this.transportApi('update_transport', { idTransport: id, ...data }); },
     async deleteVehicle(id)         { return await this.transportApi('delete_transport', { idTransport: id }); },
     async addTrajet(data)           { return await this.transportApi('add_trajet',       data); },
+    async getTrajet(id)             { return await this.transportApi('get_trajet',       { idTrajet: id }); },
+    async updateTrajet(id, data)    { return await this.transportApi('update_trajet',    { idTrajet: id, ...data }); },
     async deleteTrajet(id)          { return await this.transportApi('delete_trajet',    { idTrajet: id }); },
 
     async addTransportType(formData) { return await this.apiCall('add_transport_type',    formData); },

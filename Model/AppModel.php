@@ -805,11 +805,24 @@ class AppModel {
         $sortBy = in_array($sortBy, $allowedSorts) ? $sortBy : 'departure';
         $order = strtoupper($order) === 'DESC' ? 'DESC' : 'ASC';
 
-        $sql = "SELECT t.*, tr.name as transportName, tr.capacity as transportCapacity FROM trajet t JOIN transport tr ON t.idTransport = tr.idTransport WHERE tr.type = ? ORDER BY t.$sortBy $order";
+        $sql = "SELECT t.*, tr.name as transportName, tr.capacity as transportCapacity
+                FROM trajet t
+                JOIN transport tr ON t.idTransport = tr.idTransport
+                JOIN transport_type tt ON tr.idTransportType = tt.idTransportType
+                WHERE tt.name = ?
+                ORDER BY t.$sortBy $order";
         $db = self::getDb();
         $query = $db->prepare($sql);
         $query->execute([$type]);
         return $query->fetchAll();
+    }
+
+    public static function getTrajet($id) {
+        $sql = "SELECT * FROM trajet WHERE idTrajet = ?";
+        $db = self::getDb();
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$id]);
+        return $stmt->fetch();
     }
 
     public static function addTrajet($data) {

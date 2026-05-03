@@ -30,6 +30,9 @@ nav {
     z-index: 10;
     backdrop-filter: none !important;
     overflow-y: auto;
+    height: calc(100vh - 32px);
+    max-height: calc(100vh - 32px);
+    box-sizing: border-box;
 }
 
 .nav-brand {

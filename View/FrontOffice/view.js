@@ -641,7 +641,11 @@ const view = {
 
         const renderTicketCard = (ticket, isExpanded = true) => {
             const isValid  = ticket.status === 'Valid';
-            const depTime  = ticket.departureTime ? new Date(ticket.departureTime).toLocaleString() : '—';
+            const depTime = (() => {
+                if (!ticket.departureTime) return 'Time not set';
+                const date = new Date(ticket.departureTime);
+                return isNaN(date.getTime()) ? 'Invalid time' : date.toLocaleString();
+            })();
             const issuedAt = ticket.issuedAt ? new Date(ticket.issuedAt).toLocaleDateString() : '—';
             const photoHtml = isExpanded
                 ? `<img src="../../get_image.php?type=transport_type&id=${ticket.typeId || 0}" alt="${ticket.typeName || ''}"
@@ -650,12 +654,16 @@ const view = {
                 : '';
 
             const mapBlock = isExpanded
-                ? `<div style="margin:20px 0;border-radius:12px;overflow:hidden;border:2px solid rgba(255,255,255,0.05);position:relative;">
-                       <div id="map-${ticket.idTicket}" class="ticket-map"
-                            data-deplat="${ticket.depLat}"  data-deplng="${ticket.depLng}"
-                            data-destlat="${ticket.destLat}" data-destlng="${ticket.destLng}"
-                            style="width:100%;height:220px;"></div>
-                   </div>`
+                ? (ticket.depLat && ticket.depLng && ticket.destLat && ticket.destLng
+                    ? `<div style="margin:20px 0;border-radius:12px;overflow:hidden;border:2px solid rgba(255,255,255,0.05);position:relative;">
+                           <div id="map-${ticket.idTicket}" class="ticket-map"
+                                data-deplat="${ticket.depLat}"  data-deplng="${ticket.depLng}"
+                                data-destlat="${ticket.destLat}" data-destlng="${ticket.destLng}"
+                                style="width:100%;height:220px;"></div>
+                       </div>`
+                    : `<div style="margin:20px 0;padding:20px;border-radius:12px;border:2px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.02);text-align:center;color:rgba(255,255,255,0.6);">
+                           No route coordinates available
+                       </div>`)
                 : '';
 
             return `

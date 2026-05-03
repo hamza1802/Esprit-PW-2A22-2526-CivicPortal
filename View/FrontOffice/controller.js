@@ -140,10 +140,30 @@ const controller = {
 
             case '#transport_list': {
                 const params  = new URLSearchParams(queryStr || '');
-                const type    = params.get('type')  || 'Bus';
+                let type      = params.get('type');
                 const sortBy  = params.get('sort')  || 'departure';
                 const order   = params.get('order') || 'ASC';
-                const trajets = await model.getTrajetsByTypeAndSort(type, sortBy, order);
+
+                // If no type specified, use the first available transport type
+                if (!type) {
+                    const transportTypes = model.getTransportTypes();
+                    type = transportTypes && transportTypes.length > 0 ? transportTypes[0].name : 'Bus';
+                }
+
+                let trajets = await model.getTrajetsByTypeAndSort(type, sortBy, order);
+
+                // If no routes found for the requested type, try the first available transport type
+                if ((!trajets || trajets.length === 0) && type !== 'Bus') {
+                    const transportTypes = model.getTransportTypes();
+                    if (transportTypes && transportTypes.length > 0) {
+                        const firstType = transportTypes[0].name;
+                        if (firstType !== type) {
+                            type = firstType;
+                            trajets = await model.getTrajetsByTypeAndSort(type, sortBy, order);
+                        }
+                    }
+                }
+
                 view.renderTransportList(type, trajets || [], sortBy, order);
                 break;
             }

@@ -62,6 +62,9 @@ export function initRouteMap() {
                                 input.value = place.display_name.split(',').slice(0, 2).join(',');
                                 document.getElementById(latId).value = place.lat;
                                 document.getElementById(lngId).value = place.lon;
+                                // Set address field
+                                const addressId = latId.replace('Lat', 'Address').replace('Lng', 'Address');
+                                document.getElementById(addressId).value = place.display_name;
                                 sugBox.style.display = 'none';
                                 drawRoute();
                             });
