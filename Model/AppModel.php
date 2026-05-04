@@ -162,39 +162,27 @@ class AppModel {
 
     public static function getPrograms() {
         $db = self::getDb();
-        $stmt = $db->query("
-            SELECT p.*,
-                   COALESCE(ec.total_enrolled, 0) as enrollment_count,
-                   COALESCE(ec.pending_count, 0) as pending_count,
-                   COALESCE(ec.confirmed_count, 0) as confirmed_count
+        // Explicitly select columns to exclude heavy BLOB data
+        $sql = "
+            SELECT p.id, p.title, p.description, p.category, p.capacity, p.location, p.status, p.start_date, p.end_date,
+                   (SELECT COUNT(*) FROM enrollment e WHERE e.program_id = p.id AND e.status != 'cancelled') as enrollment_count,
+                   (SELECT COUNT(*) FROM enrollment e WHERE e.program_id = p.id AND e.status = 'pending') as pending_count,
+                   (SELECT COUNT(*) FROM enrollment e WHERE e.program_id = p.id AND e.status = 'confirmed') as confirmed_count
             FROM program p
-            LEFT JOIN (
-                SELECT program_id,
-                       COUNT(*) as total_enrolled,
-                       SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_count,
-                       SUM(CASE WHEN status = 'confirmed' THEN 1 ELSE 0 END) as confirmed_count
-                FROM enrollment WHERE status != 'cancelled' GROUP BY program_id
-            ) ec ON p.id = ec.program_id
             WHERE p.status != 'cancelled'
             ORDER BY p.id DESC
-        ");
-        return $stmt->fetchAll();
+        ";
+        return $db->query($sql)->fetchAll();
     }
 
     public static function getProgramById($id) {
         $db = self::getDb();
         $stmt = $db->prepare("
-            SELECT p.*,
-                   COALESCE(ec.total_enrolled, 0) as enrollment_count,
-                   COALESCE(ec.pending_count, 0) as pending_count,
-                   COALESCE(ec.confirmed_count, 0) as confirmed_count
+            SELECT p.id, p.title, p.description, p.category, p.capacity, p.location, p.status, p.start_date, p.end_date,
+                   (SELECT COUNT(*) FROM enrollment e WHERE e.program_id = p.id AND e.status != 'cancelled') as enrollment_count,
+                   (SELECT COUNT(*) FROM enrollment e WHERE e.program_id = p.id AND e.status = 'pending') as pending_count,
+                   (SELECT COUNT(*) FROM enrollment e WHERE e.program_id = p.id AND e.status = 'confirmed') as confirmed_count
             FROM program p
-            LEFT JOIN (
-                SELECT program_id, COUNT(*) as total_enrolled,
-                       SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_count,
-                       SUM(CASE WHEN status = 'confirmed' THEN 1 ELSE 0 END) as confirmed_count
-                FROM enrollment WHERE status != 'cancelled' GROUP BY program_id
-            ) ec ON p.id = ec.program_id
             WHERE p.id = ?
         ");
         $stmt->execute([$id]);
@@ -224,8 +212,8 @@ class AppModel {
         if ($imgData) { [$blob, $mime] = $imgData; }
 
         $stmt = $db->prepare("
-            INSERT INTO program (title, description, category, capacity, location, status, program_image, program_image_mime)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO program (title, description, category, capacity, location, status, start_date, end_date, program_image, program_image_mime)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         $stmt->bindValue(1, $data['title']);
         $stmt->bindValue(2, $data['description']);
@@ -233,8 +221,10 @@ class AppModel {
         $stmt->bindValue(4, $data['capacity'], PDO::PARAM_INT);
         $stmt->bindValue(5, $data['location']);
         $stmt->bindValue(6, $data['status'] ?? 'active');
-        $stmt->bindValue(7, $blob, PDO::PARAM_LOB);
-        $stmt->bindValue(8, $mime);
+        $stmt->bindValue(7, $data['start_date'] ?? null);
+        $stmt->bindValue(8, $data['end_date'] ?? null);
+        $stmt->bindValue(9, $blob, PDO::PARAM_LOB);
+        $stmt->bindValue(10, $mime);
         $stmt->execute();
         return $db->lastInsertId();
     }
@@ -243,34 +233,49 @@ class AppModel {
      * Update program with optional BLOB image.
      */
     public static function updateProgram($id, $data, $imageFile = null) {
-        self::validateProgramData($data);
-        $db = self::getDb();
+        try {
+            self::validateProgramData($data);
+            $db = self::getDb();
 
-        $imgData = self::readImageUpload($imageFile);
+            $imgData = self::readImageUpload($imageFile);
 
-        if ($imgData) {
-            [$blob, $mime] = $imgData;
+            if ($imgData) {
+                [$blob, $mime] = $imgData;
+                $stmt = $db->prepare("
+                    UPDATE program SET title=?, description=?, category=?, capacity=?, location=?, status=?,
+                           start_date=?, end_date=?, program_image=?, program_image_mime=? WHERE id=?
+                ");
+                $stmt->bindValue(1,  $data['title']);
+                $stmt->bindValue(2,  $data['description']);
+                $stmt->bindValue(3,  $data['category']);
+                $stmt->bindValue(4,  $data['capacity'], PDO::PARAM_INT);
+                $stmt->bindValue(5,  $data['location']);
+                $stmt->bindValue(6,  $data['status'] ?? 'active');
+                $stmt->bindValue(7,  $data['start_date']);
+                $stmt->bindValue(8,  $data['end_date']);
+                $stmt->bindValue(9,  $blob, PDO::PARAM_LOB);
+                $stmt->bindValue(10, $mime);
+                $stmt->bindValue(11, $id, PDO::PARAM_INT);
+                return $stmt->execute();
+            }
+
             $stmt = $db->prepare("
-                UPDATE program SET title=?, description=?, category=?, capacity=?, location=?, status=?,
-                       program_image=?, program_image_mime=? WHERE id=?
+                UPDATE program SET title=?, description=?, category=?, capacity=?, location=?, status=?, start_date=?, end_date=? WHERE id=?
             ");
             $stmt->bindValue(1, $data['title']);
             $stmt->bindValue(2, $data['description']);
             $stmt->bindValue(3, $data['category']);
             $stmt->bindValue(4, $data['capacity'], PDO::PARAM_INT);
             $stmt->bindValue(5, $data['location']);
-            $stmt->bindValue(6, $data['status']);
-            $stmt->bindValue(7, $blob, PDO::PARAM_LOB);
-            $stmt->bindValue(8, $mime);
+            $stmt->bindValue(6, $data['status'] ?? 'active');
+            $stmt->bindValue(7, $data['start_date']);
+            $stmt->bindValue(8, $data['end_date']);
             $stmt->bindValue(9, $id, PDO::PARAM_INT);
             return $stmt->execute();
+        } catch (Exception $e) {
+            error_log('[CivicPortal][AppModel] Update Program failed: ' . $e->getMessage() . ' | Data: ' . json_encode($data));
+            throw $e;
         }
-
-        $stmt = $db->prepare("
-            UPDATE program SET title=?, description=?, category=?, capacity=?, location=?, status=? WHERE id=?
-        ");
-        return $stmt->execute([$data['title'], $data['description'], $data['category'],
-            $data['capacity'], $data['location'], $data['status'], $id]);
     }
 
     /**
@@ -282,12 +287,19 @@ class AppModel {
         $data['category']    = trim($data['category'] ?? '');
         $data['location']    = trim($data['location'] ?? '');
         $data['capacity']    = (isset($data['capacity']) && is_numeric($data['capacity'])) ? (int)$data['capacity'] : 0;
+        $data['start_date']  = trim($data['start_date'] ?? '');
+        $data['end_date']    = trim($data['end_date'] ?? '');
+        $data['status']      = trim($data['status'] ?? 'active');
 
         if (empty($data['title']) || strlen($data['title']) < 5) throw new Exception("Title must be at least 5 characters.");
         if (empty($data['description']) || strlen($data['description']) < 20) throw new Exception("Description must be at least 20 characters.");
         if (empty($data['category'])) throw new Exception("Category is required.");
         if ($data['capacity'] <= 0) throw new Exception("Capacity must be a positive number.");
         if (empty($data['location']) || strlen($data['location']) < 3) throw new Exception("Location must be at least 3 characters.");
+        
+        if (empty($data['start_date'])) throw new Exception("Start date is required.");
+        if (empty($data['end_date'])) throw new Exception("End date is required.");
+        if (strtotime($data['start_date']) > strtotime($data['end_date'])) throw new Exception("Start date must be before end date.");
 
         $data['title']       = htmlspecialchars($data['title'], ENT_QUOTES, 'UTF-8');
         $data['description'] = htmlspecialchars($data['description'], ENT_QUOTES, 'UTF-8');

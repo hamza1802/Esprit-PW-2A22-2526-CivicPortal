@@ -75,6 +75,23 @@ class ForumPostController {
     }
 
     /**
+     * Get all posts for a specific user ID.
+     */
+    public static function getPostsByUserId(int $userId): array {
+        $db = self::getDb();
+        $stmt = $db->prepare(
+            "SELECT fp.*, u.username AS author_name,
+                    (SELECT COUNT(*) FROM forum_comments fc WHERE fc.post_id = fp.post_id) AS comment_count
+             FROM forum_posts fp 
+             JOIN users u ON fp.user_id = u.id 
+             WHERE fp.user_id = ?
+             ORDER BY fp.created_at DESC"
+        );
+        $stmt->execute([$userId]);
+        return $stmt->fetchAll();
+    }
+
+    /**
      * Create a new post. Returns the new post_id on success.
      */
     public static function createPost(ForumPost $post): int {

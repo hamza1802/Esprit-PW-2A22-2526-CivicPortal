@@ -36,6 +36,11 @@ $currentUser = [
     <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 <body>
+    <div class="aurora-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
 
     <!-- Inject PHP Session State into JS Environment -->
     <?php

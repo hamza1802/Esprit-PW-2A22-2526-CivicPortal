@@ -13,6 +13,7 @@ require_once __DIR__ . '/../Model/TransportType.php';
 require_once __DIR__ . '/../Model/Trajet.php';
 require_once __DIR__ . '/../Model/Ticket.php';
 require_once __DIR__ . '/UserController.php';
+require_once __DIR__ . '/ForumPostController.php';
 
 class MainController {
 
@@ -37,6 +38,7 @@ class MainController {
             'get_categories'        => 'any',
             'update_profile'        => 'any',
             'upload_profile_pic'    => 'any',
+            'get_my_posts'          => 'any',
             // Appointments (citizen)
             'book_appointment'      => 'any',
             'get_my_appointments'   => 'any',
@@ -148,6 +150,9 @@ class MainController {
             case 'get_my_requests':
                 $userId = $_SESSION['user_id'];
                 return AppModel::getRequestsByUser((int)$userId);
+            case 'get_my_posts':
+                $userId = $_SESSION['user_id'];
+                return ForumPostController::getPostsByUserId((int)$userId);
             case 'add_request':
                 $userId = $_SESSION['user_id'];
                 $attachFile = $data['attachment_file'] ?? null;
@@ -167,7 +172,12 @@ class MainController {
                 $imageFile = $data['image_file'] ?? null;
                 return AppModel::addProgram($data, $imageFile);
             case 'update_program':
+                if (!isset($data['id'])) {
+                    error_log('[CivicPortal][MainController] Missing program ID for update.');
+                    throw new Exception("Program ID is required for update.");
+                }
                 $imageFile = $data['image_file'] ?? null;
+                error_log('[CivicPortal][MainController] Updating program ' . $data['id'] . ' with data: ' . json_encode($data));
                 return AppModel::updateProgram($data['id'], $data, $imageFile);
             case 'delete_program':
                 return AppModel::deleteProgram($data['id']);

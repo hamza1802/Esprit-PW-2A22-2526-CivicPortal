@@ -85,11 +85,19 @@ try {
             $mime = 'image/jpeg';
         }
 
+        // ── Cache Validation ────────────────────────────────────────────
+        $etag = '"' . md5($row['blob_data']) . '"';
+        header('ETag: ' . $etag);
+        header('Cache-Control: public, max-age=86400'); // Cache for 24 hours
+
+        if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && trim($_SERVER['HTTP_IF_NONE_MATCH']) === $etag) {
+            header('HTTP/1.1 304 Not Modified');
+            exit;
+        }
+
         // ── Output the image ────────────────────────────────────────────
         header('Content-Type: ' . $mime);
         header('Content-Length: ' . strlen($row['blob_data']));
-        header('Cache-Control: public, max-age=3600'); // cache 1 hour
-        header('ETag: "' . md5($row['blob_data']) . '"');
         echo $row['blob_data'];
         exit;
     }

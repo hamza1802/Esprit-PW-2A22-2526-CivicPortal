@@ -18,7 +18,8 @@ const model = {
         myTickets: [],
         myAppointments: [],
         notifications: [],
-        serviceTypes: []
+        serviceTypes: [],
+        myPosts: []
     },
 
     // -------------------------------------------------------------------------
@@ -121,10 +122,11 @@ const model = {
                 this.apiCall('get_enrollments', { userId: this.state.currentUser.id }),
                 this.transportApi('list_transport_types'),
                 this.apiCall('get_service_types'),
+                this.apiCall('get_my_posts')
             ];
             
             console.log('Model: Waiting for all API calls...');
-            const [requests, programs, enrollments, types, svcTypes] = await Promise.all(promises);
+            const [requests, programs, enrollments, types, svcTypes, posts] = await Promise.all(promises);
             
             console.log('Model: API calls complete');
             console.log('  - requests:', requests);
@@ -132,12 +134,14 @@ const model = {
             console.log('  - enrollments:', enrollments);
             console.log('  - types:', types);
             console.log('  - svcTypes:', svcTypes);
+            console.log('  - posts:', posts);
             
             if (requests) this.state.serviceRequests = requests;
             if (programs) this.state.programs = programs;
             if (enrollments) this.state.enrollments = enrollments;
             if (types) this.state.transportTypes = types;
             if (svcTypes) this.state.serviceTypes = svcTypes;
+            if (posts) this.state.myPosts = posts;
             
             console.log('Model: Sync complete, state updated');
         } catch (error) {
@@ -147,10 +151,11 @@ const model = {
     },
 
     // -------------------------------------------------------------------------
-    // Programs
+    // Programs & Posts
     // -------------------------------------------------------------------------
     getPrograms() { return this.state.programs; },
     getEnrollments(userId) { return this.state.enrollments.filter(e => e.user_id == userId); },
+    getMyPosts() { return this.state.myPosts; },
 
     async addEnrollment(userId, programId) {
         const result = await this.apiCall('enroll_user', { userId, programId });

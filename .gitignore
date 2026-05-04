@@ -9,4 +9,4 @@ TEST_CREDENTIALS.md
 .gemini/
 *.log
 .claude/
-
+.env

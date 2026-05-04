@@ -7,26 +7,20 @@ import model from './model.js';
 import view from './view.js';
 
 const controller = {
-    async init() {
+        async init() {
         try {
             console.log('Controller: Starting initialization...');
+            this.setupEventListeners();
             
+            const user = model.getCurrentUser();
+            view.renderNavBar(user);
+            this.handleRouting();
+
             console.log('Controller: Syncing model...');
             await model.sync();
-            console.log('Controller: Sync complete');
             
-            console.log('Controller: Setting up event listeners...');
-            this.setupEventListeners();
-            console.log('Controller: Event listeners set up');
-            
-            console.log('Controller: Handling routing...');
             this.handleRouting();
-            console.log('Controller: Routing handled');
-            
-            console.log('Controller: Rendering navigation...');
             view.renderNavBar(model.getCurrentUser());
-            console.log('Controller: Navigation rendered');
-            
             console.log('Controller: Initialization complete!');
         } catch (error) {
             console.error('FATAL ERROR during initialization:', error);
@@ -37,6 +31,25 @@ const controller = {
 
     setupEventListeners() {
         document.addEventListener('click', (e) => {
+            if (e.target.id === 'btn-ai-match') {
+                this.handleAIMatch();
+                return;
+            }
+            if (e.target.classList.contains('btn-ai-simplify')) {
+                this.handleAISimplify(e.target.dataset.id, e.target);
+                return;
+            }
+            if (e.target.closest('.btn-toggle-chat')) {
+                const id = e.target.closest('.btn-toggle-chat').dataset.id;
+                const chatBox = document.getElementById('ai-chat-' + id);
+                chatBox.style.display = chatBox.style.display === 'none' ? 'flex' : 'none';
+                return;
+            }
+            if (e.target.classList.contains('btn-ai-ask')) {
+                const id = e.target.dataset.id;
+                this.handleAIAssistant(id, document.getElementById('ai-input-' + id), e.target);
+                return;
+            }
             const target = e.target.closest('[data-action]') || e.target;
             const action = target.dataset.action;
             const id     = target.dataset.id;
@@ -115,8 +128,7 @@ const controller = {
                 break;
 
             case '#my-requests': {
-                const requests = await model.getMyRequests();
-                view.renderMyRequests(requests || []);
+                window.location.hash = '#dashboard';
                 break;
             }
 
@@ -125,8 +137,7 @@ const controller = {
                 break;
 
             case '#my-appointments': {
-                const appointments = await model.getMyAppointments();
-                view.renderMyAppointments(appointments || []);
+                window.location.hash = '#dashboard';
                 break;
             }
 
@@ -169,8 +180,24 @@ const controller = {
             }
 
             case '#my-tickets': {
-                const tickets = await model.getMyTickets();
-                view.renderMyTickets(tickets || [], user);
+                window.location.hash = '#dashboard';
+                break;
+            }
+
+            case '#dashboard': {
+                const [requests, appointments, tickets] = await Promise.all([
+                    model.getMyRequests(),
+                    model.getMyAppointments(),
+                    model.getMyTickets()
+                ]);
+                view.renderDashboard(user, { 
+                    requests: requests || [], 
+                    appointments: appointments || [], 
+                    tickets: tickets || [],
+                    programs: model.getPrograms() || [],
+                    enrollments: model.getEnrollments(user.id) || [],
+                    posts: model.getMyPosts() || []
+                });
                 break;
             }
 
@@ -218,7 +245,7 @@ const controller = {
         const result = await model.addServiceRequest(formData);
         if (result) {
             view.renderToast('Service request submitted successfully!');
-            window.location.hash = '#my-requests';
+            window.location.hash = '#dashboard';
         } else {
             view.renderToast('Failed to submit request. Please try again.', 'error');
         }
@@ -340,7 +367,7 @@ const controller = {
         });
         if (result) {
             view.renderToast('Appointment booked successfully!');
-            window.location.hash = '#my-appointments';
+            window.location.hash = '#dashboard';
         } else {
             view.renderToast('Failed to book appointment. The slot may be unavailable.', 'error');
         }
@@ -352,8 +379,7 @@ const controller = {
         const result = await model.cancelAppointment(id);
         if (result) {
             view.renderToast('Appointment cancelled.');
-            const appointments = await model.getMyAppointments();
-            view.renderMyAppointments(appointments || []);
+            this.handleRouting();
         } else {
             view.renderToast('Failed to cancel appointment.', 'error');
         }
@@ -363,7 +389,7 @@ const controller = {
         const result = await model.bookTicket(idTrajet, citizenName);
         if (result?.success) {
             view.renderToast(`Ticket booked! Reference: ${result.ref}`);
-            window.location.hash = '#my-tickets';
+            window.location.hash = '#dashboard';
         } else {
             view.renderToast(result?.error || 'Booking failed.', 'error');
         }
@@ -375,12 +401,150 @@ const controller = {
         const result = await model.cancelTicket(idTicket);
         if (result?.success) {
             view.renderToast('Booking cancelled.');
-            const tickets = await model.getMyTickets();
-            view.renderMyTickets(tickets || [], model.getCurrentUser());
+            this.handleRouting();
         } else {
             view.renderToast('Failed to cancel ticket.', 'error');
+        }
+    },
+
+    // =========================================================================
+    // AI Feature Layer (Citizen)
+    // =========================================================================
+
+    async fetchGroq(prompt, system = 'You are a helpful assistant.') {
+        try {
+            const res = await fetch('../../groq-proxy.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt, system, max_tokens: 500 })
+            });
+            if (!res.ok) throw new Error('AI API Error: ' + res.status);
+            const data = await res.json();
+            return data.choices[0].message.content;
+        } catch (e) {
+            console.error('Groq Fetch Error:', e);
+            throw e;
+        }
+    },
+
+    async handleAIMatch() {
+        const input = document.getElementById('ai-match-input').value;
+        const btn = document.getElementById('btn-ai-match');
+        const resultsContainer = document.getElementById('ai-match-results');
+        if (!input) return;
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="ai-loading-indicator">Thinking</span>';
+        resultsContainer.style.display = 'grid';
+        resultsContainer.innerHTML = '<p class="ai-loading-indicator">Analyzing program catalog...</p>';
+
+        const programs = model.getPrograms().map(p => ({ id: p.id, title: p.title, description: p.description, category: p.category }));
+        const prompt = `User request: "${input}"\n\nPrograms available: ${JSON.stringify(programs)}\n\nReturn a JSON array of the top 3 best matching programs. Format: [{"id": 1, "reason": "Why it matches"}]. Return ONLY valid JSON, nothing else.`;
+
+        try {
+            let jsonStr = await this.fetchGroq(prompt, 'You are an AI program matcher for a civic portal. Always return ONLY a raw JSON array.');
+            
+            // Robust JSON extraction
+            const jsonMatch = jsonStr.match(/\[[\s\S]*\]/);
+            if (jsonMatch) jsonStr = jsonMatch[0];
+            
+            const matches = JSON.parse(jsonStr.trim());
+            
+            if (!Array.isArray(matches) || matches.length === 0) {
+                resultsContainer.innerHTML = '<p>No specific matches found. Try browsing the catalog below!</p>';
+                return;
+            }
+
+            let html = '<h4><i class="bi bi-stars"></i> Top AI Matches</h4>';
+            matches.forEach(m => {
+                const prog = model.getPrograms().find(p => p.id == m.id);
+                if (prog) {
+                    html += `
+                        <div style="background:var(--surface-glass); border:var(--surface-border); padding:1rem; border-radius:var(--radius-sm);">
+                            <h5 style="margin:0 0 0.5rem 0; color:var(--primary-navy);">${prog.title}</h5>
+                            <span class="category-badge" style="font-size:0.7rem; padding:0.2rem 0.5rem;">${prog.category}</span>
+                            <div class="ai-match-reason">${m.reason}</div>
+                            <button class="btn btn-small btn-primary" onclick="document.querySelector('[data-action=\\'enroll\\'][data-id=\\'${prog.id}\\']').click()" style="margin-top:0.5rem; width:100%;">Enroll</button>
+                        </div>
+                    `;
+                }
+            });
+            resultsContainer.innerHTML = html;
+        } catch (e) {
+            resultsContainer.innerHTML = '<p style="color:var(--color-danger);">AI is currently unavailable. Please browse the catalog manually.</p>';
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Match Me';
+        }
+    },
+
+    async handleAISimplify(id, btn) {
+        const descEl = document.getElementById('prog-desc-' + id);
+        if (!descEl) return;
+        const originalText = descEl.dataset.originalDesc;
+        
+        if (btn.dataset.simplified === 'true') {
+            descEl.textContent = originalText;
+            btn.innerHTML = '✨ Simplify';
+            btn.dataset.simplified = 'false';
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="ai-loading-indicator"></span>';
+
+        const prompt = `Rewrite this program description in very simple, accessible language (B1 English level). Maximum 3 short sentences. No jargon.\n\nDescription: ${originalText}`;
+        
+        try {
+            const simplified = await this.fetchGroq(prompt, 'You simplify civic texts for general accessibility.');
+            descEl.textContent = simplified;
+            btn.innerHTML = '🔄 Original';
+            btn.dataset.simplified = 'true';
+        } catch(e) {
+            view.renderToast('AI Simplifier unavailable.', 'error');
+            btn.innerHTML = '✨ Simplify';
+        } finally {
+            btn.disabled = false;
+        }
+    },
+
+    async handleAIAssistant(id, inputEl, btn) {
+        const val = inputEl.value;
+        if (!val) return;
+
+        const historyEl = document.getElementById('ai-history-' + id);
+        const prog = model.getPrograms().find(p => p.id == id);
+        
+        // Count exchanges
+        let exchanges = parseInt(btn.dataset.exchanges || '0');
+        if (exchanges >= 3) {
+            view.renderToast('AI limit reached for this session.', 'error');
+            return;
+        }
+
+        historyEl.innerHTML += `<div class="ai-bubble ai-bubble-user">${val}</div>`;
+        inputEl.value = '';
+        btn.disabled = true;
+        
+        const loadingId = 'loading-' + Date.now();
+        historyEl.innerHTML += `<div class="ai-bubble ai-bubble-ai" id="${loadingId}"><span class="ai-loading-indicator">Typing</span></div>`;
+        historyEl.scrollTop = historyEl.scrollHeight;
+
+        const context = `Program Title: ${prog.title}\nCategory: ${prog.category}\nDates: ${prog.start_date} to ${prog.end_date}\nDescription: ${prog.description}`;
+        const prompt = `User question: ${val}\n\nProgram Context:\n${context}`;
+
+        try {
+            const reply = await this.fetchGroq(prompt, 'You are an enrollment assistant. Answer questions concisely based ONLY on the provided context. If unknown, say "I don\'t have that information."');
+            document.getElementById(loadingId).outerHTML = `<div class="ai-bubble ai-bubble-ai">${reply}</div>`;
+            btn.dataset.exchanges = exchanges + 1;
+        } catch(e) {
+            document.getElementById(loadingId).outerHTML = `<div class="ai-bubble ai-bubble-ai" style="color:red;">Sorry, I encountered an error.</div>`;
+        } finally {
+            btn.disabled = false;
+            historyEl.scrollTop = historyEl.scrollHeight;
         }
     }
 };
 
 export default controller;
+

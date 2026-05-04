@@ -75,11 +75,11 @@ AppModel::init();
 
 
     <!-- Scripts -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://js.puter.com/v2/"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+    <script src="https://js.puter.com/v2/" defer></script>
     <script src="validate.js"></script>
     <script type="module" src="app.js"></script>
-    <script src="../assets/js/glass-animations.js"></script>
+    <script src="../assets/js/glass-animations.js" defer></script>
     <script src="../assets/js/sidebar.js" defer></script>
 </body>
 </html>

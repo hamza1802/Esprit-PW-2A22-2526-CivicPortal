@@ -81,17 +81,17 @@ const view = {
             <div class="editorial-card editorial-highlight reveal">
                 <h3>Service Request Queue</h3>
                 <p>Process pending administrative filings. Validate or reject documents submitted by citizens.</p>
-                <a href="#worker-dashboard" class="btn btn-primary" style="align-self:flex-start;margin-top:auto;">Open Dashboard</a>
+                <a href="#worker-dashboard" class="btn btn-primary mt-auto" style="align-self:flex-start;">Open Dashboard</a>
             </div>
             <div class="editorial-card reveal">
                 <h3>Appointments</h3>
                 <p>Manage citizen appointment requests. Confirm, reschedule, or complete scheduled service visits.</p>
-                <a href="#appointments" class="btn" style="align-self:flex-start;margin-top:auto;">View Appointments</a>
+                <a href="#appointments" class="btn mt-auto" style="align-self:flex-start;">View Appointments</a>
             </div>
             <div class="editorial-card reveal">
                 <h3>Parks &amp; Recreation</h3>
                 <p>View community programs and manage citizen enrollment requests.</p>
-                <a href="#manage-programs" class="btn" style="align-self:flex-start;margin-top:auto;">View Programs</a>
+                <a href="#manage-programs" class="btn mt-auto" style="align-self:flex-start;">View Programs</a>
             </div>
         `;
 
@@ -99,37 +99,37 @@ const view = {
             <div class="editorial-card editorial-highlight reveal">
                 <h3>Platform Statistics</h3>
                 <p>View real-time aggregated data across all civic modules to monitor system health.</p>
-                <a href="#admin-stats" class="btn btn-primary" style="align-self:flex-start;margin-top:auto;">View Stats</a>
+                <a href="#admin-stats" class="btn btn-primary mt-auto" style="align-self:flex-start;">View Stats</a>
             </div>
             <div class="editorial-card reveal">
                 <h3>Service Requests</h3>
                 <p>Review and process all citizen service filings. Validate or reject submitted requests.</p>
-                <a href="#worker-dashboard" class="btn" style="align-self:flex-start;margin-top:auto;">View Requests</a>
+                <a href="#worker-dashboard" class="btn mt-auto" style="align-self:flex-start;">View Requests</a>
             </div>
             <div class="editorial-card reveal">
                 <h3>Parks &amp; Recreation</h3>
                 <p>Manage community programs, workshops, and facilities.</p>
-                <a href="#manage-programs" class="btn" style="align-self:flex-start;margin-top:auto;">Manage Programs</a>
+                <a href="#manage-programs" class="btn mt-auto" style="align-self:flex-start;">Manage Programs</a>
             </div>
             <div class="editorial-card reveal">
                 <h3>Appointments</h3>
                 <p>Oversee all citizen appointment bookings across all service types and agents.</p>
-                <a href="#appointments" class="btn" style="align-self:flex-start;margin-top:auto;">View Queue</a>
+                <a href="#appointments" class="btn mt-auto" style="align-self:flex-start;">View Queue</a>
             </div>
             <div class="editorial-card reveal">
                 <h3>Transport</h3>
                 <p>Manage vehicles, routes, and timetables. Monitor seat occupancy and ticket sales.</p>
-                <a href="#transport-management" class="btn" style="align-self:flex-start;margin-top:auto;">Manage Transport</a>
+                <a href="#transport-management" class="btn mt-auto" style="align-self:flex-start;">Manage Transport</a>
             </div>
             <div class="editorial-card reveal">
                 <h3>Slot Management</h3>
                 <p>Configure agent availability windows. Define which agents handle which services and when.</p>
-                <a href="#slot-management" class="btn" style="align-self:flex-start;margin-top:auto;">Manage Slots</a>
+                <a href="#slot-management" class="btn mt-auto" style="align-self:flex-start;">Manage Slots</a>
             </div>
             <div class="editorial-card reveal">
                 <h3>User Management</h3>
                 <p>Manage citizen and staff accounts. Change roles, activate, deactivate, or create new accounts.</p>
-                <a href="#user-management" class="btn" style="align-self:flex-start;margin-top:auto;">Manage Users</a>
+                <a href="#user-management" class="btn mt-auto" style="align-self:flex-start;">Manage Users</a>
             </div>
         `;
 
@@ -164,9 +164,9 @@ const view = {
                             <label for="profile-email">Email Address</label>
                             <input type="email" id="profile-email" name="email" value="${user.email}" required>
                         </div>
-                        <div class="form-group" style="display:flex;gap:1rem;">
+                        <div class="form-group flex gap-16">
                             <button type="submit" class="btn btn-primary">UPDATE DETAILS</button>
-                            <a href="#home" class="btn" style="text-decoration:none;text-align:center;">CANCEL</a>
+                            <a href="#home" class="btn text-center" style="text-decoration:none;">CANCEL</a>
                         </div>
                     </form>
                 </div>
@@ -207,7 +207,7 @@ const view = {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${tableRows.length > 0 ? tableRows : '<tr><td colspan="6" style="text-align:center;padding:2rem;">No requests found.</td></tr>'}
+                                ${tableRows.length > 0 ? tableRows : '<tr><td colspan="6" class="text-center" style="padding:2rem;">No requests found.</td></tr>'}
                             </tbody>
                         </table>
                     </div>
@@ -223,27 +223,27 @@ const view = {
                 <h2 class="reveal">System Statistics</h2>
                 <div class="editorial-grid">
                     <div class="editorial-card reveal">
-                        <i class="bi bi-people-fill" style="font-size:2rem;margin-bottom:0.5rem;display:block;"></i>
+                        <i class="bi bi-people-fill mb-8" style="font-size:2rem;display:block;"></i>
                         <h3>Total Users</h3>
                         <p class="stats-number">${stats.usersCount ?? 0}</p>
                     </div>
                     <div class="editorial-card editorial-highlight reveal">
-                        <i class="bi bi-file-earmark-arrow-up" style="font-size:2rem;margin-bottom:0.5rem;display:block;"></i>
+                        <i class="bi bi-file-earmark-arrow-up mb-8" style="font-size:2rem;display:block;"></i>
                         <h3>Service Requests</h3>
                         <p class="stats-number">${stats.requestsCount ?? 0}</p>
                     </div>
                     <div class="editorial-card reveal">
-                        <i class="bi bi-calendar2-event" style="font-size:2rem;margin-bottom:0.5rem;display:block;"></i>
+                        <i class="bi bi-calendar2-event mb-8" style="font-size:2rem;display:block;"></i>
                         <h3>Active Programs</h3>
                         <p class="stats-number">${stats.programsCount ?? 0}</p>
                     </div>
                     <div class="editorial-card reveal">
-                        <i class="bi bi-person-check" style="font-size:2rem;margin-bottom:0.5rem;display:block;"></i>
+                        <i class="bi bi-person-check mb-8" style="font-size:2rem;display:block;"></i>
                         <h3>Enrollments</h3>
                         <p class="stats-number">${stats.enrollmentsCount ?? 0}</p>
                     </div>
                     <div class="editorial-card reveal">
-                        <i class="bi bi-calendar-check" style="font-size:2rem;margin-bottom:0.5rem;display:block;"></i>
+                        <i class="bi bi-calendar-check mb-8" style="font-size:2rem;display:block;"></i>
                         <h3>Appointments</h3>
                         <p class="stats-number">${stats.appointmentsCount ?? 0}</p>
                     </div>
@@ -264,17 +264,17 @@ const view = {
                 : '—';
             const avatar   = u.has_pic
                 ? `<img src="../../get_image.php?type=profile&id=${u.id}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--border-main);">`
-                : `<div style="width:36px;height:36px;border-radius:50%;background:var(--primary-navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.85rem;">${u.username.charAt(0).toUpperCase()}</div>`;
+                : `<div class="flex-center text-black text-small" style="width:36px;height:36px;border-radius:50%;background:var(--primary-navy);color:#fff;">${u.username.charAt(0).toUpperCase()}</div>`;
 
             return `
                 <tr data-uid="${u.id}">
                     <td>${avatar}</td>
                     <td>
                         <strong>${u.username}</strong><br>
-                        <span style="font-size:0.82rem;opacity:0.65;">${u.email}</span>
+                        <span class="text-small opacity-7">${u.email}</span>
                     </td>
                     <td>
-                        <select class="role-select" style="padding:0.3rem 0.5rem;border:2px solid var(--border-main);font-weight:700;font-size:0.8rem;"
+                        <select class="role-select text-bold text-small" style="padding:0.3rem 0.5rem;border:2px solid var(--border-main);"
                                 data-id="${u.id}" data-name="${u.username}" data-email="${u.email}">
                             <option value="citizen" ${u.role === 'citizen' ? 'selected' : ''}>Citizen</option>
                             <option value="agent"   ${u.role === 'agent'   ? 'selected' : ''}>Agent</option>
@@ -285,7 +285,7 @@ const view = {
                                 style="margin-left:4px;padding:0.3rem 0.6rem;">✓</button>
                     </td>
                     <td><span class="status-badge status-${isActive ? 'validated' : 'rejected'}">${isActive ? 'Active' : 'Inactive'}</span></td>
-                    <td style="font-size:0.82rem;">${joined}</td>
+                    <td class="text-small">${joined}</td>
                     <td style="white-space:nowrap;">
                         <button class="btn btn-small ${isActive ? 'btn-danger' : 'btn-success'}"
                                 data-action="toggle-user-active" data-id="${u.id}" data-active="${isActive ? '0' : '1'}"
@@ -301,16 +301,16 @@ const view = {
 
         this.app.innerHTML = `
             <section class="page-container">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
-                    <h2 class="reveal" style="margin:0;border:none;padding:0;">User Management</h2>
+                <div class="flex-between mb-32 flex-wrap gap-16">
+                    <h2 class="reveal no-border" style="margin:0;padding:0;">User Management</h2>
                     <button class="btn btn-primary reveal" data-action="toggle-create-user">+ NEW USER</button>
                 </div>
 
-                <div id="create-user-panel" style="display:none;margin-bottom:2rem;">
+                <div id="create-user-panel" class="mb-32" style="display:none;">
                     <div class="form-card reveal">
-                        <h3 style="margin:0 0 1.5rem;font-size:1rem;text-transform:uppercase;letter-spacing:1px;">Create New User</h3>
+                        <h3 class="mb-24" style="margin-top:0;margin-left:0;margin-right:0;font-size:1rem;text-transform:uppercase;letter-spacing:1px;">Create New User</h3>
                         <form id="create-user-form">
-                            <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                            <div class="form-grid gap-16" style="display:grid;grid-template-columns:1fr 1fr;">
                                 <div class="form-group">
                                     <label>Full Name</label>
                                     <input type="text" name="name" placeholder="e.g. John Doe" required>
@@ -332,7 +332,7 @@ const view = {
                                     </select>
                                 </div>
                             </div>
-                            <div style="display:flex;gap:1rem;margin-top:0.5rem;">
+                            <div class="flex gap-16" style="margin-top:0.5rem;">
                                 <button type="submit" class="btn btn-primary">CREATE USER</button>
                                 <button type="button" class="btn" data-action="toggle-create-user">CANCEL</button>
                             </div>
@@ -354,7 +354,7 @@ const view = {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${rows.length > 0 ? rows : '<tr><td colspan="6" style="text-align:center;padding:2rem;">No users found.</td></tr>'}
+                                ${rows.length > 0 ? rows : '<tr><td colspan="6" class="text-center" style="padding:2rem;">No users found.</td></tr>'}
                             </tbody>
                         </table>
                     </div>
@@ -392,7 +392,7 @@ const view = {
                         ${isConf ? `
                             <button class="btn btn-small btn-success" data-action="complete-appointment" data-id="${a.id}">COMPLETE</button>
                         ` : ''}
-                        ${!isPending && !isConf ? '<span style="opacity:0.5;font-size:0.85rem;">—</span>' : ''}
+                        ${!isPending && !isConf ? '<span class="opacity-5 text-small">—</span>' : ''}
                     </td>
                 </tr>
             `;
@@ -416,7 +416,7 @@ const view = {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${rows.length > 0 ? rows : '<tr><td colspan="7" style="text-align:center;padding:2rem;">No appointments found.</td></tr>'}
+                                ${rows.length > 0 ? rows : '<tr><td colspan="7" class="text-center" style="padding:2rem;">No appointments found.</td></tr>'}
                             </tbody>
                         </table>
                     </div>
@@ -447,17 +447,19 @@ const view = {
                         ${enrolled > 0 ? `<span class="program-dot${pending > 0 ? ' has-pending' : ''}">${enrolled}</span>` : ''}
                     </div>
                     <div class="program-mgmt-body">
-                        <span class="category-badge">${p.category}</span>
-                        <h3 style="margin:0.5rem 0;">${p.title}</h3>
-                        <p style="font-size:0.95rem;flex-grow:1;margin-bottom:1rem;">${p.description.substring(0, 80)}${p.description.length > 80 ? '...' : ''}</p>
-                        <div style="display:flex;gap:0.5rem;align-items:center;font-size:0.85rem;margin-bottom:0.5rem;">
-                            <span style="font-weight:800;"><i class="bi bi-geo-alt-fill"></i> ${p.location}</span>
-                            <span style="margin-left:auto;font-weight:800;">${enrolled}/${cap} enrolled</span>
+                        <span class="category-badge">${p.category || 'Uncategorized'}</span>
+                        <h3 style="margin:0.5rem 0;">${p.title || 'Untitled Program'}</h3>
+                        <p class="mb-16" style="font-size:0.95rem;flex-grow:1;">
+                            ${(p.description || '').substring(0, 80)}${(p.description || '').length > 80 ? '...' : ''}
+                        </p>
+                        <div class="flex gap-8 text-small mb-8" style="align-items:center;">
+                            <span class="text-bold"><i class="bi bi-geo-alt-fill"></i> ${p.location || 'No location'}</span>
+                            <span class="text-bold" style="margin-left:auto;">${enrolled}/${cap} enrolled</span>
                         </div>
                         <div class="capacity-track">
                             <div class="capacity-fill${isFull ? ' full' : ''}" style="width:${fillPct}%;"></div>
                         </div>
-                        <div style="display:flex;gap:0.5rem;margin-top:1rem;font-size:0.8rem;">
+                        <div class="flex gap-8 text-small" style="margin-top:1rem;">
                             ${pending   > 0 ? `<span class="mini-stat pending">${pending} pending</span>` : ''}
                             ${confirmed > 0 ? `<span class="mini-stat confirmed">${confirmed} confirmed</span>` : ''}
                             ${isFull ? '<span class="mini-stat full">FULL</span>' : ''}
@@ -469,16 +471,16 @@ const view = {
 
         this.app.innerHTML = `
             <section class="page-container">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
-                    <h2 class="reveal" style="margin:0;border:none;padding:0;">Parks &amp; Recreation</h2>
-                    <div style="display:flex;gap:1rem;align-items:center;">
-                        <span class="reveal" style="font-weight:800;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;">${totalEnrollments} total enrollments</span>
+                <div class="flex-between mb-32 flex-wrap gap-16">
+                    <h2 class="reveal no-border" style="margin:0;padding:0;">Parks &amp; Recreation</h2>
+                    <div class="flex gap-16" style="align-items:center;">
+                        <span class="reveal text-bold" style="font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;">${totalEnrollments} total enrollments</span>
                         ${role === 'admin' ? '<button class="btn reveal" data-action="manage-categories" style="border:2px solid var(--primary-navy);"><i class="bi bi-tags"></i> CATEGORIES</button>' : ''}
                         ${role === 'admin' ? '<button class="btn btn-primary reveal" data-action="new-program">+ NEW PROGRAM</button>' : ''}
                     </div>
                 </div>
                 <div class="programs-mgmt-grid">
-                    ${programCards.length > 0 ? programCards : '<p class="reveal" style="text-align:center;padding:3rem;">No programs found.</p>'}
+                    ${programCards.length > 0 ? programCards : '<p class="reveal text-center" style="padding:3rem;">No programs found.</p>'}
                 </div>
             </section>
         `;
@@ -508,7 +510,7 @@ const view = {
                         ${isPending ? `
                             <button class="btn btn-small btn-success" data-action="confirm-enroll" data-id="${e.id}" data-program-id="${program.id}" style="margin-right:4px;">CONFIRM</button>
                             <button class="btn btn-small btn-danger"  data-action="cancel-enroll"  data-id="${e.id}" data-program-id="${program.id}">REJECT</button>
-                        ` : `<span style="font-size:0.85rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;opacity:0.6;">—</span>`}
+                        ` : `<span class="opacity-7 text-small" style="font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">—</span>`}
                     </td>
                 </tr>
             `;
@@ -523,15 +525,15 @@ const view = {
                 <div class="program-detail-hero reveal">
                     <div class="program-detail-img" style="background-image:url('../../get_image.php?type=program&id=${program.id}');"></div>
                     <div class="program-detail-info">
-                        <span class="category-badge" style="margin-bottom:1rem;">${program.category}</span>
-                        <h2 style="border:none;padding:0;margin:0 0 0.5rem 0;">${program.title}</h2>
-                        <p style="margin-bottom:1.5rem;">${program.description}</p>
-                        <div style="display:flex;gap:2rem;flex-wrap:wrap;margin-bottom:1.5rem;">
-                            <div><span style="font-weight:900;text-transform:uppercase;font-size:0.8rem;letter-spacing:1px;display:block;margin-bottom:4px;">Location</span>${program.location}</div>
-                            <div><span style="font-weight:900;text-transform:uppercase;font-size:0.8rem;letter-spacing:1px;display:block;margin-bottom:4px;">Capacity</span>${cap}</div>
-                            <div><span style="font-weight:900;text-transform:uppercase;font-size:0.8rem;letter-spacing:1px;display:block;margin-bottom:4px;">Status</span><span class="status-badge status-${program.status}">${program.status}</span></div>
+                        <span class="category-badge mb-16">${program.category}</span>
+                        <h2 class="no-border" style="padding:0;margin:0 0 0.5rem 0;">${program.title}</h2>
+                        <p class="mb-24">${program.description}</p>
+                        <div class="flex-wrap gap-32 mb-24" style="display:flex;">
+                            <div><span class="text-black text-small mb-8" style="text-transform:uppercase;letter-spacing:1px;display:block;">Location</span>${program.location}</div>
+                            <div><span class="text-black text-small mb-8" style="text-transform:uppercase;letter-spacing:1px;display:block;">Capacity</span>${cap}</div>
+                            <div><span class="text-black text-small mb-8" style="text-transform:uppercase;letter-spacing:1px;display:block;">Status</span><span class="status-badge status-${program.status}">${program.status}</span></div>
                         </div>
-                        <div style="display:flex;gap:2rem;flex-wrap:wrap;margin-bottom:1rem;">
+                        <div class="flex-wrap gap-32 mb-16" style="display:flex;">
                             <div class="detail-stat"><span class="detail-stat-number">${enrolled}</span><span class="detail-stat-label">ENROLLED</span></div>
                             <div class="detail-stat"><span class="detail-stat-number" style="color:var(--accent-blue);">${pending}</span><span class="detail-stat-label">PENDING</span></div>
                             <div class="detail-stat"><span class="detail-stat-number" style="color:var(--success);">${confirmed}</span><span class="detail-stat-label">CONFIRMED</span></div>
@@ -539,9 +541,9 @@ const view = {
                         <div class="capacity-track" style="height:16px;">
                             <div class="capacity-fill${fillPct >= 100 ? ' full' : ''}" style="width:${fillPct}%;"></div>
                         </div>
-                        <p style="font-size:0.8rem;font-weight:700;margin-top:0.5rem;">${fillPct}% capacity filled</p>
+                        <p class="text-small text-bold" style="margin-top:0.5rem;">${fillPct}% capacity filled</p>
                         ${role === 'admin' ? `
-                            <div style="display:flex;gap:0.5rem;margin-top:1.5rem;">
+                            <div class="flex gap-8" style="margin-top:1.5rem;">
                                 <button class="btn btn-small btn-primary" data-action="edit-program" data-id="${program.id}"><i class="bi bi-pencil-square"></i> EDIT PROGRAM</button>
                                 <button class="btn btn-small btn-danger"  data-action="delete-program" data-id="${program.id}"><i class="bi bi-trash3"></i> DELETE</button>
                             </div>
@@ -560,7 +562,7 @@ const view = {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${enrollmentRows.length > 0 ? enrollmentRows : '<tr><td colspan="6" style="text-align:center;padding:2rem;">No enrollments yet.</td></tr>'}
+                                    ${enrollmentRows.length > 0 ? enrollmentRows : '<tr><td colspan="6" class="text-center" style="padding:2rem;">No enrollments yet.</td></tr>'}
                                 </tbody>
                             </table>
                         </div>
@@ -603,6 +605,16 @@ const view = {
                                 <input type="number" id="prog-capacity" name="capacity" value="${isEdit ? program.capacity : '20'}">
                             </div>
                         </div>
+                        <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                            <div class="form-group">
+                                <label for="prog-start-date">Start Date</label>
+                                <input type="date" id="prog-start-date" name="start_date" value="${isEdit ? program.start_date : ''}">
+                            </div>
+                            <div class="form-group">
+                                <label for="prog-end-date">End Date</label>
+                                <input type="date" id="prog-end-date" name="end_date" value="${isEdit ? program.end_date : ''}">
+                            </div>
+                        </div>
                         <div class="form-group">
                             <label for="prog-location">Location</label>
                             <input type="text" id="prog-location" name="location" value="${isEdit ? program.location : ''}">
@@ -632,7 +644,9 @@ const view = {
                         </div>
                         ` : ''}
                         <div style="display:flex;gap:1rem;margin-top:1rem;">
-                            <button type="submit" class="btn btn-primary" style="flex:1;">${isEdit ? 'UPDATE PROGRAM' : 'CREATE PROGRAM'}</button>
+                            <button type="button" class="btn btn-primary" id="btn-save-program" data-action="save-program" style="flex:1;">
+                                ${isEdit ? 'UPDATE PROGRAM' : 'CREATE PROGRAM'}
+                            </button>
                             <a href="#manage-programs" class="btn" style="flex:1;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;">CANCEL</a>
                         </div>
                     </form>
@@ -1045,3 +1059,5 @@ const view = {
 };
 
 export default view;
+
+

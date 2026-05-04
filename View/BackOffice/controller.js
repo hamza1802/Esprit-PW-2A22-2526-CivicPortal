@@ -12,11 +12,34 @@ const controller = {
         await model.sync();
         this.setupEventListeners();
         const user = model.getCurrentUser();
-        this.handleRoleChange(user.role, false);
+        await this.handleRoleChange(user.role, false);
     },
 
     setupEventListeners() {
         document.addEventListener('click', (e) => {
+            if (e.target.id === 'btn-save-program') {
+                const form = document.getElementById('program-form');
+                if (form) this.handleProgramSave(new FormData(form));
+                return;
+            }
+
+            if (e.target.id === 'btn-ai-generate-desc') {
+                e.preventDefault();
+                this.handleAIGenerateDesc();
+                return;
+            }
+            if (e.target.id === 'btn-ai-audit') {
+                e.preventDefault();
+                this.handleAIAuditDescriptions(e.target);
+                return;
+            }
+            if (e.target.closest('.btn-ai-analyze')) {
+                const targetBtn = e.target.closest('.btn-ai-analyze');
+                e.preventDefault();
+                this.handleAIAnalyzeEnrollment(targetBtn.dataset.id, targetBtn);
+                return;
+            }
+            
             const actionEl = e.target.closest('[data-action]');
             if (!actionEl) {
                 if (e.target.id === 'btn-generate-image') {
@@ -52,6 +75,12 @@ const controller = {
                 case 'view-program':
                     window.location.hash = `#program/${id}`;
                     break;
+
+                case 'save-program': {
+                    const form = document.getElementById('program-form');
+                    if (form) this.handleProgramSave(new FormData(form));
+                    break;
+                }
 
                 // Enrollment actions
                 case 'confirm-enroll':
@@ -427,6 +456,8 @@ const controller = {
         const capacity    = parseInt(formData.get('capacity'));
         const location    = formData.get('location')?.trim();
         const category    = formData.get('category');
+        const startDate   = formData.get('start_date');
+        const endDate     = formData.get('end_date');
 
         if (!title || title.length < 5) {
             view.renderToast('Title must be at least 5 characters.', 'error'); return;
@@ -443,13 +474,22 @@ const controller = {
         if (!category) {
             view.renderToast('Please select a category.', 'error'); return;
         }
+        if (!startDate) {
+            view.renderToast('Please select a start date.', 'error'); return;
+        }
+        if (!endDate) {
+            view.renderToast('Please select an end date.', 'error'); return;
+        }
+        if (new Date(startDate) > new Date(endDate)) {
+            view.renderToast('Start date must be before end date.', 'error'); return;
+        }
 
         const success = await model.saveProgram(formData);
         if (success) {
             view.renderToast(formData.get('id') ? 'Program updated!' : 'New program created!');
             window.location.hash = '#manage-programs';
         } else {
-            view.renderToast('Failed to save program.', 'error');
+            view.renderToast('Failed to save program. Please check the console and server logs.', 'error');
         }
     },
 
@@ -885,7 +925,124 @@ const controller = {
         } else {
             view.renderToast('Failed to delete category. It may be in use.', 'error');
         }
+    },
+
+    // =========================================================================
+    // AI Feature Layer (Admin)
+    // =========================================================================
+
+    async fetchGroq(prompt, system = 'You are a helpful assistant.') {
+        try {
+            const res = await fetch('../../groq-proxy.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt, system, max_tokens: 500 })
+            });
+            if (!res.ok) throw new Error('AI API Error: ' + res.status);
+            const data = await res.json();
+            return data.choices[0].message.content;
+        } catch (e) {
+            console.error('Groq Fetch Error:', e);
+            throw e;
+        }
+    },
+
+    async handleAIGenerateDesc() {
+        const title = document.getElementById('prog-title')?.value;
+        const category = document.getElementById('prog-category')?.value;
+        const btn = document.getElementById('btn-ai-generate-desc');
+        const descField = document.getElementById('prog-desc');
+        
+        if (!title || !category) {
+            view.renderToast('Please fill in Title and Category first.', 'error');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="ai-loading-indicator">Generating</span>';
+        
+        const prompt = `Write a professional, 3-4 sentence public service description for a program titled "${title}" in the "${category}" category.`;
+        
+        try {
+            const desc = await this.fetchGroq(prompt, 'You are an expert civic program copywriter. Write clear, engaging descriptions.');
+            descField.value = desc;
+        } catch(e) {
+            view.renderToast('AI Generator unavailable.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '✨ Generate with AI';
+        }
+    },
+
+    async checkDuplicate(title, description) {
+        const programs = model.getPrograms().filter(p => p.title !== title).map(p => p.title);
+        const prompt = `New program: "${title}". Description: "${description}".\nExisting programs: ${JSON.stringify(programs)}\n\nIs there a significant overlap or near exact duplicate? Return ONLY raw JSON: {"isDuplicate": boolean, "matchedTitle": "name or null", "reason": "brief reason or null"}`;
+        
+        try {
+            const jsonStr = await this.fetchGroq(prompt, 'You are an AI duplication detector. Return ONLY raw JSON.');
+            return JSON.parse(jsonStr.replace(/```json/g, '').replace(/```/g, '').trim());
+        } catch(e) {
+            return { isDuplicate: false };
+        }
+    },
+
+    async handleAIAnalyzeEnrollment(id, btn) {
+        const prog = model.getPrograms().find(p => p.id == id);
+        const enrollments = model.getEnrollments(null).filter(e => e.program_id == id);
+        const count = enrollments.length;
+        const target = document.getElementById('ai-explanation-' + id);
+        
+        btn.disabled = true;
+        target.style.display = 'block';
+        target.innerHTML = '<span class="ai-loading-indicator">Analyzing...</span>';
+
+        const prompt = `Program: ${prog.title}\nCapacity: ${prog.capacity}\nEnrolled: ${count}\nCategory: ${prog.category}\n\nExplain this enrollment performance in 2 sentences. Is it high, low, or expected?`;
+
+        try {
+            const analysis = await this.fetchGroq(prompt, 'You are a data analyst for a civic portal.');
+            target.innerHTML = analysis;
+            btn.style.display = 'none'; // hide button after analyzing
+        } catch(e) {
+            target.innerHTML = 'Analysis failed.';
+            btn.disabled = false;
+        }
+    },
+
+    async handleAIAuditDescriptions(btn) {
+        const programs = model.getPrograms();
+        const target = document.getElementById('ai-audit-results');
+        
+        btn.disabled = true;
+        target.style.display = 'block';
+        target.innerHTML = '<span class="ai-loading-indicator">Auditing all descriptions. This may take a moment...</span>';
+
+        // We batch them to avoid massive token usage or prompt limits, or send all at once if small.
+        const input = programs.map(p => ({ id: p.id, title: p.title, desc: p.description }));
+        const prompt = `Audit these civic program descriptions. Flag ones that are too vague, too short, or poor quality.\n${JSON.stringify(input)}\n\nReturn ONLY a raw JSON array: [{"id": 1, "status": "OK|Flagged", "suggestion": "Why it was flagged"}].`;
+
+        try {
+            const jsonStr = await this.fetchGroq(prompt, 'You are an accessibility and content auditor. Return ONLY raw JSON array.');
+            const results = JSON.parse(jsonStr.replace(/```json/g, '').replace(/```/g, '').trim());
+            
+            let html = '<table class="ai-audit-table"><tr><th>Program</th><th>Status</th><th>Suggestion</th></tr>';
+            results.forEach(r => {
+                const p = programs.find(x => x.id == r.id);
+                const title = p ? p.title : 'Unknown';
+                const cls = r.status === 'Flagged' ? 'flagged' : '';
+                html += `<tr class="${cls}"><td>${title}</td><td>${r.status}</td><td>${r.suggestion}</td></tr>`;
+            });
+            html += '</table>';
+            target.innerHTML = html;
+        } catch(e) {
+            target.innerHTML = 'Audit failed or rate limit exceeded.';
+        } finally {
+            btn.disabled = false;
+        }
     }
 };
 
 export default controller;
+
+
+
+

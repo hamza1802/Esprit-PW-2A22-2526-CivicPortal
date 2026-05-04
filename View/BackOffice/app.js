@@ -28,7 +28,16 @@ const setupScrollAnimations = () => {
 // Make it globally accessible so view.js can re-trigger it
 window.initScrollObserver = setupScrollAnimations;
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize the controller
-    controller.init();
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        await controller.init();
+    } catch (err) {
+        console.error('[CivicPortal] Init failed:', err);
+        const app = document.getElementById('app');
+        if (app) {
+            app.innerHTML = `<div style="padding:2rem;color:red;font-family:monospace;">
+                <strong>Staff Portal failed to load</strong><br>${err.message}
+            </div>`;
+        }
+    }
 });

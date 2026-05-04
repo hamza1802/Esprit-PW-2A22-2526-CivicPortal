@@ -1,4 +1,5 @@
 <?php
+ob_start("ob_gzhandler");
 /**
  * bootstrap.php
  * Centralized application initialization.

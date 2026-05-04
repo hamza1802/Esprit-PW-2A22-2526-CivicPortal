@@ -1,5 +1,5 @@
 /**
- * view.js — FrontOffice rendering logic.
+ * view.js â€” FrontOffice rendering logic.
  * Modules: Home, Programs, Service Requests, Appointments,
  *          Transport, My Tickets, Profile, Notifications.
  * Complaints/Grievances module REMOVED.
@@ -47,7 +47,7 @@ const view = {
                 <li><a href="#request-service">requests</a></li>
                 <li><a href="#appointments">appointments</a></li>
                 <li><a href="#transport">transport</a></li>
-                <li><a href="#my-tickets">my tickets</a></li>
+                <li><a href="#dashboard">dashboard</a></li>
                 <li><a href="#profile">profile</a></li>
             </ul>
             <div class="user-controls">
@@ -89,43 +89,108 @@ const view = {
     // -------------------------------------------------------------------------
     renderHome(user) {
         this.app.innerHTML = `
-            <div class="hero-container reveal">
+            <div class="hero-container dashboard-mode reveal">
                 <section class="hero-section">
                     <h1>CivicPortal</h1>
                     <p>Welcome back, ${user.name}. Navigate municipal services with clarity and precision.</p>
+                    
+                    <div class="smart-status-bar">
+                        <div class="status-item" id="weather-status-widget">
+                            <i class="bi bi-cloud-sun"></i>
+                            <div>
+                                <div class="status-label">Local Weather</div>
+                                <div class="status-value">Loading...</div>
+                            </div>
+                        </div>
+                        <div class="status-item">
+                            <i class="bi bi-shield-check"></i>
+                            <div>
+                                <div class="status-label">System Status</div>
+                                <div class="status-value">Operational</div>
+                            </div>
+                        </div>
+                        <div class="status-item">
+                            <i class="bi bi-activity"></i>
+                            <div>
+                                <div class="status-label">Service Uptime</div>
+                                <div class="status-value">99.8%</div>
+                            </div>
+                        </div>
+                    </div>
                 </section>
             </div>
-            <section class="page-container">
-                <h2 class="reveal">Directory of Services</h2>
-                <div class="editorial-grid">
-                    <div class="editorial-card editorial-highlight reveal">
-                        <i class="bi bi-file-earmark-text" style="font-size:2rem;margin-bottom:1rem;display:block;"></i>
-                        <h3>Service Requests</h3>
-                        <p>Submit administrative documents, permits, and service requests. Track status in real-time.</p>
-                        <a href="#request-service" class="btn btn-primary" style="align-self:flex-start;margin-top:auto;">File a Request</a>
-                    </div>
-                    <div class="editorial-card reveal">
-                        <i class="bi bi-calendar2-check" style="font-size:2rem;margin-bottom:1rem;display:block;"></i>
-                        <h3>Book Appointment</h3>
-                        <p>Schedule a meeting with a municipal agent for document processing or inquiries.</p>
-                        <a href="#appointments" class="btn" style="align-self:flex-start;margin-top:auto;">Book Now</a>
-                    </div>
-                    <div class="editorial-card reveal">
-                        <i class="bi bi-people" style="font-size:2rem;margin-bottom:1rem;display:block;"></i>
-                        <h3>Community Programs</h3>
-                        <p>Engage with local initiatives. Browse the Parks &amp; Recreation activity catalog.</p>
-                        <a href="#programs" class="btn" style="align-self:flex-start;margin-top:auto;">View Catalog</a>
-                    </div>
-                    <div class="editorial-card reveal">
-                        <i class="bi bi-bus-front" style="font-size:2rem;margin-bottom:1rem;display:block;"></i>
-                        <h3>Municipal Transport</h3>
-                        <p>Book tickets for buses, trains, and other city transport. View live routes.</p>
-                        <a href="#transport" class="btn" style="align-self:flex-start;margin-top:auto;">Browse Routes</a>
+            <section class="page-container w-full" style="padding: 6rem 0; overflow: hidden;">
+                <h2 class="reveal text-center mb-48"><span class="kinetic-text">Directory of Services</span></h2>
+                <div class="diagonal-scroll-wrapper">
+                    <div class="editorial-grid">
+                        <div class="editorial-card editorial-highlight reveal">
+                            <div class="stats-number mb-16" style="opacity:0.2;">01</div>
+                            <i class="bi bi-file-earmark-text card-icon"></i>
+                            <h3>Service Requests</h3>
+                            <p>Submit administrative documents, permits, and service requests. Track status in real-time.</p>
+                            <a href="#request-service" class="btn btn-primary card-action">File a Request</a>
+                        </div>
+                        <div class="editorial-card reveal">
+                            <div class="stats-number mb-16" style="opacity:0.1;">02</div>
+                            <i class="bi bi-calendar2-check card-icon"></i>
+                            <h3>Book Appointment</h3>
+                            <p>Schedule a meeting with a municipal agent for document processing or inquiries.</p>
+                            <a href="#appointments" class="btn card-action">Book Now</a>
+                        </div>
+                        <div class="editorial-card reveal">
+                            <div class="stats-number mb-16" style="opacity:0.1;">03</div>
+                            <i class="bi bi-people card-icon"></i>
+                            <h3>Community Programs</h3>
+                            <p>Engage with local initiatives. Browse the Parks &amp; Recreation activity catalog.</p>
+                            <a href="#programs" class="btn card-action">View Catalog</a>
+                        </div>
+                        <div class="editorial-card reveal">
+                            <div class="stats-number mb-16" style="opacity:0.1;">04</div>
+                            <i class="bi bi-bus-front card-icon"></i>
+                            <h3>Municipal Transport</h3>
+                            <p>Book tickets for buses, trains, and other city transport. View live routes.</p>
+                            <a href="#transport" class="btn card-action">Browse Routes</a>
+                        </div>
                     </div>
                 </div>
             </section>
         `;
-        this.triggerObserver();
+                this.triggerObserver();
+        this._initWeatherWidget();
+    },
+
+    _initWeatherWidget() {
+        const widget = document.getElementById('weather-status-widget');
+        if (!widget) return;
+
+        const updateWeather = (lat, lon) => {
+            fetch("https://api.open-meteo.com/v1/forecast?latitude=" + lat + "&longitude=" + lon + "&current_weather=true")
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.current_weather) {
+                        const temp = data.current_weather.temperature;
+                        const code = data.current_weather.weathercode;
+                        let desc = 'Clear';
+                        if (code > 0) desc = 'Cloudy';
+                        if (code > 50) desc = 'Rain';
+                        if (code > 70) desc = 'Snow';
+                        widget.querySelector('.status-value').textContent = temp + ' C - ' + desc;
+                    }
+                })
+                .catch(err => {
+                    console.error('Weather fetch error:', err);
+                    widget.querySelector('.status-value').textContent = 'Unavailable';
+                });
+        };
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                position => updateWeather(position.coords.latitude, position.coords.longitude),
+                () => updateWeather(36.7681, 10.2753) // Radès, Tunisia
+            );
+        } else {
+            updateWeather(36.7681, 10.2753); // Radès, Tunisia
+        }
     },
 
     // -------------------------------------------------------------------------
@@ -139,17 +204,24 @@ const view = {
             return `
                 <div class="program-card reveal">
                     <div class="program-img-wrapper">
-                        <img src="${imgSrc}" alt="${p.title}" class="program-img"
+                        <img loading="lazy" src="${imgSrc}" alt="${p.title}" class="program-img"
                              onerror="this.style.display='none';this.parentElement.style.background='var(--primary-navy)';">
                     </div>
                     <div class="card-content">
                         <span class="category-badge">${p.category}</span>
                         <h3>${p.title}</h3>
+                        <div class="text-small text-bold mb-16" style="color:var(--primary-navy);opacity:0.8;">
+                            <i class="bi bi-calendar3"></i> 
+                            ${p.start_date ? new Date(p.start_date).toLocaleDateString() : 'TBA'} - 
+                            ${p.end_date ? new Date(p.end_date).toLocaleDateString() : 'TBA'}
+                        </div>
                         <p class="description-clamp" onclick="this.classList.toggle('expanded')"
                            title="Click to expand">${p.description}</p>
-                        <div style="margin-top:auto;padding-bottom:5%;">
-                            <button class="btn ${isEnrolled ? 'btn-success' : 'btn-primary'}"
-                                    style="width:100%"
+                        <div class="mt-auto flex-column gap-8" style="padding-bottom:5%;">
+                            <button class="btn btn-secondary btn-toggle-chat w-full no-bg" data-id="${p.id}" style="border:1px solid var(--color-primary);">
+                                <i class="bi bi-chat-stars"></i> Ask AI
+                            </button>
+                            <button class="btn ${isEnrolled ? 'btn-success' : 'btn-primary'} w-full"
                                     data-id="${p.id}"
                                     data-action="enroll"
                                     ${isEnrolled ? 'disabled' : ''}>
@@ -163,15 +235,18 @@ const view = {
 
         this.app.innerHTML = `
             <section class="page-container">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;">
-                    <h2 class="reveal" style="margin:0;">Programs Catalog</h2>
-                    <div class="filter-controls reveal" style="display:flex;gap:1rem;flex-wrap:wrap;">
+                <div class="flex-between mb-32">
+                    <h2 class="reveal mb-0">Programs Catalog</h2>
+
+                    <div class="filter-controls reveal flex gap-16 flex-wrap">
                         <input type="text" id="prog-search" placeholder="Search by title..."
-                               style="flex-grow:1;padding:1rem;border:var(--border-main);background:transparent;
+                               class="no-bg"
+                               style="flex-grow:1;padding:1rem;border:var(--border-main);
                                       font-family:inherit;font-size:1.1rem;font-weight:600;
                                       color:var(--primary-navy);outline:none;">
                         <select id="prog-filter-cat"
-                                style="padding:1rem 2rem 1rem 1rem;border:var(--border-main);background:transparent;
+                                class="no-bg"
+                                style="padding:1rem 2rem 1rem 1rem;border:var(--border-main);
                                        font-family:inherit;font-size:1.1rem;font-weight:600;
                                        color:var(--primary-navy);outline:none;cursor:pointer;">
                             <option value="">All Categories</option>
@@ -181,8 +256,17 @@ const view = {
                         </select>
                     </div>
                 </div>
+                                <div class="editorial-card reveal mb-32" style="background: var(--surface-glass); border-color: var(--color-accent-blue); padding: 2rem;">
+                    <h3 class="mb-16" style="color: var(--color-accent-blue);"><i class="bi bi-magic"></i> AI Program Matcher</h3>
+                    <p>Describe what you're looking for or your current situation, and our AI will find the best programs for you.</p>
+                    <div class="flex gap-16 mt-16 flex-center">
+                        <input type="text" id="ai-match-input" placeholder="e.g., I'm a student looking for part-time community service..." class="no-bg" style="flex:1; padding:1rem; border-radius:var(--radius-sm); border:var(--border-main); font-family:inherit; color:var(--primary-navy); outline:none;">
+                        <button id="btn-ai-match" class="btn btn-primary" style="min-width:120px;">Match Me</button>
+                    </div>
+                    <div id="ai-match-results" style="display:none;" class="ai-matches-grid"></div>
+                </div>
                 <div class="editorial-grid" id="program-list">
-                    ${programCards || '<div class="editorial-card" style="grid-column:1/-1;text-align:center;"><p>No programs available.</p></div>'}
+                    ${programCards || '<div class="editorial-card text-center" style="grid-column:1/-1;"><p>No programs available.</p></div>'}
                 </div>
             </section>
         `;
@@ -190,7 +274,7 @@ const view = {
     },
 
     // -------------------------------------------------------------------------
-    // Service Requests — Form + My Requests list
+    // Service Requests â€” Form + My Requests list
     // -------------------------------------------------------------------------
     renderServiceRequestForm(serviceTypes = []) {
         const typeOptions = serviceTypes.length > 0
@@ -202,10 +286,10 @@ const view = {
 
         this.app.innerHTML = `
             <section class="page-container">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
-                    <h2 class="reveal" style="margin:0;">File a Service Request</h2>
-                    <a href="#my-requests" class="btn reveal" style="text-decoration:none;">
-                        <i class="bi bi-clock-history"></i> My Requests
+                <div class="flex-between mb-32 flex-wrap gap-16">
+                    <h2 class="reveal mb-0">File a Service Request</h2>
+                    <a href="#dashboard" class="btn reveal" style="text-decoration:none;">
+                        <i class="bi bi-columns-gap"></i> Dashboard
                     </a>
                 </div>
                 <div class="form-card reveal">
@@ -225,9 +309,10 @@ const view = {
                             </label>
                             <input type="file" id="req-attachment" name="attachment"
                                    accept=".pdf,image/*"
-                                   style="border:none;padding:0.5rem 0;">
+                                   class="no-border"
+                                   style="padding:0.5rem 0;">
                         </div>
-                        <button type="submit" class="btn btn-primary reveal" style="width:100%;">
+                        <button type="submit" class="btn btn-primary reveal w-full">
                             <i class="bi bi-send"></i> SUBMIT REQUEST
                         </button>
                     </form>
@@ -237,21 +322,21 @@ const view = {
         this.triggerObserver();
     },
 
-    renderMyRequests(requests = []) {
+    _getRequestsHtml(requests = []) {
         const statusColor = { pending: '#f59e0b', in_progress: '#6366f1', approved: '#10b981', rejected: '#ef4444', validated: '#10b981', resolved: '#6366f1' };
 
         const rows = requests.length === 0
-            ? `<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-dark);opacity:0.6;">
+            ? `<tr><td colspan="5" class="text-center" style="padding:2rem;color:var(--text-dark);opacity:0.6;">
                    No requests found. <a href="#request-service" style="color:var(--accent-blue);">File one?</a>
                </td></tr>`
             : requests.map(r => `
                 <tr>
                     <td><strong>#${r.id}</strong></td>
-                    <td>${r.title || r.category || '—'}</td>
-                    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.description || ''}">${r.description || '—'}</td>
-                    <td>${r.created_at ? new Date(r.created_at).toLocaleDateString() : '—'}</td>
+                    <td>${r.title || r.category || 'â€”'}</td>
+                    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.description || ''}">${r.description || 'â€”'}</td>
+                    <td>${r.created_at ? new Date(r.created_at).toLocaleDateString() : 'â€”'}</td>
                     <td>
-                        <span style="display:inline-block;padding:3px 10px;border-radius:99px;font-size:0.75rem;font-weight:800;
+                        <span class="status-pill" style="display:inline-block;padding:3px 10px;border-radius:99px;font-size:0.75rem;font-weight:800;
                                      background:${(statusColor[r.status] || '#6b7280')}22;
                                      color:${statusColor[r.status] || '#6b7280'};">
                             ${r.status?.toUpperCase() || 'PENDING'}
@@ -260,29 +345,18 @@ const view = {
                 </tr>
             `).join('');
 
-        this.app.innerHTML = `
-            <section class="page-container">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
-                    <h2 class="reveal" style="margin:0;">My Requests</h2>
-                    <a href="#request-service" class="btn btn-primary reveal" style="text-decoration:none;">
-                        + New Request
-                    </a>
-                </div>
-                <div class="reveal">
-                    <div class="table-responsive">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Ref</th><th>Service</th><th>Details</th><th>Date</th><th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>${rows}</tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
+        return `
+            <div class="flex-between mb-24 flex-wrap gap-16">
+                <h3 class="mb-0" style="font-size:1.5rem;">My Requests</h3>
+                <a href="#request-service" class="btn btn-primary" style="text-decoration:none;padding:0.6rem 1.2rem;">+ New Request</a>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead><tr><th>Ref</th><th>Service</th><th>Details</th><th>Date</th><th>Status</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
         `;
-        this.triggerObserver();
     },
 
     // -------------------------------------------------------------------------
@@ -302,10 +376,10 @@ const view = {
 
         this.app.innerHTML = `
             <section class="page-container">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
-                    <h2 class="reveal" style="margin:0;">Book an Appointment</h2>
-                    <a href="#my-appointments" class="btn reveal" style="text-decoration:none;">
-                        <i class="bi bi-calendar2-week"></i> My Appointments
+                <div class="flex-between mb-32 flex-wrap gap-16">
+                    <h2 class="reveal mb-0">Book an Appointment</h2>
+                    <a href="#dashboard" class="btn reveal" style="text-decoration:none;">
+                        <i class="bi bi-columns-gap"></i> Dashboard
                     </a>
                 </div>
                 <div class="form-card reveal">
@@ -316,7 +390,7 @@ const view = {
                                 ${typeOptions}
                             </select>
                         </div>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                        <div class="gap-16" style="display:grid;grid-template-columns:1fr 1fr;">
                             <div class="form-group">
                                 <label for="appt-date">Preferred Date</label>
                                 <input type="date" id="appt-date" name="preferred_date"
@@ -333,7 +407,7 @@ const view = {
                             <textarea id="appt-notes" name="notes" rows="3"
                                       placeholder="Any specific details about your visit..."></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary reveal" style="width:100%;">
+                        <button type="submit" class="btn btn-primary reveal w-full">
                             <i class="bi bi-calendar2-plus"></i> REQUEST APPOINTMENT
                         </button>
                     </form>
@@ -343,7 +417,7 @@ const view = {
         this.triggerObserver();
     },
 
-    renderMyAppointments(appointments = []) {
+    _getAppointmentsHtml(appointments = []) {
         const statusStyles = {
             pending:     { bg: 'rgba(245,158,11,0.12)',  color: '#f59e0b' },
             confirmed:   { bg: 'rgba(16,185,129,0.12)',  color: '#10b981' },
@@ -353,10 +427,10 @@ const view = {
         };
 
         const cards = appointments.length === 0
-            ? `<div style="text-align:center;padding:60px 20px;border:2px dashed var(--border-main);border-radius:16px;">
-                   <i class="bi bi-calendar2-x" style="font-size:3rem;opacity:0.3;display:block;margin-bottom:1rem;"></i>
-                   <h3 style="margin-bottom:0.5rem;">No Appointments</h3>
-                   <p style="opacity:0.6;margin-bottom:1.5rem;">You haven't booked any appointments yet.</p>
+            ? `<div class="text-center" style="padding:60px 20px;border:2px dashed var(--border-main);border-radius:16px;">
+                   <i class="bi bi-calendar2-x mb-16" style="font-size:3rem;opacity:0.3;display:block;"></i>
+                   <h3 class="mb-8">No Appointments</h3>
+                   <p class="mb-24" style="opacity:0.6;">You haven't booked any appointments yet.</p>
                    <a href="#appointments" class="btn btn-primary" style="text-decoration:none;">Book Now</a>
                </div>`
             : appointments.map(a => {
@@ -365,12 +439,12 @@ const view = {
                 <div class="appt-card">
                     <div class="appt-header">
                         <div>
-                            <div style="font-weight:800;font-size:1.1rem;">${a.service_type}</div>
-                            <div style="font-size:0.85rem;opacity:0.7;margin-top:2px;">
-                                Ref #${a.id} · ${a.agent_name ? 'Agent: ' + a.agent_name : 'Pending assignment'}
+                            <div class="text-bold" style="font-size:1.1rem;">${a.service_type}</div>
+                            <div class="text-small opacity-7" style="margin-top:2px;">
+                                Ref #${a.id} Â· ${a.agent_name ? 'Agent: ' + a.agent_name : 'Pending assignment'}
                             </div>
                         </div>
-                        <span style="padding:4px 14px;border-radius:99px;font-size:0.78rem;font-weight:800;
+                        <span class="status-pill" style="padding:4px 14px;border-radius:99px;font-size:0.78rem;font-weight:800;
                                      background:${s.bg};color:${s.color};border:1px solid ${s.color}44;">
                             ${a.status.toUpperCase()}
                         </span>
@@ -382,7 +456,7 @@ const view = {
                         </div>
                         <div>
                             <div class="appt-detail-label">Time</div>
-                            <div class="appt-detail-value">${a.preferred_time?.substring(0,5) || '—'}</div>
+                            <div class="appt-detail-value">${a.preferred_time?.substring(0,5) || 'â€”'}</div>
                         </div>
                         ${a.notes ? `<div style="grid-column:1/-1;">
                             <div class="appt-detail-label">Notes</div>
@@ -395,30 +469,25 @@ const view = {
                     </div>
                     ${['pending','confirmed'].includes(a.status) ? `
                     <div style="padding:0 20px 20px;">
-                        <button class="btn btn-danger" data-action="cancel-appointment" data-id="${a.id}"
-                                style="font-size:0.85rem;padding:8px 20px;">
+                        <button class="btn btn-danger text-small" data-action="cancel-appointment" data-id="${a.id}"
+                                style="padding:8px 20px;">
                             Cancel Appointment
                         </button>
                     </div>` : ''}
                 </div>`;
             }).join('');
 
-        this.app.innerHTML = `
-            <section class="page-container">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
-                    <h2 class="reveal" style="margin:0;">My Appointments</h2>
-                    <a href="#appointments" class="btn btn-primary reveal" style="text-decoration:none;">
-                        + New Appointment
-                    </a>
-                </div>
-                ${cards}
-            </section>
+        return `
+            <div class="flex-between mb-24 flex-wrap gap-16">
+                <h3 class="mb-0" style="font-size:1.5rem;">My Appointments</h3>
+                <a href="#appointments" class="btn btn-primary" style="text-decoration:none;padding:0.6rem 1.2rem;">+ New Appointment</a>
+            </div>
+            ${cards}
         `;
-        this.triggerObserver();
     },
 
     // -------------------------------------------------------------------------
-    // Profile — with profile pic + password change
+    // Profile â€” with profile pic + password change
     // -------------------------------------------------------------------------
     renderProfile(user) {
         const picSrc = user.has_profile_pic
@@ -426,7 +495,7 @@ const view = {
             : null;
 
         const avatarHtml = picSrc
-            ? `<img src="${picSrc}" alt="Profile" id="profile-pic-preview"
+            ? `<img loading="lazy" src="${picSrc}" alt="Profile" id="profile-pic-preview"
                     style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--primary-navy);"
                     onerror="this.parentElement.innerHTML='<i class=\\'bi bi-person\\' style=\\'font-size:2.5rem;\\'></i>';">`
             : `<i class="bi bi-person" style="font-size:2.5rem;"></i>`;
@@ -437,19 +506,19 @@ const view = {
                 <div class="form-card reveal" style="background:var(--glass-bg-light);border:var(--glass-border);padding:3rem;border-radius:24px;">
 
                     <!-- Profile Picture -->
-                    <div style="display:flex;align-items:center;gap:2rem;margin-bottom:2.5rem;">
+                    <div class="flex gap-32 mb-32 flex-center">
                         <div id="profile-pic-container"
+                             class="flex-center"
                              style="width:80px;height:80px;border-radius:50%;background:var(--primary-navy);
-                                    display:flex;align-items:center;justify-content:center;
                                     color:white;overflow:hidden;flex-shrink:0;">
                             ${avatarHtml}
                         </div>
                         <div>
-                            <h3 style="margin:0 0 0.2rem;font-family:var(--font-primary);font-size:1.6rem;">
+                            <h3 class="mb-0" style="font-family:var(--font-primary);font-size:1.6rem;">
                                 ${user.name}
                             </h3>
-                            <p style="margin:0;opacity:0.6;">${user.email}</p>
-                            <span style="display:inline-block;margin-top:0.4rem;font-size:0.78rem;font-weight:bold;
+                            <p class="mb-0" style="opacity:0.6;">${user.email}</p>
+                            <span class="text-bold text-small" style="display:inline-block;margin-top:0.4rem;
                                          padding:2px 10px;background:rgba(29,42,68,0.1);border-radius:20px;">
                                 ${(user.role || 'citizen').toUpperCase()}
                             </span>
@@ -457,20 +526,21 @@ const view = {
                     </div>
 
                     <!-- Profile Pic Upload -->
-                    <div class="form-group reveal"
-                         style="border-bottom:1px solid var(--border-main);padding-bottom:1.5rem;margin-bottom:1.5rem;">
+                    <div class="form-group reveal mb-24"
+                         style="border-bottom:1px solid var(--border-main);padding-bottom:1.5rem;">
                         <label><i class="bi bi-image"></i> Change Profile Picture</label>
                         <form id="profile-pic-form" enctype="multipart/form-data"
-                              style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
+                              class="flex gap-16 flex-center flex-wrap">
                             <input type="file" id="profile-pic-input" name="profile_pic"
                                    accept="image/jpeg,image/png,image/webp"
-                                   style="flex:1;border:none;padding:0.5rem 0;">
+                                   class="no-border"
+                                   style="flex:1;padding:0.5rem 0;">
                             <button type="submit" class="btn btn-primary" style="padding:0.8rem 2rem;">
                                 <i class="bi bi-upload"></i> Upload
                             </button>
                         </form>
-                        <p style="font-size:0.8rem;opacity:0.5;margin-top:0.5rem;">
-                            JPEG, PNG or WebP · max 2MB
+                        <p class="text-small opacity-5" style="margin-top:0.5rem;">
+                            JPEG, PNG or WebP Â· max 2MB
                         </p>
                     </div>
 
@@ -479,39 +549,43 @@ const view = {
                         <div class="form-group reveal">
                             <label for="profile-name"><i class="bi bi-person-badge"></i> Display Name</label>
                             <input type="text" id="profile-name" name="name" value="${user.name}" required
-                                   style="width:100%;padding:1rem;border:var(--glass-border);border-radius:12px;
+                                   class="w-full"
+                                   style="padding:1rem;border:var(--glass-border);border-radius:12px;
                                           background:rgba(255,255,255,0.6);font-family:var(--font-primary);">
                         </div>
                         <div class="form-group reveal">
                             <label for="profile-email"><i class="bi bi-envelope"></i> Email Address</label>
                             <input type="email" id="profile-email" name="email" value="${user.email}" required
-                                   style="width:100%;padding:1rem;border:var(--glass-border);border-radius:12px;
+                                   class="w-full"
+                                   style="padding:1rem;border:var(--glass-border);border-radius:12px;
                                           background:rgba(255,255,255,0.6);font-family:var(--font-primary);">
                         </div>
-                        <button type="submit" class="btn btn-primary reveal" style="width:100%;margin-top:1rem;">
+                        <button type="submit" class="btn btn-primary reveal w-full" style="margin-top:1rem;">
                             UPDATE DETAILS
                         </button>
                     </form>
 
                     <!-- Password Change -->
                     <div style="margin-top:2rem;padding-top:2rem;border-top:1px solid var(--border-main);">
-                        <h3 class="reveal" style="font-size:1.1rem;margin-bottom:1rem;">Change Password</h3>
+                        <h3 class="reveal mb-16" style="font-size:1.1rem;">Change Password</h3>
                         <form id="password-form">
                             <div class="form-group reveal">
                                 <label for="new-password">New Password</label>
                                 <input type="password" id="new-password" name="password" minlength="8"
                                        placeholder="Min. 8 characters"
-                                       style="width:100%;padding:1rem;border:var(--glass-border);border-radius:12px;
+                                       class="w-full"
+                                       style="padding:1rem;border:var(--glass-border);border-radius:12px;
                                               background:rgba(255,255,255,0.6);font-family:var(--font-primary);">
                             </div>
                             <div class="form-group reveal">
                                 <label for="confirm-password">Confirm Password</label>
                                 <input type="password" id="confirm-password" name="confirm_password"
                                        placeholder="Repeat new password"
-                                       style="width:100%;padding:1rem;border:var(--glass-border);border-radius:12px;
+                                       class="w-full"
+                                       style="padding:1rem;border:var(--glass-border);border-radius:12px;
                                               background:rgba(255,255,255,0.6);font-family:var(--font-primary);">
                             </div>
-                            <button type="submit" class="btn reveal" style="width:100%;border:2px solid var(--primary-navy);">
+                            <button type="submit" class="btn reveal w-full" style="border:2px solid var(--primary-navy);">
                                 UPDATE PASSWORD
                             </button>
                         </form>
@@ -529,10 +603,11 @@ const view = {
         const cards = transportTypes.length > 0
             ? transportTypes.map((tt, i) => {
                 const highlight = i === 0 ? 'editorial-highlight' : '';
-                const imgHtml   = `<div style="width:100%;height:140px;overflow:hidden;border-radius:8px;margin-bottom:1rem;background:rgba(29,42,68,0.06);">
-                    <img src="../../get_image.php?type=transport_type&id=${tt.idTransportType}" alt="${tt.name}"
-                         style="width:100%;height:100%;object-fit:cover;"
-                         onerror="this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;\\' ><i class=\\'bi bi-bus-front\\' style=\\'font-size:3rem;opacity:0.3;\\'></i></div>';">
+                const imgHtml   = `<div class="w-full mb-16" style="height:140px;overflow:hidden;border-radius:8px;background:rgba(29,42,68,0.06);">
+                    <img loading="lazy" src="../../get_image.php?type=transport_type&id=${tt.idTransportType}" alt="${tt.name}"
+                         class="w-full"
+                         style="height:100%;object-fit:cover;"
+                         onerror="this.parentElement.innerHTML='<div class=\\'flex-center\\' style=\\'height:100%;\\' ><i class=\\'bi bi-bus-front\\' style=\\'font-size:3rem;opacity:0.3;\\'></i></div>';">
                 </div>`;
                 return `
                     <div class="editorial-card ${highlight} reveal">
@@ -540,10 +615,10 @@ const view = {
                         <h3>${tt.name}</h3>
                         <p>${tt.description || `Book routes for ${tt.name} transport.`}</p>
                         <a href="#transport_list?type=${encodeURIComponent(tt.name)}"
-                           class="btn btn-primary" style="align-self:flex-start;margin-top:auto;">View Routes</a>
+                           class="btn btn-primary mt-auto" style="align-self:flex-start;">View Routes</a>
                     </div>`;
             }).join('')
-            : `<div class="editorial-card" style="grid-column:1/-1;text-align:center;">
+            : `<div class="editorial-card text-center" style="grid-column:1/-1;">
                    <h3>No Transport Methods Available</h3>
                    <p>The municipality has not added any transport types yet. Please check back later.</p>
                </div>`;
@@ -551,7 +626,7 @@ const view = {
         this.app.innerHTML = `
             <section class="page-container">
                 <h2 class="reveal">Municipal Transport</h2>
-                <p style="margin-bottom:2rem;max-width:800px;font-weight:500;font-size:1.2rem;">
+                <p class="mb-32" style="max-width:800px;font-weight:500;font-size:1.2rem;">
                     Select your preferred mode of transportation to book tickets securely.
                 </p>
                 <div class="editorial-grid">${cards}</div>
@@ -565,26 +640,26 @@ const view = {
     // -------------------------------------------------------------------------
     renderTransportList(type, trajets, sortBy = 'departure', order = 'ASC') {
         const routeCards = trajets.length === 0
-            ? `<div class="editorial-card" style="grid-column:1/-1;text-align:center;">
+            ? `<div class="editorial-card text-center" style="grid-column:1/-1;">
                    <h3>No Routes Found</h3>
                    <p>No active routes for <strong>${type}</strong>.</p>
-                   <a href="#transport" class="btn" style="margin-top:1rem;">Back to Categories</a>
+                   <a href="#transport" class="btn mb-16">Back to Categories</a>
                </div>`
             : trajets.map(trajet => {
                 const isFull    = trajet.capacity > 0 && trajet.sold >= trajet.capacity;
                 const remaining = trajet.capacity - trajet.sold;
                 const pct       = trajet.capacity > 0 ? Math.round((trajet.sold / trajet.capacity) * 100) : 0;
                 return `
-                <div class="editorial-card reveal" style="justify-content:space-between;">
+                <div class="editorial-card reveal flex-between">
                     <div>
                         <span class="category-badge">${trajet.transportName || type}</span>
-                        <h3 style="font-size:1.5rem;margin-bottom:0.5rem;">${trajet.departure} → ${trajet.destination}</h3>
-                        <p style="margin-bottom:0.5rem;font-weight:700;color:var(--accent-blue);">
+                        <h3 class="mb-8" style="font-size:1.5rem;">${trajet.departure} â†’ ${trajet.destination}</h3>
+                        <p class="mb-8 text-bold" style="color:var(--accent-blue);">
                             ${parseFloat(trajet.price).toFixed(3)} TND
                         </p>
-                        <div style="font-size:0.9rem;margin-bottom:1.5rem;font-weight:600;">
-                            📅 ${new Date(trajet.departureTime).toLocaleString()}<br><br>
-                            🎟️ ${isFull
+                        <div class="mb-24 text-small" style="font-weight:600;">
+                            ðŸ“… ${new Date(trajet.departureTime).toLocaleString()}<br><br>
+                            ðŸŽŸï¸ ${isFull
                                 ? '<span style="color:var(--danger)">Sold Out</span>'
                                 : `${remaining} seat${remaining !== 1 ? 's' : ''} left`}
                             <div style="margin-top:8px;height:6px;background:rgba(29,42,68,0.1);border-radius:3px;">
@@ -592,36 +667,35 @@ const view = {
                             </div>
                         </div>
                     </div>
-                    <div style="margin-top:auto;">
+                    <div class="mt-auto">
                         ${!isFull
                             ? `<form class="book-transport-form" data-id="${trajet.idTrajet}">
-                                   <button type="submit" class="btn btn-primary" style="width:100%;">
+                                   <button type="submit" class="btn btn-primary w-full">
                                        <i class="bi bi-ticket-perforated"></i> Book Ticket
                                    </button>
                                </form>`
-                            : `<button disabled class="btn btn-danger" style="width:100%;opacity:0.6;">Sold Out</button>`}
+                            : `<button disabled class="btn btn-danger w-full" style="opacity:0.6;">Sold Out</button>`}
                     </div>
                 </div>`;
             }).join('');
 
         this.app.innerHTML = `
             <section class="page-container">
-                <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2rem;
-                            border-bottom:var(--border-main);padding-bottom:1rem;flex-wrap:wrap;gap:1rem;">
-                    <h2 class="reveal" style="margin-bottom:0;border-bottom:none;padding-bottom:0;">
-                        <a href="#transport" style="text-decoration:none;color:var(--secondary-grey);">←</a>
+                <div class="flex-between mb-32 flex-wrap gap-16" style="align-items:flex-end; border-bottom:var(--border-main);padding-bottom:1rem;">
+                    <h2 class="reveal mb-0" style="border-bottom:none;padding-bottom:0;">
+                        <a href="#transport" style="text-decoration:none;color:var(--secondary-grey);">â†</a>
                         Routes: ${type}
                     </h2>
                     <form id="sort-transport-form" data-type="${type}"
-                          style="display:flex;gap:10px;align-items:stretch;flex-wrap:wrap;">
-                        <select name="sort" style="padding:0.8rem;border:var(--border-main);background:transparent;font-weight:bold;font-family:inherit;color:var(--primary-navy);">
+                          class="flex gap-8 flex-wrap" style="align-items:stretch;">
+                        <select name="sort" class="no-bg text-bold" style="padding:0.8rem;border:var(--border-main);font-family:inherit;color:var(--primary-navy);">
                             <option value="departure"   ${sortBy==='departure'   ? 'selected':''}>Sort by Departure</option>
                             <option value="destination" ${sortBy==='destination' ? 'selected':''}>Sort by Destination</option>
                             <option value="price"       ${sortBy==='price'       ? 'selected':''}>Sort by Price</option>
                         </select>
-                        <select name="order" style="padding:0.8rem;border:var(--border-main);background:transparent;font-weight:bold;font-family:inherit;color:var(--primary-navy);">
-                            <option value="ASC"  ${order==='ASC'  ? 'selected':''}>A → Z</option>
-                            <option value="DESC" ${order==='DESC' ? 'selected':''}>Z → A</option>
+                        <select name="order" class="no-bg text-bold" style="padding:0.8rem;border:var(--border-main);font-family:inherit;color:var(--primary-navy);">
+                            <option value="ASC"  ${order==='ASC'  ? 'selected':''}>A â†’ Z</option>
+                            <option value="DESC" ${order==='DESC' ? 'selected':''}>Z â†’ A</option>
                         </select>
                         <button type="submit" class="btn btn-primary" style="padding:0.8rem 1.5rem;">Sort</button>
                     </form>
@@ -635,7 +709,7 @@ const view = {
     // -------------------------------------------------------------------------
     // My Tickets
     // -------------------------------------------------------------------------
-    renderMyTickets(tickets = [], user) {
+    _getTicketsHtml(tickets = [], user) {
         const validTickets     = tickets.filter(t => t.status === 'Valid');
         const cancelledTickets = tickets.filter(t => t.status === 'Cancelled');
 
@@ -646,22 +720,22 @@ const view = {
                 const date = new Date(ticket.departureTime);
                 return isNaN(date.getTime()) ? 'Invalid time' : date.toLocaleString();
             })();
-            const issuedAt = ticket.issuedAt ? new Date(ticket.issuedAt).toLocaleDateString() : '—';
+            const issuedAt = ticket.issuedAt ? new Date(ticket.issuedAt).toLocaleDateString() : 'â€”';
             const photoHtml = isExpanded
-                ? `<img src="../../get_image.php?type=transport_type&id=${ticket.typeId || 0}" alt="${ticket.typeName || ''}"
+                ? `<img loading="lazy" src="../../get_image.php?type=transport_type&id=${ticket.typeId || 0}" alt="${ticket.typeName || ''}"
                         style="width:80px;height:80px;object-fit:cover;border-radius:12px;border:2px solid rgba(255,255,255,0.1);"
-                        onerror="this.outerHTML='<div style=&quot;width:80px;height:80px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.1);border-radius:12px;font-size:2rem;color:rgba(255,255,255,0.5);&quot;><i class=&quot;bi bi-bus-front&quot;></i></div>';">`
+                        onerror="this.outerHTML='<div class=&quot;flex-center&quot; style=&quot;width:80px;height:80px;background:rgba(255,255,255,0.1);border-radius:12px;font-size:2rem;color:rgba(255,255,255,0.5);&quot;><i class=&quot;bi bi-bus-front&quot;></i></div>';">`
                 : '';
 
             const mapBlock = isExpanded
                 ? (ticket.depLat && ticket.depLng && ticket.destLat && ticket.destLng
                     ? `<div style="margin:20px 0;border-radius:12px;overflow:hidden;border:2px solid rgba(255,255,255,0.05);position:relative;">
-                           <div id="map-${ticket.idTicket}" class="ticket-map"
+                           <div id="map-${ticket.idTicket}" class="ticket-map w-full"
                                 data-deplat="${ticket.depLat}"  data-deplng="${ticket.depLng}"
                                 data-destlat="${ticket.destLat}" data-destlng="${ticket.destLng}"
-                                style="width:100%;height:220px;"></div>
+                                style="height:220px;"></div>
                        </div>`
-                    : `<div style="margin:20px 0;padding:20px;border-radius:12px;border:2px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.02);text-align:center;color:rgba(255,255,255,0.6);">
+                    : `<div class="text-center" style="margin:20px 0;padding:20px;border-radius:12px;border:2px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.02);color:rgba(255,255,255,0.6);">
                            No route coordinates available
                        </div>`)
                 : '';
@@ -669,7 +743,7 @@ const view = {
             return `
             <div class="ticket-card ${!isValid ? 'cancelled' : ''}">
                 <div class="ticket-header ${!isValid ? 'cancelled' : ''}">
-                    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+                    <div class="flex gap-16 flex-wrap flex-center">
                         ${photoHtml}
                         <div>
                             <div class="ticket-type-label">${ticket.typeName || 'Transport'} Ticket</div>
@@ -683,12 +757,12 @@ const view = {
                     <div class="ticket-route">
                         <div class="ticket-route-point">
                             <div class="ticket-route-label">Origin</div>
-                            <div class="ticket-route-city">${ticket.departure || '—'}</div>
+                            <div class="ticket-route-city">${ticket.departure || 'â€”'}</div>
                         </div>
-                        <div style="font-size:1.5rem;flex-shrink:0;">✈️</div>
+                        <div style="font-size:1.5rem;flex-shrink:0;">âœˆï¸</div>
                         <div class="ticket-route-point">
                             <div class="ticket-route-label">Destination</div>
-                            <div class="ticket-route-city">${ticket.destination || '—'}</div>
+                            <div class="ticket-route-city">${ticket.destination || 'â€”'}</div>
                         </div>
                     </div>
 
@@ -703,24 +777,24 @@ const view = {
                         </div>
                         <div class="ticket-detail-item">
                             <div class="ticket-detail-label">Vehicle</div>
-                            <div class="ticket-detail-value">${ticket.transportName || '—'}</div>
+                            <div class="ticket-detail-value">${ticket.transportName || 'â€”'}</div>
                         </div>
                         <div class="ticket-detail-item">
                             <div class="ticket-detail-label">Departure</div>
-                            <div class="ticket-detail-value">📅 ${depTime}</div>
+                            <div class="ticket-detail-value">ðŸ“… ${depTime}</div>
                         </div>
                         <div class="ticket-detail-item">
                             <div class="ticket-detail-label">Fare</div>
-                            <div class="ticket-detail-value price">${ticket.price ? parseFloat(ticket.price).toFixed(3) + ' TND' : '—'}</div>
+                            <div class="ticket-detail-value price">${ticket.price ? parseFloat(ticket.price).toFixed(3) + ' TND' : 'â€”'}</div>
                         </div>
                     </div>
 
                     <div class="ticket-footer">
-                        <div style="font-size:0.8rem;color:rgba(255,255,255,0.4);font-weight:600;">Issued: ${issuedAt}</div>
+                        <div class="text-small" style="color:rgba(255,255,255,0.4);font-weight:600;">Issued: ${issuedAt}</div>
                         ${isValid
-                            ? `<button class="btn btn-danger" data-action="cancel-ticket" data-id="${ticket.idTicket}"
-                                       style="font-size:0.85rem;padding:8px 20px;font-weight:700;">🚫 Cancel Booking</button>`
-                            : `<span style="font-size:0.85rem;color:rgba(255,255,255,0.4);font-weight:700;
+                            ? `<button class="btn btn-danger text-small text-bold" data-action="cancel-ticket" data-id="${ticket.idTicket}"
+                                       style="padding:8px 20px;"><span class="btn-text">ðŸš« Cancel Booking</span></button>`
+                            : `<span class="text-small text-bold" style="color:rgba(255,255,255,0.4);
                                            background:rgba(255,255,255,0.05);padding:6px 12px;border-radius:6px;">Cancelled</span>`}
                     </div>
                 </div>
@@ -729,40 +803,194 @@ const view = {
 
         const validCards = validTickets.length > 0
             ? validTickets.map(t => renderTicketCard(t, true)).join('')
-            : `<div class="ticket-card" style="text-align:center;padding:60px 20px;">
-                   <div style="font-size:4rem;margin-bottom:16px;">🎫</div>
+            : `<div class="ticket-card text-center" style="padding:60px 20px;">
+                   <div class="mb-16" style="font-size:4rem;">ðŸŽ«</div>
                    <h3 style="color:#fff;">No Active Tickets</h3>
-                   <p style="color:rgba(255,255,255,0.5);margin-bottom:24px;">Book a route to get your digital boarding pass.</p>
-                   <a href="#transport" class="btn btn-primary" style="padding:12px 30px;">Browse Routes</a>
+                   <p class="mb-24" style="color:rgba(255,255,255,0.5);">Book a route to get your digital boarding pass.</p>
+                   <a href="#transport" class="btn btn-primary" style="padding:12px 30px;"><span class="btn-text">Browse Routes</span></a>
                </div>`;
 
         const cancelledSection = cancelledTickets.length > 0 ? `
             <div style="margin-top:3rem;">
-                <h3 style="margin-bottom:1.5rem;color:var(--secondary-grey);font-size:1rem;text-transform:uppercase;letter-spacing:2px;
-                           display:flex;align-items:center;gap:10px;">
+                <h3 class="flex gap-8 mb-24 flex-center" style="color:var(--secondary-grey);font-size:1rem;text-transform:uppercase;letter-spacing:2px;">
                     <span style="height:1px;background:var(--secondary-grey);flex:1;opacity:0.3;"></span>
                     Cancelled Bookings
                     <span style="height:1px;background:var(--secondary-grey);flex:1;opacity:0.3;"></span>
                 </h3>
-                <div style="display:flex;flex-direction:column;gap:24px;">
+                <div class="flex-column gap-24">
                     ${cancelledTickets.map(t => renderTicketCard(t, false)).join('')}
                 </div>
             </div>` : '';
 
-        this.app.innerHTML = `
-            <section class="page-container" style="max-width:900px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;">
-                    <div>
-                        <h2 style="margin-bottom:8px;border-bottom:none;padding-bottom:0;">My Boarding Passes</h2>
-                        <p style="opacity:0.6;font-size:1rem;margin:0;font-weight:500;">
-                            ${validTickets.length} active ticket${validTickets.length !== 1 ? 's' : ''}
-                        </p>
+        return `
+            <div class="flex-between mb-24 flex-wrap gap-16">
+                <div>
+                    <h3 class="mb-0" style="font-size:1.5rem;">My Boarding Passes</h3>
+                    <p class="mb-0" style="opacity:0.6;font-size:1rem;font-weight:500;">${validTickets.length} active ticket${validTickets.length !== 1 ? 's' : ''}</p>
+                </div>
+            </div>
+            <div class="flex-column gap-32">${validCards}</div>
+            ${cancelledSection}
+        `;
+    },
+
+    _getEnrollmentsHtml(programs = [], enrollments = []) {
+        if (enrollments.length === 0) {
+            return `
+                <div class="text-center" style="padding:60px 20px;border:2px dashed var(--border-main);border-radius:16px;">
+                    <i class="bi bi-mortarboard mb-16" style="font-size:3rem;opacity:0.3;display:block;"></i>
+                    <h3 class="mb-8">No Enrollments</h3>
+                    <p class="mb-24" style="opacity:0.6;">You haven't enrolled in any programs yet.</p>
+                    <a href="#programs" class="btn btn-primary" style="text-decoration:none;">Browse Programs</a>
+                </div>
+            `;
+        }
+
+        const cards = enrollments.map(e => {
+            const prog = programs.find(p => p.id == e.program_id);
+            if (!prog) return '';
+            
+            const statusColor = e.status === 'confirmed' ? '#10b981' : (e.status === 'pending' ? '#f59e0b' : '#ef4444');
+            
+            return `
+                <div class="editorial-card reveal" style="padding:1.5rem; margin-bottom:1rem;">
+                    <div class="flex-between">
+                        <div>
+                            <span class="category-badge">${prog.category}</span>
+                            <h4 class="mb-8" style="margin-top:0.5rem;">${prog.title}</h4>
+                            <div class="text-small opacity-7">Enrolled on: ${new Date(e.created_at).toLocaleDateString()}</div>
+                        </div>
+                        <span class="status-pill" style="color:${statusColor}; border-color:${statusColor}44; background:${statusColor}11;">
+                            ${e.status.toUpperCase()}
+                        </span>
                     </div>
                 </div>
-                <div style="display:flex;flex-direction:column;gap:32px;">${validCards}</div>
-                ${cancelledSection}
+            `;
+        }).join('');
+
+        return `
+            <div class="flex-between mb-24 flex-wrap gap-16">
+                <h3 class="mb-0" style="font-size:1.5rem;">My Program Enrollments</h3>
+                <a href="#programs" class="btn btn-primary" style="text-decoration:none;padding:0.6rem 1.2rem;">+ Join Program</a>
+            </div>
+            <div class="flex-column gap-16">${cards}</div>
+        `;
+    },
+
+    _getPostsHtml(posts = []) {
+        if (posts.length === 0) {
+            return `
+                <div class="text-center" style="padding:60px 20px;border:2px dashed var(--border-main);border-radius:16px;">
+                    <i class="bi bi-chat-square-text mb-16" style="font-size:3rem;opacity:0.3;display:block;"></i>
+                    <h3 class="mb-8">No Forum Posts</h3>
+                    <p class="mb-24" style="opacity:0.6;">You haven't shared anything on the forum yet.</p>
+                    <a href="forum.php" class="btn btn-primary" style="text-decoration:none;">Visit Forum</a>
+                </div>
+            `;
+        }
+
+        const cards = posts.map(p => {
+            const statusColor = p.status === 'open' ? '#10b981' : '#6b7280';
+            return `
+                <div class="editorial-card reveal" style="padding:1.5rem; margin-bottom:1rem;">
+                    <div class="flex-between">
+                        <div>
+                            <span class="category-badge" style="background:rgba(58,134,255,0.1); color:var(--accent-blue);">${p.category}</span>
+                            <h4 class="mb-8" style="margin-top:0.5rem;">${p.title}</h4>
+                            <div class="text-small opacity-7">Posted: ${new Date(p.created_at).toLocaleDateString()}</div>
+                        </div>
+                        <span class="status-pill" style="color:${statusColor}; border-color:${statusColor}44; background:${statusColor}11;">
+                            ${p.status.toUpperCase()}
+                        </span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        return `
+            <div class="flex-between mb-24 flex-wrap gap-16">
+                <h3 class="mb-0" style="font-size:1.5rem;">My Forum Activity</h3>
+                <a href="forum.php" class="btn btn-primary" style="text-decoration:none;padding:0.6rem 1.2rem;">New Post</a>
+            </div>
+            <div class="flex-column gap-16">${cards}</div>
+        `;
+    },
+
+    renderDashboard(user, { requests, appointments, tickets, programs, enrollments, posts }) {
+        const reqHtml = this._getRequestsHtml(requests);
+        const apptHtml = this._getAppointmentsHtml(appointments);
+        const ticketHtml = this._getTicketsHtml(tickets, user);
+        const enrollHtml = this._getEnrollmentsHtml(programs, enrollments);
+        const postHtml = this._getPostsHtml(posts);
+
+        this.app.innerHTML = `
+            <section class="portal-grid">
+                <div class="grid-cell span-3 header-cell reveal no-bg no-border no-shadow flex-between flex-center" style="padding:0;">
+                    <h2 class="kinetic-text mb-0" style="font-size:2.5rem;">Citizen Dashboard</h2>
+                </div>
+                
+                <div class="grid-cell span-3 dashboard-tabs reveal no-bg no-border no-shadow flex" style="padding:0; overflow-x:auto;">
+                    <button class="btn btn-primary dashboard-tab-btn active" data-target="tab-tickets">
+                        <span class="btn-text"><i class="bi bi-ticket-perforated"></i> Tickets</span>
+                    </button>
+                    <button class="btn dashboard-tab-btn" data-target="tab-appointments">
+                        <span class="btn-text"><i class="bi bi-calendar-check"></i> Appointments</span>
+                    </button>
+                    <button class="btn dashboard-tab-btn" data-target="tab-requests">
+                        <span class="btn-text"><i class="bi bi-file-text"></i> Requests</span>
+                    </button>
+                    <button class="btn dashboard-tab-btn" data-target="tab-enrollments">
+                        <span class="btn-text"><i class="bi bi-mortarboard"></i> Enrollments</span>
+                    </button>
+                    <button class="btn dashboard-tab-btn" data-target="tab-posts">
+                        <span class="btn-text"><i class="bi bi-chat-square-text"></i> My Posts</span>
+                    </button>
+                </div>
+
+                <div id="tab-tickets" class="grid-cell span-3 dashboard-tab-content reveal active">
+                    ${ticketHtml}
+                </div>
+                <div id="tab-appointments" class="grid-cell span-3 dashboard-tab-content reveal" style="display:none;">
+                    ${apptHtml}
+                </div>
+                <div id="tab-requests" class="grid-cell span-3 dashboard-tab-content reveal" style="display:none;">
+                    ${reqHtml}
+                </div>
+                <div id="tab-enrollments" class="grid-cell span-3 dashboard-tab-content reveal" style="display:none;">
+                    ${enrollHtml}
+                </div>
+                <div id="tab-posts" class="grid-cell span-3 dashboard-tab-content reveal" style="display:none;">
+                    ${postHtml}
+                </div>
             </section>
         `;
+
+        const tabBtns = document.querySelectorAll('.dashboard-tab-btn');
+        const contents = document.querySelectorAll('.dashboard-tab-content');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach(b => b.classList.remove('btn-primary'));
+                btn.classList.add('btn-primary');
+
+                const targetId = btn.getAttribute('data-target');
+                contents.forEach(content => {
+                    if (content.id === targetId) {
+                        content.style.display = 'flex'; // grid-cells are flex column by default in CSS
+                        content.classList.add('tab-fade-in');
+                        if (targetId === 'tab-tickets') {
+                            setTimeout(() => {
+                                window.dispatchEvent(new Event('resize'));
+                            }, 50);
+                        }
+                    } else {
+                        content.style.display = 'none';
+                        content.classList.remove('tab-fade-in');
+                    }
+                });
+            });
+        });
+
         this.triggerObserver();
         setTimeout(() => this.initTicketMaps(), 150);
     },
@@ -812,4 +1040,11 @@ const view = {
 
 
 export default view;
+
+
+
+
+
+
+
 
