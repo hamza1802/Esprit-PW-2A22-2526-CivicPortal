@@ -653,13 +653,13 @@ const view = {
                 <div class="editorial-card reveal flex-between">
                     <div>
                         <span class="category-badge">${trajet.transportName || type}</span>
-                        <h3 class="mb-8" style="font-size:1.5rem;">${trajet.departure} â†’ ${trajet.destination}</h3>
+                        <h3 class="mb-8" style="font-size:1.5rem;">${trajet.departure} → ${trajet.destination}</h3>
                         <p class="mb-8 text-bold" style="color:var(--accent-blue);">
                             ${parseFloat(trajet.price).toFixed(3)} TND
                         </p>
                         <div class="mb-24 text-small" style="font-weight:600;">
-                            ðŸ“… ${new Date(trajet.departureTime).toLocaleString()}<br><br>
-                            ðŸŽŸï¸ ${isFull
+                            ⏱️ ${new Date(trajet.departureTime).toLocaleString()}<br><br>
+                            ${isFull
                                 ? '<span style="color:var(--danger)">Sold Out</span>'
                                 : `${remaining} seat${remaining !== 1 ? 's' : ''} left`}
                             <div style="margin-top:8px;height:6px;background:rgba(29,42,68,0.1);border-radius:3px;">
@@ -683,7 +683,7 @@ const view = {
             <section class="page-container">
                 <div class="flex-between mb-32 flex-wrap gap-16" style="align-items:flex-end; border-bottom:var(--border-main);padding-bottom:1rem;">
                     <h2 class="reveal mb-0" style="border-bottom:none;padding-bottom:0;">
-                        <a href="#transport" style="text-decoration:none;color:var(--secondary-grey);">â†</a>
+                        <a href="#transport" style="text-decoration:none;color:var(--secondary-grey);">←</a>
                         Routes: ${type}
                     </h2>
                     <form id="sort-transport-form" data-type="${type}"
@@ -694,8 +694,8 @@ const view = {
                             <option value="price"       ${sortBy==='price'       ? 'selected':''}>Sort by Price</option>
                         </select>
                         <select name="order" class="no-bg text-bold" style="padding:0.8rem;border:var(--border-main);font-family:inherit;color:var(--primary-navy);">
-                            <option value="ASC"  ${order==='ASC'  ? 'selected':''}>A â†’ Z</option>
-                            <option value="DESC" ${order==='DESC' ? 'selected':''}>Z â†’ A</option>
+                            <option value="ASC"  ${order==='ASC'  ? 'selected':''}>A → Z</option>
+                            <option value="DESC" ${order==='DESC' ? 'selected':''}>Z → A</option>
                         </select>
                         <button type="submit" class="btn btn-primary" style="padding:0.8rem 1.5rem;">Sort</button>
                     </form>
@@ -720,22 +720,22 @@ const view = {
                 const date = new Date(ticket.departureTime);
                 return isNaN(date.getTime()) ? 'Invalid time' : date.toLocaleString();
             })();
-            const issuedAt = ticket.issuedAt ? new Date(ticket.issuedAt).toLocaleDateString() : 'â€”';
+            const issuedAt = ticket.issuedAt ? new Date(ticket.issuedAt).toLocaleDateString() : '—';
             const photoHtml = isExpanded
                 ? `<img loading="lazy" src="../../get_image.php?type=transport_type&id=${ticket.typeId || 0}" alt="${ticket.typeName || ''}"
-                        style="width:80px;height:80px;object-fit:cover;border-radius:12px;border:2px solid rgba(255,255,255,0.1);"
-                        onerror="this.outerHTML='<div class=&quot;flex-center&quot; style=&quot;width:80px;height:80px;background:rgba(255,255,255,0.1);border-radius:12px;font-size:2rem;color:rgba(255,255,255,0.5);&quot;><i class=&quot;bi bi-bus-front&quot;></i></div>';">`
+                        style="width:80px;height:80px;object-fit:cover;border-radius:12px;border:2px solid rgba(29,42,68,0.08);"
+                        onerror="this.outerHTML='<div class=&quot;flex-center&quot; style=&quot;width:80px;height:80px;background:rgba(255,255,255,0.6);border-radius:12px;font-size:2rem;color:rgba(26,26,26,0.5);&quot;><i class=&quot;bi bi-bus-front&quot;></i></div>';">`
                 : '';
 
             const mapBlock = isExpanded
                 ? (ticket.depLat && ticket.depLng && ticket.destLat && ticket.destLng
-                    ? `<div style="margin:20px 0;border-radius:12px;overflow:hidden;border:2px solid rgba(255,255,255,0.05);position:relative;">
+                    ? `<div style="margin:20px 0;border-radius:12px;overflow:hidden;border:2px solid rgba(29,42,68,0.08);background:rgba(255,255,255,0.98);position:relative;">
                            <div id="map-${ticket.idTicket}" class="ticket-map w-full"
                                 data-deplat="${ticket.depLat}"  data-deplng="${ticket.depLng}"
                                 data-destlat="${ticket.destLat}" data-destlng="${ticket.destLng}"
                                 style="height:220px;"></div>
                        </div>`
-                    : `<div class="text-center" style="margin:20px 0;padding:20px;border-radius:12px;border:2px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.02);color:rgba(255,255,255,0.6);">
+                    : `<div class="text-center" style="margin:20px 0;padding:20px;border-radius:12px;border:2px solid rgba(0,0,0,0.08);background:rgba(255,255,255,0.92);color:rgba(26,26,26,0.7);">
                            No route coordinates available
                        </div>`)
                 : '';
@@ -757,12 +757,12 @@ const view = {
                     <div class="ticket-route">
                         <div class="ticket-route-point">
                             <div class="ticket-route-label">Origin</div>
-                            <div class="ticket-route-city">${ticket.departure || 'â€”'}</div>
+                            <div class="ticket-route-city">${ticket.departure || '—'}</div>
                         </div>
-                        <div style="font-size:1.5rem;flex-shrink:0;">âœˆï¸</div>
+                        <div style="font-size:1.5rem;flex-shrink:0;">→</div>
                         <div class="ticket-route-point">
                             <div class="ticket-route-label">Destination</div>
-                            <div class="ticket-route-city">${ticket.destination || 'â€”'}</div>
+                            <div class="ticket-route-city">${ticket.destination || '—'}</div>
                         </div>
                     </div>
 
@@ -777,25 +777,25 @@ const view = {
                         </div>
                         <div class="ticket-detail-item">
                             <div class="ticket-detail-label">Vehicle</div>
-                            <div class="ticket-detail-value">${ticket.transportName || 'â€”'}</div>
+                            <div class="ticket-detail-value">${ticket.transportName || '—'}</div>
                         </div>
                         <div class="ticket-detail-item">
                             <div class="ticket-detail-label">Departure</div>
-                            <div class="ticket-detail-value">ðŸ“… ${depTime}</div>
+                            <div class="ticket-detail-value">⏱️ ${depTime}</div>
                         </div>
                         <div class="ticket-detail-item">
                             <div class="ticket-detail-label">Fare</div>
-                            <div class="ticket-detail-value price">${ticket.price ? parseFloat(ticket.price).toFixed(3) + ' TND' : 'â€”'}</div>
+                            <div class="ticket-detail-value price">${ticket.price ? parseFloat(ticket.price).toFixed(3) + ' TND' : '—'}</div>
                         </div>
                     </div>
 
                     <div class="ticket-footer">
-                        <div class="text-small" style="color:rgba(255,255,255,0.4);font-weight:600;">Issued: ${issuedAt}</div>
+                        <div class="text-small" style="color:rgba(26,26,26,0.6);font-weight:600;">Issued: ${issuedAt}</div>
                         ${isValid
                             ? `<button class="btn btn-danger text-small text-bold" data-action="cancel-ticket" data-id="${ticket.idTicket}"
-                                       style="padding:8px 20px;"><span class="btn-text">ðŸš« Cancel Booking</span></button>`
-                            : `<span class="text-small text-bold" style="color:rgba(255,255,255,0.4);
-                                           background:rgba(255,255,255,0.05);padding:6px 12px;border-radius:6px;">Cancelled</span>`}
+                                       style="padding:8px 20px;"><span class="btn-text">Cancel Booking</span></button>`
+                            : `<span class="text-small text-bold" style="color:rgba(26,26,26,0.65);
+                                           background:rgba(0,0,0,0.04);padding:6px 12px;border-radius:6px;">Cancelled</span>`}
                     </div>
                 </div>
             </div>`;
@@ -804,9 +804,9 @@ const view = {
         const validCards = validTickets.length > 0
             ? validTickets.map(t => renderTicketCard(t, true)).join('')
             : `<div class="ticket-card text-center" style="padding:60px 20px;">
-                   <div class="mb-16" style="font-size:4rem;">ðŸŽ«</div>
-                   <h3 style="color:#fff;">No Active Tickets</h3>
-                   <p class="mb-24" style="color:rgba(255,255,255,0.5);">Book a route to get your digital boarding pass.</p>
+                   <div class="mb-16" style="font-size:4rem;">&#x1F3AB;</div>
+                   <h3 style="color:var(--text-dark);">No Active Tickets</h3>
+                   <p class="mb-24" style="color:rgba(26, 26, 26, 0.6);">Book a route to get your digital boarding pass.</p>
                    <a href="#transport" class="btn btn-primary" style="padding:12px 30px;"><span class="btn-text">Browse Routes</span></a>
                </div>`;
 
@@ -1008,7 +1008,7 @@ const view = {
             const destLng = parseFloat(el.dataset.destlng);
 
             if (isNaN(depLat) || isNaN(depLng) || isNaN(destLat) || isNaN(destLng)) {
-                el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:rgba(255,255,255,0.3);font-size:0.9rem;">No route coordinates available.</div>';
+                el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:rgba(26,26,26,0.6);font-size:0.9rem;">No route coordinates available.</div>';
                 return;
             }
 

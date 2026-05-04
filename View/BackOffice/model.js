@@ -227,6 +227,7 @@ const model = {
     async getTrajet(id)             { return await this.transportApi('get_trajet',       { idTrajet: id }); },
     async updateTrajet(id, data)    { return await this.transportApi('update_trajet',    { idTrajet: id, ...data }); },
     async deleteTrajet(id)          { return await this.transportApi('delete_trajet',    { idTrajet: id }); },
+    async searchInternetRoutePrice(data) { return await this.transportApi('search_route_price', data); },
 
     async addTransportType(formData) { return await this.apiCall('add_transport_type',    formData); },
     async deleteTransportType(id)    { return await this.apiCall('delete_transport_type', { id }); },

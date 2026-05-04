@@ -8,6 +8,7 @@ import view  from './view.js';
 import { initRouteMap } from './map.js';
 
 const controller = {
+
     async init() {
         await model.sync();
         this.setupEventListeners();
@@ -31,6 +32,12 @@ const controller = {
             if (e.target.id === 'btn-ai-audit') {
                 e.preventDefault();
                 this.handleAIAuditDescriptions(e.target);
+                return;
+            }
+            const aiPriceBtn = e.target.closest('#btn-ai-price');
+            if (aiPriceBtn) {
+                e.preventDefault();
+                this.handleAIPredictRoutePrice();
                 return;
             }
             if (e.target.closest('.btn-ai-analyze')) {
@@ -152,6 +159,9 @@ const controller = {
                     break;
                 case 'edit-trajet':
                     this.handleTrajetEdit(parseInt(id));
+                    break;
+                case 'ai-price-row':
+                    this.handleRouteRowAIPrice(actionEl.dataset);
                     break;
                 case 'delete-trajet':
                     if (confirm('Delete this route? All booked tickets will be affected.')) this.handleTrajetDelete(parseInt(id));
@@ -631,6 +641,340 @@ const controller = {
         }
     },
 
+    async handleAIPredictRoutePrice() {
+        const form = document.getElementById('add-trajet-form');
+        if (!form) {
+            return;
+        }
+
+        const departure = form.querySelector('[name="departure"]').value.trim();
+        const destination = form.querySelector('[name="destination"]').value.trim();
+        const depLat = parseFloat(form.querySelector('#depLat').value);
+        const depLng = parseFloat(form.querySelector('#depLng').value);
+        const destLat = parseFloat(form.querySelector('#destLat').value);
+        const destLng = parseFloat(form.querySelector('#destLng').value);
+        const transportSelect = form.querySelector('select[name="idTransport"]');
+        const transportType = transportSelect?.selectedOptions?.[0]?.dataset.transportType?.trim() || '';
+        const distanceInput = form.querySelector('#routeDistance');
+        const transportTypeInput = form.querySelector('#routeTransportType');
+        const destAddress = form.querySelector('#destAddress').value.trim();
+        const suggestion = document.getElementById('ai-price-suggestion');
+        const priceInput = form.querySelector('[name="price"]');
+
+        if (!departure || !destination) {
+            view.renderToast('Please enter both departure and destination to get an AI price.', 'error');
+            return;
+        }
+
+        if (!transportType) {
+            view.renderToast('Please select a vehicle so AI can determine the transport type.', 'error');
+            return;
+        }
+
+        const routeInfo = this._getRoutePricingInfo({
+            transportType,
+            distance: parseFloat(distanceInput?.value),
+            depLat,
+            depLng,
+            destLat,
+            destLng
+        });
+
+        if (routeInfo.error) {
+            view.renderToast(routeInfo.error, 'error');
+            return;
+        }
+
+        if (transportTypeInput) {
+            transportTypeInput.value = transportType;
+        }
+
+        const destinationCity = this._extractCityFromAddress(destAddress || destination);
+        const livePrice = await this._fetchLivePricingSuggestion({
+            transportType,
+            routeInfo,
+            departure,
+            destination,
+            destinationCity
+        });
+
+        const suggestedPrice = typeof livePrice === 'number'
+            ? livePrice
+            : this._calculateFallbackPrice({
+                distance: routeInfo.distance,
+                transportType,
+                destinationCity,
+                effectiveTransportType: routeInfo.effectiveTransportType
+            });
+
+        if (priceInput) {
+            priceInput.value = suggestedPrice.toFixed(2);
+        }
+        
+        // Build detailed suggestion message including internet search note if available
+        let suggestionText = `AI best price suggestion: ${suggestedPrice.toFixed(2)} TND`;
+        if (routeInfo.note) {
+            suggestionText += ` — ${routeInfo.note}`;
+        }
+        
+        // Show whether we found internet data or using fallback
+        if (this._lastInternetSearch && this._lastInternetSearch.price !== null) {
+            suggestionText += ` | ${this._lastInternetSearch.note}`;
+        } else if (routeInfo.distance > 2000 && (routeInfo.effectiveTransportType.includes('flight') || routeInfo.effectiveTransportType.includes('plane'))) {
+            suggestionText += ` (⚠ Estimated: No internet flight data found)`;
+        } else if (livePrice === null || livePrice === undefined) {
+            suggestionText += ` (Estimated based on distance and type)`;
+        }
+        
+        if (suggestion) {
+            suggestion.textContent = suggestionText;
+        }
+        view.renderToast(livePrice != null ? 'AI price suggestion retrieved from internet search.' : 'AI price suggestion generated locally (no internet data found).', 'success');
+    },
+
+    _computeStraightLineKm(lat1, lng1, lat2, lng2) {
+        const toRad = (value) => (value * Math.PI) / 180;
+        const R = 6371;
+        const dLat = toRad(lat2 - lat1);
+        const dLng = toRad(lng2 - lng1);
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+            + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2))
+            * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    },
+
+    _extractCityFromAddress(address) {
+        if (!address) return '';
+        const parts = address.split(',').map(p => p.trim()).filter(Boolean);
+        return parts.length > 0 ? parts[0] : address;
+    },
+
+    _calculateFallbackPrice({ distance, transportType, destinationCity, effectiveTransportType }) {
+        const normalizedType = (effectiveTransportType || transportType || '').trim().toLowerCase();
+        const baseTypeRate = this._getTypeBaseRate(normalizedType);
+        const demandFactor = this._cityDemandFactor(destinationCity);
+        const typePremium = this._getTypePremium(normalizedType);
+        let price = distance * baseTypeRate * typePremium * (1 + demandFactor);
+        const roundedPrice = this._roundPrice(price);
+
+        // Apply minimum prices based on distance and transport type
+        let minimumPrice = 0.5;
+        if (normalizedType.includes('flight') || normalizedType.includes('plane')) {
+            // Domestic flights (short distances)
+            if (distance < 200) {
+                minimumPrice = 50;  // Minimum for domestic flights
+            }
+            // Regional flights (North Africa/Mediterranean)
+            else if (distance < 2000) {
+                minimumPrice = 100;
+            }
+            // International flights (long distances)
+            else {
+                minimumPrice = 300;  // Minimum for intercontinental flights
+            }
+        } else if (normalizedType.includes('train') || normalizedType.includes('tgm')) {
+            minimumPrice = distance > 500 ? 30 : 1.0;
+        } else if (normalizedType.includes('bus')) {
+            minimumPrice = distance > 500 ? 15 : 0.5;
+        } else if (normalizedType.includes('taxi') || normalizedType.includes('car')) {
+            minimumPrice = 2.0;
+        }
+
+        const finalPrice = Math.max(minimumPrice, roundedPrice);
+        return Number(finalPrice.toFixed(2));
+    },
+
+    _getRoutePricingInfo({ transportType, distance, depLat, depLng, destLat, destLng }) {
+        const normalizedType = (transportType || '').trim().toLowerCase();
+        const routeInfo = { distance: NaN, effectiveTransportType: normalizedType, note: '' };
+
+        if (normalizedType.includes('flight') || normalizedType.includes('plane') || normalizedType.includes('air')) {
+            if ([depLat, depLng, destLat, destLng].some((value) => isNaN(value))) {
+                return { error: 'Unable to determine airports for flight pricing. Please select both locations on the map.' };
+            }
+
+            const depAirport = this._getNearestAirport(depLat, depLng);
+            const destAirport = this._getNearestAirport(destLat, destLng);
+            const airportDistance = this._computeStraightLineKm(depAirport.lat, depAirport.lng, destAirport.lat, destAirport.lng);
+
+            if (depAirport.code === destAirport.code || airportDistance < 10) {
+                const fallbackDistance = !isNaN(distance) && distance > 0
+                    ? distance
+                    : this._computeStraightLineKm(depLat, depLng, destLat, destLng);
+                return {
+                    distance: fallbackDistance,
+                    effectiveTransportType: 'car',
+                    note: `Same airport detected (${depAirport.code}). Flight not recommended; use car/bus instead.`
+                };
+            }
+
+            return {
+                distance: airportDistance,
+                effectiveTransportType: 'flight',
+                note: `Flight distance via ${depAirport.code} → ${destAirport.code}.`
+            };
+        }
+
+        if (!isNaN(distance) && distance > 0) {
+            routeInfo.distance = distance;
+            return routeInfo;
+        }
+
+        if ([depLat, depLng, destLat, destLng].every((value) => !isNaN(value))) {
+            routeInfo.distance = this._computeStraightLineKm(depLat, depLng, destLat, destLng);
+            return routeInfo;
+        }
+
+        return { error: 'Unable to determine route distance. Please select both departure and destination locations on the map.' };
+    },
+
+    async _fetchLivePricingSuggestion({ transportType, routeInfo, departure, destination, destinationCity }) {
+        const transportKey = (transportType || '').trim().toLowerCase();
+
+        const searchResponse = await model.searchInternetRoutePrice({
+            transportType,
+            departure,
+            destination,
+            destinationCity,
+            routeDistance: routeInfo.distance
+        });
+
+        if (searchResponse && typeof searchResponse.price === 'number' && !Number.isNaN(searchResponse.price) && searchResponse.price > 0) {
+            // Validate price is realistic for transport type
+            if (transportKey.includes('flight') || transportKey.includes('plane')) {
+                // Flights must be at least 30 TND; reject garbage matches
+                if (searchResponse.price < 30) {
+                    return null;
+                }
+            } else {
+                // Other transport must be at least 1 TND
+                if (searchResponse.price < 1) {
+                    return null;
+                }
+            }
+            
+            this._lastInternetSearch = searchResponse;
+            return searchResponse.price;
+        }
+
+        return null;
+    },
+
+
+    _getNearestAirport(lat, lng) {
+        const airports = this._getAirports();
+        let best = airports[0];
+        let bestDistance = Infinity;
+        airports.forEach((airport) => {
+            const dist = this._computeStraightLineKm(lat, lng, airport.lat, airport.lng);
+            if (dist < bestDistance) {
+                bestDistance = dist;
+                best = airport;
+            }
+        });
+        return best;
+    },
+
+    _getAirports() {
+        return [
+            { code: 'TUN', name: 'Tunis Carthage Airport', lat: 36.8519, lng: 10.2270 },
+            { code: 'NBE', name: 'Enfidha–Hammamet Intl', lat: 36.0733, lng: 10.3300 },
+            { code: 'MIR', name: 'Monastir Habib Bourguiba Intl', lat: 35.7580, lng: 10.7547 },
+            { code: 'DJE', name: 'Djerba–Zarzis Intl', lat: 33.8753, lng: 10.7758 },
+            { code: 'SFA', name: 'Sfax–Thyna Intl', lat: 34.7478, lng: 10.6903 },
+            { code: 'GAF', name: 'Gabes–Matmata Intl', lat: 33.8867, lng: 10.1018 },
+            { code: 'CDG', name: 'Paris Charles de Gaulle', lat: 49.0097, lng: 2.5479 },
+            { code: 'LHR', name: 'London Heathrow', lat: 51.4700, lng: -0.4543 },
+            { code: 'FRA', name: 'Frankfurt Main', lat: 50.0379, lng: 8.5622 },
+            { code: 'IST', name: 'Istanbul Airport', lat: 41.2753, lng: 28.7519 },
+            { code: 'DXB', name: 'Dubai Intl', lat: 25.2532, lng: 55.3657 }
+        ];
+    },
+
+    _roundPrice(price) {
+        if (price <= 5) {
+            return Math.round(price * 2) / 2; // 0.5 TND increments for small fares
+        }
+        return Math.round(price); // 1 TND increments for larger fares
+    },
+
+    _getTypeBaseRate(type) {
+        if (!type) return 0.5;
+        // Realistic Tunisian transport rates (TND per km)
+        if (type.includes('taxi') || type.includes('car') || type.includes('van') || type.includes('shuttle')) return 0.8;
+        if (type.includes('bus') || type.includes('autocar')) return 0.15;  // City bus ~0.15-0.20 TND/km
+        if (type.includes('train') || type.includes('tgm')) return 0.12;   // Train ~0.10-0.15 TND/km
+        if (type.includes('tram') || type.includes('metro') || type.includes('light rail')) return 0.10;  // Metro ~0.08-0.12 TND/km
+        if (type.includes('ferry')) return 0.40;
+        if (type.includes('flight') || type.includes('plane') || type.includes('air')) return 0.80;
+        return 0.35;
+    },
+
+    _getTypePremium(type) {
+        if (!type) return 1.0;
+        if (type.includes('flight') || type.includes('plane') || type.includes('air')) return 1.30;
+        if (type.includes('ferry')) return 1.10;
+        if (type.includes('luxury') || type.includes('vip') || type.includes('express')) return 1.20;
+        if (type.includes('night') || type.includes('premium')) return 1.10;
+        return 1.00;
+    },
+
+    _cityDemandFactor(city) {
+        if (!city) return 0.05;
+        const popularCities = ['tunis', 'sousse', 'sfax', 'nabeul', 'monastir', 'gabes', 'bizerte', 'kairouan', 'sidi bou said', 'douz'];
+        const cityKey = city.toLowerCase();
+        const localBonus = popularCities.some(name => cityKey.includes(name)) ? 0.10 : 0;
+        const touristBonus = cityKey.includes('beach') || cityKey.includes('hotel') || cityKey.includes('marina') ? 0.08 : 0;
+        let hash = 0;
+        for (let i = 0; i < cityKey.length; i++) {
+            hash += cityKey.charCodeAt(i);
+        }
+        return Math.min(0.25, 0.04 + ((hash % 7) * 0.01) + localBonus + touristBonus);
+    },
+
+    async handleRouteRowAIPrice(dataset) {
+        const transportType = (dataset.transportType || '').trim();
+        const destination = dataset.destination || '';
+        const depLat = parseFloat(dataset.depLat);
+        const depLng = parseFloat(dataset.depLng);
+        const destLat = parseFloat(dataset.destLat);
+        const destLng = parseFloat(dataset.destLng);
+        const suggestion = document.getElementById(`ai-suggestion-${dataset.id}`);
+
+        if (!destination || !transportType) {
+            view.renderToast('Cannot compute AI price for this route. Missing destination or transport type.', 'error');
+            return;
+        }
+
+        const routeInfo = this._getRoutePricingInfo({
+            transportType,
+            distance: NaN,
+            depLat,
+            depLng,
+            destLat,
+            destLng
+        });
+
+        if (routeInfo.error) {
+            view.renderToast(routeInfo.error, 'error');
+            return;
+        }
+
+        const destinationCity = this._extractCityFromAddress(destination);
+        const proposed = this._calculateFallbackPrice({
+            distance: routeInfo.distance,
+            transportType,
+            destinationCity,
+            effectiveTransportType: routeInfo.effectiveTransportType
+        });
+
+        if (suggestion) {
+            suggestion.textContent = `AI best price: ${proposed.toFixed(2)} TND${routeInfo.note ? ' — ' + routeInfo.note : ''}`;
+        }
+        view.renderToast('AI price suggestion generated locally for this route.', 'success');
+    },
+
     async handleTrajetAdd(formData) {
         const departure     = formData.get('departure')?.trim();
         const destination   = formData.get('destination')?.trim();
@@ -758,6 +1102,12 @@ const controller = {
             document.getElementById('destLng').value = '';
             document.getElementById('depAddress').value = '';
             document.getElementById('destAddress').value = '';
+            document.getElementById('routeDistance').value = '';
+            document.getElementById('routeTransportType').value = '';
+            const suggestion = document.getElementById('ai-price-suggestion');
+            if (suggestion) {
+                suggestion.textContent = 'AI will suggest a best price once route and vehicle are selected.';
+            }
 
             // Reset button
             const submitBtn = form.querySelector('button[type="submit"]');

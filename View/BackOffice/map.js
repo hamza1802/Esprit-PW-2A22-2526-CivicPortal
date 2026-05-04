@@ -102,15 +102,23 @@ export function initRouteMap() {
             .then(r => r.json())
             .then(data => {
                 if (data.code === 'Ok' && data.routes.length > 0) {
-                    const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                    const route = data.routes[0];
+                    const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
                     routeLine = L.polyline(coords, { color: '#6366f1', weight: 5, opacity: 0.85 }).addTo(map);
                     map.fitBounds(routeLine.getBounds(), { padding: [40, 40] });
+                    const distanceKm = route.distance / 1000;
+                    const distanceInput = document.getElementById('routeDistance');
+                    if (distanceInput) distanceInput.value = distanceKm.toFixed(2);
                 } else {
                     map.fitBounds([[depLat, depLng], [destLat, destLng]], { padding: [40, 40] });
+                    const distanceInput = document.getElementById('routeDistance');
+                    if (distanceInput) distanceInput.value = '';
                 }
             })
             .catch(() => {
                 map.fitBounds([[depLat, depLng], [destLat, destLng]], { padding: [40, 40] });
+                const distanceInput = document.getElementById('routeDistance');
+                if (distanceInput) distanceInput.value = '';
             });
     }
 

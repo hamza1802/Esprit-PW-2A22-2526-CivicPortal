@@ -689,8 +689,12 @@ const view = {
         ).join('');
 
         const vehicleOptions = vehicles.map(v =>
-            `<option value="${v.idTransport}">${v.name} (${v.type})</option>`
+            `<option value="${v.idTransport}" data-transport-type="${(v.type || '').toLowerCase()}">${v.name} (${v.type})</option>`
         ).join('');
+
+        const transportTypeMap = Object.fromEntries(
+            vehicles.map(v => [v.idTransport, (v.type || '').toLowerCase()])
+        );
 
         const vehicleRows = vehicles.map(v => `
             <tr>
@@ -723,7 +727,19 @@ const view = {
                     <td>${t.departure}</td>
                     <td>${t.destination}</td>
                     <td>${t.departureTime ? t.departureTime.substring(0,5) : '—'}</td>
-                    <td>${Number(t.price).toFixed(2)}</td>
+                    <td>
+                        <div>${Number(t.price).toFixed(2)} TND</div>
+                        <button type="button" class="btn btn-small" data-action="ai-price-row" data-id="${t.idTrajet}"
+                            data-transport-type="${(t.transportType || t.type || '').toLowerCase()}"
+                            data-dep-lat="${t.depLat || ''}"
+                            data-dep-lng="${t.depLng || ''}"
+                            data-dest-lat="${t.destLat || ''}"
+                            data-dest-lng="${t.destLng || ''}"
+                            data-destination="${(t.destAddress || t.destination || '').replace(/"/g, '&quot;')}">
+                            AI
+                        </button>
+                        <div id="ai-suggestion-${t.idTrajet}" style="font-size:0.75rem;opacity:0.75;margin-top:0.25rem;"></div>
+                    </td>
                     <td>${t.transportName || '—'}</td>
                     <td>
                         <div style="display:flex;align-items:center;gap:0.5rem;">
@@ -865,10 +881,16 @@ const view = {
                                     <label>Departure Time</label>
                                     <input type="time" name="departureTime">
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group" style="display:flex;flex-direction:column;gap:0.5rem;">
                                     <label>Price</label>
-                                    <input type="number" name="price" min="0" step="0.01" placeholder="9.99">
+                                    <div style="display:flex;gap:0.5rem;align-items:flex-start;">
+                                        <input type="number" name="price" id="route-price" min="0" step="0.01" placeholder="9.99" style="flex:1;">
+                                        <button type="button" class="btn btn-primary" id="btn-ai-price" style="white-space:nowrap;">GET BEST PRICE</button>
+                                    </div>
+                                    <div id="ai-price-suggestion" style="font-size:0.85rem;opacity:0.75;line-height:1.3;">Click the button to compute the best route price in Tunisian Dinar.</div>
                                 </div>
+                                <input type="hidden" name="distance" id="routeDistance">
+                                <input type="hidden" name="transportType" id="routeTransportType">
                                 <div class="form-group" style="grid-column:1/-1;">
                                     <label>Vehicle</label>
                                     <select name="idTransport">

@@ -19,6 +19,186 @@ header('Content-Type: application/json');
 
 require_once __DIR__ . '/Controller/MainController.php';
 
+function fetchUrlContent(string $url): ?string {
+    if (!function_exists('curl_version')) {
+        return null;
+    }
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_USERAGENT      => 'Mozilla/5.0 (CivicPortal/1.0)',
+        CURLOPT_TIMEOUT        => 20,
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_SSL_VERIFYHOST => false,
+    ]);
+
+    $body = curl_exec($ch);
+    $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_errno($ch);
+    curl_close($ch);
+
+    if ($body === false || $error || $status >= 400) {
+        return null;
+    }
+
+    return $body;
+}
+
+function parseInternetPrices(string $html): array {
+    $prices = [];
+
+    // Match prices with thousands separators: "1,000 DT", "1.000 DT", "1000 DT", "1,50 DT", etc.
+    if (preg_match_all('/(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)\s*(?:TND|DT|dinars?|د\.ت)/iu', $html, $matches)) {
+        foreach ($matches[1] as $raw) {
+            // Remove thousands separators before the decimal, keep only the decimal part
+            $normalized = preg_replace('/[.,](?=\d{3}(?:[^\d]|$))/', '', $raw);
+            // Replace comma/dot with dot for float conversion
+            $normalized = str_replace(',', '.', $normalized);
+            $prices[] = (float) $normalized;
+        }
+    }
+
+    // Also try reverse pattern: "DT 1,000" or "د.ت 1000"
+    if (empty($prices) && preg_match_all('/(?:TND|DT|د\.ت)\s+(\d{1,3}(?:[.,]\d{3})*(?:[.,]\d{1,2})?|\d+(?:[.,]\d{1,2})?)/iu', $html, $matches)) {
+        foreach ($matches[1] as $raw) {
+            $normalized = preg_replace('/[.,](?=\d{3}(?:[^\d]|$))/', '', $raw);
+            $normalized = str_replace(',', '.', $normalized);
+            $prices[] = (float) $normalized;
+        }
+    }
+
+    // Filter out unrealistic prices  
+    $prices = array_filter($prices, function($p) { return $p >= 1.0 && $p <= 500; });
+
+    return array_values(array_unique($prices));
+}
+
+function buildInternetSearchQueries(string $transportType, string $departure, string $destination): array {
+    $queries = [];
+    
+    // French-specific queries for Tunisian context
+    $transportLabel = strtolower($transportType);
+    
+    if (strpos($transportLabel, 'bus') !== false || strpos($transportLabel, 'autocar') !== false) {
+        $queries[] = "{$departure} {$destination} bus prix 2026";
+        $queries[] = "tarif bus {$departure} {$destination} Tunisie";
+        $queries[] = "prix trajet autocar {$departure} {$destination}";
+    } elseif (strpos($transportLabel, 'train') !== false || strpos($transportLabel, 'tgm') !== false) {
+        $queries[] = "{$departure} {$destination} train prix 2026";
+        $queries[] = "TGM tarif {$departure} {$destination}";
+    } elseif (strpos($transportLabel, 'flight') !== false || strpos($transportLabel, 'plane') !== false) {
+        // International flight queries with better coverage
+        $queries[] = "flight price {$departure} {$destination} 2026";
+        $queries[] = "airline ticket {$departure} to {$destination} TND";
+        $queries[] = "cheapest flight {$departure} {$destination}";
+        $queries[] = "vol {$departure} {$destination} prix Tunisie";
+        $queries[] = "Tunisair {$departure} {$destination}";
+    } elseif (strpos($transportLabel, 'ferry') !== false) {
+        $queries[] = "ferry {$departure} {$destination} prix Tunisie";
+    } else {
+        $queries[] = "{$transportType} {$departure} {$destination} prix Tunisie";
+        $queries[] = "{$transportType} {$departure} {$destination} tarif 2026";
+    }
+    
+    return $queries;
+}
+
+function searchInternetRoutePrice(string $transportType, string $departure, string $destination): array {
+    $queries = buildInternetSearchQueries($transportType, $departure, $destination);
+    $allPrices = [];
+    $searchSources = [];
+    
+    foreach ($queries as $query) {
+        $url = 'https://html.duckduckgo.com/html/?q=' . urlencode($query);
+        $html = fetchUrlContent($url);
+        if ($html === null) {
+            continue;
+        }
+
+        $prices = parseInternetPrices($html);
+        if (empty($prices)) {
+            continue;
+        }
+
+        $transportLabel = strtolower($transportType);
+        if (strpos($transportLabel, 'flight') !== false || strpos($transportLabel, 'plane') !== false) {
+            $prices = array_filter($prices, fn($p) => $p >= 30 && $p <= 500);
+        } else {
+            $prices = array_filter($prices, fn($p) => $p >= 1 && $p <= 500);
+        }
+
+        if (empty($prices)) {
+            continue;
+        }
+
+        $allPrices = array_merge($allPrices, array_values($prices));
+        $searchSources[] = htmlspecialchars($query);
+        // Accept first query that yields valid prices
+        break;
+    }
+
+    $allPrices = array_unique($allPrices);
+    sort($allPrices);
+    
+    // Apply transport-type-specific minimum prices
+    $transportLabel = strtolower($transportType);
+    $minimumPrice = 0.5;
+    
+    if (strpos($transportLabel, 'flight') !== false || strpos($transportLabel, 'plane') !== false) {
+        // For flights, use higher minimums - these should come from internet
+        // If we found prices, use them; otherwise return null to trigger fallback
+        if (!empty($allPrices)) {
+            // Filter out unrealistic flight prices (flights shouldn't be < 30 TND or > 500 TND)
+            $allPrices = array_filter($allPrices, function($p) { return $p >= 30 && $p <= 500; });
+            $allPrices = array_values($allPrices);
+            
+            if (empty($allPrices)) {
+                // All prices were filtered as unrealistic
+                return [
+                    'price' => null,
+                    'prices' => [],
+                    'minPrice' => null,
+                    'maxPrice' => null,
+                    'source' => 'DuckDuckGo (Internet search)',
+                    'note' => 'No realistic flight prices found online. Please search manually.'
+                ];
+            }
+        }
+    } else if (strpos($transportLabel, 'bus') !== false) {
+        $minimumPrice = 0.5;
+    } else if (strpos($transportLabel, 'train') !== false || strpos($transportLabel, 'tgm') !== false) {
+        $minimumPrice = 0.5;
+    }
+    
+    if (!empty($allPrices)) {
+        $minPrice = min($allPrices);
+        $maxPrice = max($allPrices);
+        $note = count($allPrices) === 1 
+            ? "Internet price: {$minPrice} TND"
+            : "Internet prices found: {$minPrice} - {$maxPrice} TND (using minimum)";
+        
+        return [
+            'price' => $minPrice,
+            'prices' => $allPrices,
+            'minPrice' => $minPrice,
+            'maxPrice' => $maxPrice,
+            'source' => 'DuckDuckGo (Internet search)',
+            'note' => $note
+        ];
+    }
+
+    return [
+        'price' => null,
+        'prices' => [],
+        'minPrice' => null,
+        'maxPrice' => null,
+        'source' => 'DuckDuckGo (Internet search)',
+        'note' => 'No price information found on the internet for this route.'
+    ];
+}
+
 $input = json_decode(file_get_contents('php://input'), true);
 
 if (!$input || !isset($input['action'])) {
@@ -49,6 +229,19 @@ try { switch ($action) {
         case 'get_transport':
             $transport = AppModel::showTransport((int)($input['idTransport'] ?? 0));
             echo json_encode(['success' => true, 'data' => $transport]);
+            break;
+
+        case 'search_route_price':
+            $transportType = trim((string)($input['transportType'] ?? ''));
+            $departure = trim((string)($input['departure'] ?? ''));
+            $destination = trim((string)($input['destination'] ?? ''));
+            if ($departure === '' || $destination === '') {
+                echo json_encode(['success' => false, 'error' => 'Departure and destination are required for internet price search.']);
+                break;
+            }
+
+            $searchResult = searchInternetRoutePrice($transportType, $departure, $destination);
+            echo json_encode(['success' => true, 'data' => $searchResult]);
             break;
 
         case 'add_transport':
