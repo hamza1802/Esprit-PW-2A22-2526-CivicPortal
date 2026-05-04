@@ -1,6 +1,13 @@
 <?php
 
 require_once __DIR__ . '/../model/User.php';
+require_once __DIR__ . '/../lib/PHPMailer/src/PHPMailer.php';
+require_once __DIR__ . '/../lib/PHPMailer/src/SMTP.php';
+require_once __DIR__ . '/../lib/PHPMailer/src/Exception.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
 require_once __DIR__ . '/../model/Profile.php';
 require_once __DIR__ . '/../config/database.php';
 
@@ -283,6 +290,12 @@ class UserController {
         $errors = [];
         if (trim($input['email'] ?? '') === '') $errors['email'] = 'Email is required.';
         if (trim($input['password'] ?? '') === '') $errors['password'] = 'Password is required.';
+        
+        // CAPTCHA Validation
+        if (empty($input['captcha_code'])) {
+            $errors['captcha'] = 'Security code is required.';
+        }
+        
         return $errors;
     }
 
@@ -291,6 +304,16 @@ class UserController {
     public static function login(array $input): array {
         $errors = self::validateUserLogin($input);
         if (!empty($errors)) return ['errors' => $errors];
+
+        // Verify Internal Professional CAPTCHA
+        $userCode = strtoupper(trim($input['captcha_code'] ?? ''));
+        $serverCode = $_SESSION['captcha_code'] ?? '';
+        
+        if (empty($serverCode) || $userCode !== strtoupper($serverCode)) {
+            return ['errors' => ['captcha' => 'Invalid security code. Please try again.']];
+        }
+        
+        unset($_SESSION['captcha_code']); // Clear code after use
 
         $user = self::getUserByEmail(trim($input['email']));
         if (!$user || !password_verify($input['password'], $user->getPasswordHash())) {
@@ -343,7 +366,7 @@ class UserController {
             require_once $phpMailerPath;
             require_once $smtpPath;
 
-            $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+            $mail = new PHPMailer(true);
 
             try {
                 //Server settings
@@ -352,7 +375,7 @@ class UserController {
                 $mail->SMTPAuth   = true;
                 $mail->Username   = $mailConfig['username'];
                 $mail->Password   = $mailConfig['password'];
-                $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
                 $mail->Port       = 465;
 
                 // Debugging
@@ -447,5 +470,96 @@ class UserController {
     public static function deleteUser(int $id): array {
         if (!self::deleteUserRecord($id)) return ['errors' => ['general' => 'Deletion failed.']];
         return ['success' => 'User deleted successfully.'];
+    }
+
+    public static function requestPasswordReset(string $email): array {
+        $user = self::getUserByEmail($email);
+        if (!$user) {
+            return ['errors' => ['email' => 'User not found.']];
+        }
+
+        $token = bin2hex(random_bytes(32));
+        $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
+
+        $pdo = Database::getInstance();
+        $stmt = $pdo->prepare('UPDATE users SET reset_token = :token, reset_expires = :expires WHERE id = :id');
+        $stmt->execute([
+            'token' => $token,
+            'expires' => $expires,
+            'id' => $user->getId()
+        ]);
+
+        if (self::sendPasswordResetEmail($user, $token)) {
+            return ['success' => 'Reset link has been sent to your email.'];
+        } else {
+            return ['errors' => ['email' => 'Failed to send email.']];
+        }
+    }
+
+    private static function sendPasswordResetEmail($user, $token): bool {
+        $mailConfig = require __DIR__ . '/../config/mail.php';
+        $mail = new PHPMailer(true);
+
+        try {
+            $mail->isSMTP();
+            $mail->Host       = $mailConfig['host'];
+            $mail->SMTPAuth   = true;
+            $mail->Username   = $mailConfig['username'];
+            $mail->Password   = $mailConfig['password'];
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = $mailConfig['port'];
+
+            $mail->setFrom($mailConfig['username'], $mailConfig['from_name']);
+            $mail->addAddress($user->getEmail());
+
+            $resetLink = "http://" . $_SERVER['HTTP_HOST'] . "/a1/index.php?page=front_reset_password&token=" . $token;
+
+            $mail->isHTML(true);
+            $mail->Subject = 'Reset Your CivicPortal Password';
+            $mail->Body    = "
+                <div style='font-family: sans-serif; padding: 20px; color: #1D2A44;'>
+                    <h2>Password Reset Request</h2>
+                    <p>Hello {$user->getDisplayName()},</p>
+                    <p>You requested to reset your password. Click the button below to proceed:</p>
+                    <a href='{$resetLink}' style='display: inline-block; padding: 12px 24px; background: #1D2A44; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;'>Reset Password</a>
+                    <p>If you did not request this, please ignore this email.</p>
+                    <p>This link will expire in 1 hour.</p>
+                </div>
+            ";
+
+            $mail->send();
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    public static function resetPassword(string $token, string $password, string $confirmPassword): array {
+        if ($password !== $confirmPassword) {
+            return ['errors' => ['confirm_password' => 'Passwords do not match.']];
+        }
+        if (strlen($password) < 6) {
+            return ['errors' => ['password' => 'Password must be at least 6 characters.']];
+        }
+
+        $pdo = Database::getInstance();
+        $stmt = $pdo->prepare('SELECT id FROM users WHERE reset_token = :token AND reset_expires > NOW()');
+        $stmt->execute(['token' => $token]);
+        $row = $stmt->fetch();
+
+        if (!$row) {
+            return ['errors' => ['password' => 'Invalid or expired token.']];
+        }
+
+        $userId = $row['id'];
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+
+        $stmt = $pdo->prepare('UPDATE users SET password_hash = :hash, reset_token = NULL, reset_expires = NULL WHERE id = :id');
+        $stmt->execute([
+            'hash' => $hash,
+            'id' => $userId
+        ]);
+
+        return ['success' => 'Password updated successfully. You can now log in.'];
     }
 }

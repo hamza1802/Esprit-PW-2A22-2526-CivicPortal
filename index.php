@@ -166,6 +166,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: index.php?page=front_profile');
             exit;
 
+        case 'request_reset':
+            $result = UserController::requestPasswordReset($_POST['email'] ?? '');
+            if (!empty($result['errors'])) {
+                $_SESSION['errors'] = $result['errors'];
+                header('Location: index.php?page=front_forgot_password');
+                exit;
+            }
+            $_SESSION['success'] = $result['success'];
+            header('Location: index.php?page=front_forgot_password');
+            exit;
+
+        case 'reset_password':
+            $result = UserController::resetPassword(
+                $_POST['token'] ?? '',
+                $_POST['password'] ?? '',
+                $_POST['confirm_password'] ?? ''
+            );
+            if (!empty($result['errors'])) {
+                $_SESSION['errors'] = $result['errors'];
+                header('Location: index.php?page=front_reset_password&token=' . ($_POST['token'] ?? ''));
+                exit;
+            }
+            $_SESSION['success'] = $result['success'];
+            header('Location: index.php?page=front_login');
+            exit;
+
         case 'add_friend':
             AppModel::addFriend($_POST['name'] ?? '', $_POST['email'] ?? '', $_POST['role'] ?? 'citizen');
             $_SESSION['success'] = 'Friend added successfully.';
@@ -347,6 +373,12 @@ switch ($page) {
             exit;
         }
         include __DIR__ . '/View/FrontOffice/verify_otp.php';
+        break;
+    case 'front_forgot_password':
+        include __DIR__ . '/View/FrontOffice/forgot_password.php';
+        break;
+    case 'front_reset_password':
+        include __DIR__ . '/View/FrontOffice/reset_password.php';
         break;
     case 'front_login':
     default:

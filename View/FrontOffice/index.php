@@ -45,7 +45,7 @@ unset($_SESSION['success'], $_SESSION['errors']);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CivicPortal | Citizen Services</title>
     <meta name="description" content="Access municipal services, programs, and submit requests online through CivicPortal.">
-    <base href="/proj/">
+    <base href="/a1/">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="View/assets/css/style.css">
 </head>
@@ -81,6 +81,7 @@ unset($_SESSION['success'], $_SESSION['errors']);
     </script>
 
     <!-- Scripts -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <script type="module" src="View/FrontOffice/app.js"></script>
     <script src="View/assets/js/glass-animations.js"></script>
 </body>
