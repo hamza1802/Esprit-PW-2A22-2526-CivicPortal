@@ -48,7 +48,7 @@ class InteractiveUI {
      * Cursor Tracking: Dynamic radial gradient via custom properties
      */
     initCursorTracking() {
-        const glowElements = '.editorial-card, .program-card, .program-mgmt-card, .form-card, .hero-section';
+        const glowElements = '.btn, .editorial-card, .program-card, .program-mgmt-card, .form-card, .hero-section';
         document.querySelectorAll(glowElements).forEach(el => {
             if (!el.classList.contains('glow-effect')) {
                 el.classList.add('glow-effect');

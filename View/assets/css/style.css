@@ -630,10 +630,7 @@ nav {
     display: inline-block;
 }
 
-.btn:hover {
-    background-color: var(--primary-navy);
-    color: var(--bg-neutral);
-}
+
 
 .btn-primary {
     background-color: var(--primary-navy);
@@ -1152,21 +1149,20 @@ nav {
 
 /* Extra status badge states */
 .status-active {
-    background-color: var(--success);
-    color: var(--white);
+    background-color: var(--white);
+    color: var(--success);
     border-color: var(--success);
 }
 
 .status-confirmed {
-    background-color: var(--success);
-    color: var(--white);
+    background-color: var(--white);
+    color: var(--success);
     border-color: var(--success);
 }
 
 .status-cancelled {
-    background-color: var(--danger);
+    background-color: var(--white);
     color: var(--danger);
-    font
     border-color: var(--danger);
 }
 
@@ -1759,12 +1755,7 @@ nav {
     color: var(--primary-navy) !important;
 }
 
-.btn:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 8px 24px var(--glow-primary) !important;
-    background: var(--white) !important;
-    color: var(--primary-navy) !important;
-}
+
 
 .btn-primary {
     background: var(--primary-navy) !important;
@@ -2618,20 +2609,34 @@ body {
 .btn::before {
     content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 120%;
-    height: 120%;
-    background: var(--color-accent-blue);
+    top: 0;
+    left: 0;
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border-radius: 50%;
-    transform: translate(-50%, -50%) scale(0);
-    transition: transform 0.4s var(--ease-smooth);
+    transform: translate(calc(var(--x, 0px) - 50%), calc(var(--y, 0px) - 50%)) scale(0);
+    transition: transform 0.1s ease-out, opacity 0.3s ease;
     z-index: 0;
+    pointer-events: none;
+    opacity: 0;
 }
 
 .btn:hover::before {
-    transform: translate(-50%, -50%) scale(1);
+    transform: translate(calc(var(--x, 0px) - 50%), calc(var(--y, 0px) - 50%)) scale(1);
+    opacity: 1;
 }
+
+.btn:hover {
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15) !important;
+}
+
+.btn-primary::before {
+    background: rgba(255, 255, 255, 0.3) !important;
+}
+
 
 .btn:active {
     transform: scale(0.92) !important;
