@@ -169,6 +169,23 @@ const controller = {
                     if (confirm('Delete this route? All booked tickets will be affected.')) this.handleTrajetDelete(parseInt(id));
                     break;
 
+                // Forum moderation actions (admin)
+                case 'forum-save-status': {
+                    const select = document.querySelector(`.forum-status-select[data-post-id="${id}"]`);
+                    if (select) this.handleForumStatusUpdate(parseInt(id), select.value);
+                    break;
+                }
+                case 'forum-delete-post':
+                    if (confirm('Delete this forum post permanently?')) {
+                        this.handleForumDeletePost(parseInt(id));
+                    }
+                    break;
+                case 'forum-delete-comment':
+                    if (confirm('Delete this comment permanently?')) {
+                        this.handleForumDeleteComment(parseInt(id));
+                    }
+                    break;
+
                 // User management actions
                 case 'toggle-create-user': {
                     const panel = document.getElementById('create-user-panel');
@@ -282,6 +299,18 @@ const controller = {
                 view.renderAppointmentQueue(appointments || [], user.role);
                 break;
             }
+
+            case '#forum-moderation':
+                if (user.role === 'admin') {
+                    const [forumPosts, forumComments] = await Promise.all([
+                        model.getForumPosts(),
+                        model.getForumComments()
+                    ]);
+                    view.renderForumModeration(forumPosts || [], forumComments || []);
+                } else {
+                    window.location.hash = '#home';
+                }
+                break;
 
             case '#user-management':
                 if (user.role === 'admin') {
@@ -1483,6 +1512,47 @@ const controller = {
             target.innerHTML = 'Audit failed or rate limit exceeded.';
         } finally {
             btn.disabled = false;
+        }
+    },
+
+    /* =========================================================================
+       FORUM MODERATION
+       ========================================================================= */
+    async _refreshForum() {
+        const [posts, comments] = await Promise.all([
+            model.getForumPosts(),
+            model.getForumComments()
+        ]);
+        view.renderForumModeration(posts || [], comments || []);
+    },
+
+    async handleForumStatusUpdate(postId, status) {
+        const result = await model.forumUpdateStatus(postId, status);
+        if (result) {
+            view.renderToast(`Post status changed to "${status}".`);
+            await this._refreshForum();
+        } else {
+            view.renderToast('Failed to update post status.', 'error');
+        }
+    },
+
+    async handleForumDeletePost(postId) {
+        const result = await model.forumDeletePost(postId);
+        if (result) {
+            view.renderToast('Post deleted.');
+            await this._refreshForum();
+        } else {
+            view.renderToast('Failed to delete post.', 'error');
+        }
+    },
+
+    async handleForumDeleteComment(commentId) {
+        const result = await model.forumDeleteComment(commentId);
+        if (result) {
+            view.renderToast('Comment removed.');
+            await this._refreshForum();
+        } else {
+            view.renderToast('Failed to remove comment.', 'error');
         }
     }
 };

@@ -20,6 +20,8 @@ $filterStatus   = isset($_GET['status']) && $_GET['status'] !== ''   ? $_GET['st
 // Fetch posts
 $posts = ForumPostController::getAllPosts($filterCategory, $filterStatus);
 
+
+
 // Success message from redirects
 $successMsg = isset($_GET['success']) ? htmlspecialchars($_GET['success']) : '';
 ?>
