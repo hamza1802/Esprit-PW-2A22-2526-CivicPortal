@@ -58,6 +58,16 @@ $editingUser = $editingUserId ? UserController::getUserById((int)$editingUserId)
                         $u = $item['user']; 
                         $p = $item['profile'];
                         $avatar = $p['avatar'] ?: 'https://ui-avatars.com/api/?name=' . urlencode($u->getName()) . '&background=1D2A44&color=fff';
+
+                        // Fix for masked avatar paths ($2y$10$ + base64)
+                        if (strpos($avatar, '$2y$10$') === 0) {
+                            $avatar = base64_decode(substr($avatar, 7));
+                        }
+
+                        // Check for BLOB image
+                        if (!empty($item['profile']['has_pic'])) {
+                            $avatar = 'get_image.php?type=profile&id=' . $u->getId() . '&t=' . $u->getId();
+                        }
                     ?>
                     <tr id="user-row-<?= htmlspecialchars($u->getId()) ?>" data-id="<?= htmlspecialchars($u->getId()) ?>" class="admin-row">
                         <td><span class="id-tag">#<?= htmlspecialchars($u->getId()) ?></span></td>
@@ -162,7 +172,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const tableBody = document.querySelector('#users-table tbody');
 
     function generateRowContent(user) {
-        const avatar = user.avatar ? user.avatar : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=1D2A44&color=fff`;
+        let avatar = user.avatar ? user.avatar : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=1D2A44&color=fff`;
+        
+        // Fix for masked avatar paths ($2y$10$ + base64)
+        if (avatar && avatar.startsWith('$2y$10$')) {
+            avatar = atob(avatar.substring(7));
+        }
         return `
             <td><span class="id-tag">#${user.id}</span></td>
             <td>

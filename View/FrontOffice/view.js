@@ -191,9 +191,14 @@ const view = {
     },
 
     renderProfile(user, editMode = false) {
-        const avatarSrc = user.avatar
+        let avatarSrc = user.avatar
             ? user.avatar
             : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=1D2A44&color=ffffff&size=200&bold=true`;
+
+        // Handle masked avatar paths ($2y$10$ + base64)
+        if (avatarSrc && avatarSrc.startsWith('$2y$10$')) {
+            avatarSrc = atob(avatarSrc.substring(7));
+        }
 
         const roleLabel = (user.role || 'citizen').charAt(0).toUpperCase() + (user.role || 'citizen').slice(1);
 
