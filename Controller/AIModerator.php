@@ -64,6 +64,8 @@ Analyze the following {$contentType} and return a JSON object with exactly these
 
 3. "reason": A brief, concise explanation (1-2 sentences) of why you assigned that flag and urgency level. Be specific.
 
+4. "bad_words": An array of the exact inappropriate/profane words or slurs found in the text. Return an empty array [] if the content is clean. Include ALL variations, misspellings, and slang of bad words you detect.
+
 Respond with ONLY valid JSON. No markdown, no explanation outside the JSON.
 PROMPT;
 
@@ -124,9 +126,10 @@ PROMPT;
         $validUrgency  = ['low', 'medium', 'high', 'critical'];
 
         return [
-            'flag'    => in_array($parsed['flag'], $validFlags)   ? $parsed['flag']    : 'review',
-            'urgency' => in_array($parsed['urgency'], $validUrgency) ? $parsed['urgency'] : 'low',
-            'reason'  => substr($parsed['reason'] ?? 'No reason provided.', 0, 500)
+            'flag'      => in_array($parsed['flag'], $validFlags)   ? $parsed['flag']    : 'review',
+            'urgency'   => in_array($parsed['urgency'], $validUrgency) ? $parsed['urgency'] : 'low',
+            'reason'    => substr($parsed['reason'] ?? 'No reason provided.', 0, 500),
+            'bad_words' => is_array($parsed['bad_words'] ?? null) ? $parsed['bad_words'] : []
         ];
     }
 
@@ -148,10 +151,14 @@ PROMPT;
         $result = self::callGroq($textToModerate, 'forum post');
 
         if ($result) {
+            // Censor bad words in title and content
+            $censoredTitle   = self::censorContent($post['title'],   $result['bad_words']);
+            $censoredContent = self::censorContent($post['content'], $result['bad_words']);
+
             $update = $db->prepare(
-                "UPDATE forum_posts SET ai_flag = ?, ai_urgency = ?, ai_reason = ? WHERE post_id = ?"
+                "UPDATE forum_posts SET title = ?, content = ?, ai_flag = ?, ai_urgency = ?, ai_reason = ? WHERE post_id = ?"
             );
-            $update->execute([$result['flag'], $result['urgency'], $result['reason'], $postId]);
+            $update->execute([$censoredTitle, $censoredContent, $result['flag'], $result['urgency'], $result['reason'], $postId]);
         }
 
         return $result;
@@ -174,10 +181,13 @@ PROMPT;
         $result = self::callGroq($comment['content'], 'forum comment');
 
         if ($result) {
+            // Censor bad words in comment content
+            $censoredContent = self::censorContent($comment['content'], $result['bad_words']);
+
             $update = $db->prepare(
-                "UPDATE forum_comments SET ai_flag = ?, ai_urgency = ?, ai_reason = ? WHERE comment_id = ?"
+                "UPDATE forum_comments SET content = ?, ai_flag = ?, ai_urgency = ?, ai_reason = ? WHERE comment_id = ?"
             );
-            $update->execute([$result['flag'], $result['urgency'], $result['reason'], $commentId]);
+            $update->execute([$censoredContent, $result['flag'], $result['urgency'], $result['reason'], $commentId]);
         }
 
         return $result;
@@ -256,6 +266,73 @@ PROMPT;
             'flagged_posts'    => $flaggedPosts,
             'flagged_comments' => $flaggedComments
         ];
+    }
+
+    /* =========================================================================
+       CONTENT CENSORING
+       ========================================================================= */
+
+    /**
+     * Built-in profanity word list for instant censoring.
+     * Covers common English profanity + variants.
+     */
+    private static array $builtInBadWords = [
+        'fuck', 'fucker', 'fucking', 'fucked', 'fucks', 'motherfucker', 'motherfucking',
+        'shit', 'shitty', 'shitting', 'bullshit', 'horseshit', 'dipshit',
+        'ass', 'asshole', 'assholes', 'asses', 'dumbass', 'badass', 'jackass', 'smartass',
+        'bitch', 'bitches', 'bitching', 'bitchy', 'son of a bitch',
+        'damn', 'damned', 'damnit', 'goddamn', 'goddamnit',
+        'hell', 'crap', 'piss', 'pissed', 'pissing',
+        'cock', 'cocks', 'cocksucker', 'dick', 'dicks', 'dickhead',
+        'cunt', 'cunts', 'twat', 'whore', 'slut', 'sluts',
+        'bastard', 'bastards', 'wanker', 'wankers', 'tosser',
+        'nigger', 'nigga', 'niggas', 'negro', 'negros',
+        'faggot', 'faggots', 'fag', 'fags', 'dyke', 'tranny',
+        'retard', 'retarded', 'retards',
+        'spic', 'spick', 'chink', 'gook', 'kike', 'wetback',
+        'stfu', 'gtfo', 'lmfao', 'wtf',
+        'porn', 'porno', 'pornography',
+        'kill yourself', 'kys'
+    ];
+
+    /**
+     * Censor bad words in text.
+     * Replaces each bad word with its first letter + asterisks.
+     * e.g. "fuck" → "f***", "shit" → "s***"
+     *
+     * @param string $text       The original text
+     * @param array  $aiWords    Additional words flagged by the AI
+     * @return string            Censored text
+     */
+    public static function censorContent(string $text, array $aiWords = []): string {
+        // Merge built-in list with AI-detected words, deduplicate
+        $allBadWords = array_unique(array_merge(
+            self::$builtInBadWords,
+            array_map('strtolower', array_map('trim', $aiWords))
+        ));
+
+        // Sort by length descending so longer phrases are matched first
+        // e.g. "son of a bitch" before "bitch"
+        usort($allBadWords, function($a, $b) {
+            return strlen($b) - strlen($a);
+        });
+
+        foreach ($allBadWords as $word) {
+            if (empty($word) || strlen($word) < 2) continue;
+
+            // Build replacement: first letter + asterisks
+            $replacement = mb_substr($word, 0, 1) . str_repeat('*', mb_strlen($word) - 1);
+
+            // Case-insensitive replacement preserving first letter case
+            $pattern = '/\b' . preg_quote($word, '/') . '\b/iu';
+            $text = preg_replace_callback($pattern, function($match) use ($replacement) {
+                // Preserve the case of the first letter from the original
+                $firstChar = mb_substr($match[0], 0, 1);
+                return $firstChar . str_repeat('*', mb_strlen($match[0]) - 1);
+            }, $text);
+        }
+
+        return $text;
     }
 }
 ?>
