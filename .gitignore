@@ -10,3 +10,4 @@ TEST_CREDENTIALS.md
 *.log
 .claude/
 .env
+.apikey

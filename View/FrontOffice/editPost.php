@@ -33,7 +33,7 @@ $errors       = [];
 $title        = $post['title'];
 $content      = $post['content'];
 $category     = $post['category'];
-$allowedCats  = ['Infrastructure', 'Health', 'Education'];
+$allowedCats  = ['General', 'Transport', 'Events', 'Announcements', 'Suggestions'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title    = trim($_POST['title'] ?? '');

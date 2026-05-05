@@ -311,3 +311,123 @@
         min-width: unset;
     }
 }
+
+/* ==========================================================================
+   AI Moderation Badges
+   ========================================================================== */
+.ai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    animation: ai-badge-appear 0.3s ease-out;
+}
+
+.ai-badge-sm {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.65rem;
+}
+
+@keyframes ai-badge-appear {
+    from { opacity: 0; transform: scale(0.8); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+/* Flag badges */
+.ai-badge-flagged {
+    background: rgba(231, 76, 60, 0.12);
+    color: #c0392b;
+    border: 1.5px solid rgba(231, 76, 60, 0.3);
+}
+
+.ai-badge-review {
+    background: rgba(243, 156, 18, 0.12);
+    color: #d68910;
+    border: 1.5px solid rgba(243, 156, 18, 0.3);
+}
+
+.ai-badge-clean {
+    background: rgba(39, 174, 96, 0.12);
+    color: #1e8449;
+    border: 1.5px solid rgba(39, 174, 96, 0.3);
+}
+
+/* Urgency badges */
+.ai-urgency-medium {
+    background: rgba(52, 152, 219, 0.12);
+    color: #2471a3;
+    border: 1.5px solid rgba(52, 152, 219, 0.3);
+}
+
+.ai-urgency-high {
+    background: rgba(230, 126, 34, 0.12);
+    color: #ca6f1e;
+    border: 1.5px solid rgba(230, 126, 34, 0.3);
+}
+
+.ai-urgency-critical {
+    background: rgba(192, 57, 43, 0.12);
+    color: #922b21;
+    border: 1.5px solid rgba(192, 57, 43, 0.4);
+    animation: ai-badge-appear 0.3s ease-out, ai-pulse 2s ease-in-out infinite;
+}
+
+@keyframes ai-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(192, 57, 43, 0.2); }
+    50%      { box-shadow: 0 0 0 4px rgba(192, 57, 43, 0.08); }
+}
+
+/* ==========================================================================
+   AI Analysis Card (shown on single post view)
+   ========================================================================== */
+.ai-analysis-card {
+    margin-bottom: 2rem;
+    padding: 1.2rem 1.5rem;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, rgba(52, 73, 94, 0.04), rgba(142, 68, 173, 0.04));
+    border: 1.5px solid rgba(52, 73, 94, 0.12);
+    animation: ai-badge-appear 0.4s ease-out;
+}
+
+.ai-analysis-header {
+    font-weight: 900;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--primary-navy);
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.ai-analysis-header i {
+    font-size: 1rem;
+    opacity: 0.7;
+}
+
+.ai-analysis-reason {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text-dark);
+    margin-bottom: 0.8rem;
+}
+
+.ai-analysis-meta {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.8rem;
+    color: var(--primary-navy);
+    opacity: 0.7;
+    font-weight: 600;
+}
+
+.ai-analysis-meta strong {
+    opacity: 1;
+}

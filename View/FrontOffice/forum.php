@@ -82,9 +82,11 @@ $successMsg = isset($_GET['success']) ? htmlspecialchars($_GET['success']) : '';
                     <label for="filter-category">Category</label>
                     <select name="category" id="filter-category" onchange="this.form.submit()">
                         <option value="">All Categories</option>
-                        <option value="Infrastructure" <?= $filterCategory === 'Infrastructure' ? 'selected' : '' ?>>Infrastructure</option>
-                        <option value="Health" <?= $filterCategory === 'Health' ? 'selected' : '' ?>>Health</option>
-                        <option value="Education" <?= $filterCategory === 'Education' ? 'selected' : '' ?>>Education</option>
+                        <option value="General" <?= $filterCategory === 'General' ? 'selected' : '' ?>>General</option>
+                        <option value="Transport" <?= $filterCategory === 'Transport' ? 'selected' : '' ?>>Transport</option>
+                        <option value="Events" <?= $filterCategory === 'Events' ? 'selected' : '' ?>>Events</option>
+                        <option value="Announcements" <?= $filterCategory === 'Announcements' ? 'selected' : '' ?>>Announcements</option>
+                        <option value="Suggestions" <?= $filterCategory === 'Suggestions' ? 'selected' : '' ?>>Suggestions</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -124,6 +126,16 @@ $successMsg = isset($_GET['success']) ? htmlspecialchars($_GET['success']) : '';
                                 <div class="post-badges">
                                     <span class="status-badge"><?= htmlspecialchars($post['category']) ?></span>
                                     <span class="status-badge status-<?= $post['status'] === 'open' ? 'pending' : ($post['status'] === 'pinned' ? 'validated' : 'rejected') ?>"><?= strtoupper($post['status']) ?></span>
+                                    <?php if (!empty($post['ai_flag']) && $post['ai_flag'] !== 'clean'): ?>
+                                        <span class="ai-badge ai-badge-<?= $post['ai_flag'] ?>" title="<?= htmlspecialchars($post['ai_reason'] ?? '') ?>">
+                                            <i class="bi bi-robot"></i> <?= strtoupper($post['ai_flag']) ?>
+                                        </span>
+                                    <?php endif; ?>
+                                    <?php if (!empty($post['ai_urgency']) && $post['ai_urgency'] !== 'low'): ?>
+                                        <span class="ai-badge ai-urgency-<?= $post['ai_urgency'] ?>">
+                                            <i class="bi bi-exclamation-diamond"></i> <?= strtoupper($post['ai_urgency']) ?>
+                                        </span>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                             <p class="post-excerpt"><?= htmlspecialchars(substr($post['content'], 0, 200)) ?></p>

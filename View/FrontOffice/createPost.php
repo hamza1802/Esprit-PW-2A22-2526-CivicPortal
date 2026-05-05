@@ -17,12 +17,13 @@ if (empty($_SESSION['user_id'])) {
 
 require_once __DIR__ . '/../../Controller/ForumPostController.php';
 require_once __DIR__ . '/../../Model/ForumPost.php';
+require_once __DIR__ . '/../../Controller/AIModerator.php';
 
 $errors       = [];
 $title        = '';
 $content      = '';
 $category     = '';
-$allowedCats  = ['Infrastructure', 'Health', 'Education'];
+$allowedCats  = ['General', 'Transport', 'Events', 'Announcements', 'Suggestions'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title    = trim($_POST['title'] ?? '');
@@ -58,6 +59,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Pass to Controller
         $newId = ForumPostController::createPost($post);
+
+        // AI Moderation — runs asynchronously-ish, best effort
+        AIModerator::moderatePost($newId);
+
         header("Location: viewPost.php?id=$newId&success=Post+created+successfully");
         exit;
     }
