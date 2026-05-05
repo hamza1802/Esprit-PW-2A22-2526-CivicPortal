@@ -26,9 +26,9 @@ class AIConfig
     /** Per-context API keys (Google AI Studio). */
     public static array $keys = [
         // FrontOffice: "Améliorer avec IA" in the citizen request form.
-        'frontoffice' => 'AIzaSyBRyNvkLUNdoGVHC3RdXHjiD17PZd_KQ-o',
+        'frontoffice' => 'myapikey',
         // BackOffice: "Analyser avec IA" in the worker dashboard.
-        'backoffice'  => 'AIzaSyAPEUWBnd174XDYnktGmdr8vzBjhHbyw3c',
+        'backoffice'  => 'myapikey',
     ];
 
     /** Request timeout in seconds. */
