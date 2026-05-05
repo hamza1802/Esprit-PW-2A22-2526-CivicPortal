@@ -107,6 +107,39 @@ const model = {
         return await this.apiCall('get_request_audit_logs', { requestId });
     },
 
+    // ── AI Assistant ────────────────────────────────────────────
+
+    /**
+     * Same as apiCall, but never swallows errors silently. Returns an object
+     * shaped like the AI service response so the UI can always surface a
+     * useful message instead of a silent failure.
+     */
+    async aiCall(action, data = {}) {
+        try {
+            const response = await fetch('../../Verification.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, data })
+            });
+            const text = await response.text();
+            let parsed;
+            try { parsed = JSON.parse(text); } catch (_e) {
+                return { status: 'error', message: `HTTP ${response.status}: ${text.slice(0, 200)}` };
+            }
+            if (!parsed.success) {
+                return { status: 'error', message: parsed.error || 'Backend error.' };
+            }
+            return parsed.data;
+        } catch (error) {
+            console.error("AI API Error:", error);
+            return { status: 'error', message: error.message || 'Network error.' };
+        }
+    },
+
+    async aiImproveDescription(serviceType, description, requiredDocuments = []) {
+        return await this.aiCall('ai_improve_description', { serviceType, description, requiredDocuments });
+    },
+
     /**
      * Upload multiple files for a request.
      * @param {number} requestId

@@ -19,8 +19,69 @@ const REQUIRED_DOCS = {
         { label: 'Property Deed', accept: '.pdf', docType: 'proof' },
         { label: 'Building Plans', accept: '.pdf,.jpg,.jpeg,.png', docType: 'other' }
     ],
-    'Marriage Certificate': [],  // No documents needed
-    'Tax Declaration': []        // No documents needed
+    'Marriage Certificate': [],
+    'Tax Declaration': [],
+
+    'Death Certificate': [
+        { label: "Applicant's valid ID (national ID or passport)", accept: '.pdf,.jpg,.jpeg,.png', docType: 'identity' },
+        { label: 'Proof of relationship to the deceased (family book, birth cert., etc.)', accept: '.pdf,.jpg,.jpeg,.png', docType: 'certificate' },
+        { label: 'Medical certificate of death or hospital attestation (if applicable)', accept: '.pdf,.jpg,.jpeg,.png', docType: 'other' }
+    ],
+    'Divorce Certificate': [
+        { label: 'Valid ID of applicant', accept: '.pdf,.jpg,.jpeg,.png', docType: 'identity' },
+        { label: 'Original or certified copy of marriage certificate', accept: '.pdf,.jpg,.jpeg,.png', docType: 'certificate' },
+        { label: 'Court judgment or mutual consent agreement (if already issued)', accept: '.pdf', docType: 'other' }
+    ],
+    'Passport': [
+        { label: 'Valid national ID or previous passport', accept: '.pdf,.jpg,.jpeg,.png', docType: 'identity' },
+        { label: 'Recent biometric photo (white background)', accept: '.jpg,.jpeg,.png', docType: 'photo' },
+        { label: 'Proof of address (≤ 3 months)', accept: '.pdf,.jpg,.jpeg,.png', docType: 'proof' }
+    ],
+    'Certificate of Nationality': [
+        { label: 'Birth certificate (full copy)', accept: '.pdf,.jpg,.jpeg,.png', docType: 'certificate' },
+        { label: "Parents' birth certificates or nationality proof (if applicable)", accept: '.pdf,.jpg,.jpeg,.png', docType: 'other' },
+        { label: 'Valid ID of applicant', accept: '.pdf,.jpg,.jpeg,.png', docType: 'identity' }
+    ],
+    'Income Certificate': [
+        { label: 'Last 3 pay slips or employer certificate', accept: '.pdf,.jpg,.jpeg,.png', docType: 'other' },
+        { label: 'Tax notice or tax return (last year)', accept: '.pdf', docType: 'other' },
+        { label: 'Valid ID', accept: '.pdf,.jpg,.jpeg,.png', docType: 'identity' }
+    ],
+    'Business Registration': [
+        { label: 'ID of legal representative / manager', accept: '.pdf,.jpg,.jpeg,.png', docType: 'identity' },
+        { label: 'Draft articles of association or company statutes', accept: '.pdf', docType: 'other' },
+        { label: 'Proof of business address (lease, utility, domiciliation)', accept: '.pdf,.jpg,.jpeg,.png', docType: 'proof' }
+    ],
+    'Property Ownership': [
+        { label: 'Title deed or preliminary sale agreement', accept: '.pdf', docType: 'proof' },
+        { label: 'Valid ID of owner or buyer', accept: '.pdf,.jpg,.jpeg,.png', docType: 'identity' },
+        { label: 'Property tax notice or cadastral reference (if available)', accept: '.pdf,.jpg,.jpeg,.png', docType: 'other' }
+    ],
+    'Land Registry Extract': [
+        { label: 'Parcel / plot reference or full address', accept: '.pdf,.jpg,.jpeg,.png', docType: 'other' },
+        { label: 'Valid ID of applicant', accept: '.pdf,.jpg,.jpeg,.png', docType: 'identity' },
+        { label: 'Proof of legitimate interest (deed, mandate, court order)', accept: '.pdf', docType: 'proof' }
+    ],
+    'Criminal Record Extract (Bulletin n°3)': [
+        { label: 'Valid ID (both sides)', accept: '.pdf,.jpg,.jpeg,.png', docType: 'identity' },
+        { label: 'Proof of address (≤ 3 months)', accept: '.pdf,.jpg,.jpeg,.png', docType: 'proof' }
+    ],
+    'Court Judgments': [
+        { label: 'Valid ID of applicant or legal representative', accept: '.pdf,.jpg,.jpeg,.png', docType: 'identity' },
+        { label: 'Case / docket number or court reference', accept: '.pdf,.jpg,.jpeg,.png', docType: 'other' },
+        { label: 'Power of attorney (if requesting on behalf of someone)', accept: '.pdf', docType: 'other' }
+    ],
+    'Legal Certificates': [
+        { label: 'Valid ID', accept: '.pdf,.jpg,.jpeg,.png', docType: 'identity' },
+        { label: 'Written request stating exact certificate needed', accept: '.pdf', docType: 'other' },
+        { label: 'Supporting deed, contract, or prior court/administrative decision', accept: '.pdf', docType: 'certificate' }
+    ],
+    'Vehicle Registration': [
+        { label: 'Valid ID of owner', accept: '.pdf,.jpg,.jpeg,.png', docType: 'identity' },
+        { label: 'Certificate of conformity (COC) or purchase invoice', accept: '.pdf,.jpg,.jpeg,.png', docType: 'other' },
+        { label: 'Proof of address', accept: '.pdf,.jpg,.jpeg,.png', docType: 'proof' },
+        { label: 'Insurance certificate (green card / attestation)', accept: '.pdf,.jpg,.jpeg,.png', docType: 'other' }
+    ]
 };
 
 const view = {
@@ -186,6 +247,20 @@ const view = {
                                 aria-describedby="request-description-error"
                                 placeholder="Describe the details of your request..."></textarea>
                             <small id="request-description-error" class="form-error" style="display:none;"></small>
+                            <div class="ai-toolbar">
+                                <button type="button" id="ai-improve-btn" class="btn btn-ai">
+                                    <span class="ai-icon" aria-hidden="true">✨</span>
+                                    Améliorer avec IA
+                                </button>
+                                <small class="ai-hint">L'IA reformule votre texte et propose les pièces utiles. Vous décidez.</small>
+                            </div>
+                            <div id="ai-suggestion-panel" class="ai-panel" hidden>
+                                <div class="ai-panel-header">
+                                    <strong>Suggestion IA</strong>
+                                    <button type="button" class="ai-panel-close" id="ai-panel-close" aria-label="Fermer">×</button>
+                                </div>
+                                <div class="ai-panel-body" id="ai-panel-body"></div>
+                            </div>
                         </div>
 
                         <div id="documents-section" class="reveal">
@@ -636,6 +711,105 @@ const view = {
             </section>
         `;
         this.triggerObserver();
+    },
+
+    // ── AI Assistant Panel ───────────────────────────────────────
+
+    renderAiSuggestionLoading() {
+        const panel = document.getElementById('ai-suggestion-panel');
+        const body  = document.getElementById('ai-panel-body');
+        if (!panel || !body) return;
+        panel.hidden = false;
+        panel.classList.remove('ai-panel-error');
+        body.innerHTML = `
+            <div class="ai-loading">
+                <span class="ai-spinner" aria-hidden="true"></span>
+                <span>L'IA analyse votre demande…</span>
+            </div>
+        `;
+    },
+
+    renderAiSuggestion(result) {
+        const panel = document.getElementById('ai-suggestion-panel');
+        const body  = document.getElementById('ai-panel-body');
+        if (!panel || !body) return;
+        panel.hidden = false;
+
+        if (!result) {
+            panel.classList.add('ai-panel-error');
+            body.innerHTML = `<p class="ai-error">L'assistant IA n'a pas répondu. Réessayez plus tard.</p>`;
+            return;
+        }
+
+        const isFallback = result.status && result.status !== 'ok';
+        panel.classList.toggle('ai-panel-error', !!isFallback);
+
+        const issues = (result.issues || []).map(i => `<li>${this._esc(i)}</li>`).join('');
+        const improved = this._esc(result.improvedDescription || '');
+
+        const docList = result.documentStatus || [];
+        const docsHtml = docList.map((d) => `
+            <li class="ai-check-item ${d.ok ? 'is-ok' : 'is-missing'}">
+                <span class="ai-check-mark" aria-hidden="true">${d.ok ? '✓' : '✗'}</span>
+                <div class="ai-check-text">
+                    <strong>${this._esc(d.label)}</strong>
+                    <small>${this._esc(d.comment || (d.ok ? 'Document joint.' : 'Document manquant.'))}</small>
+                </div>
+            </li>
+        `).join('');
+
+        const ready = !!result.readyToSubmit;
+        const overall = this._esc(result.overallComment || (ready
+            ? 'Votre demande est prête à être envoyée.'
+            : 'Complétez les éléments signalés avant l\'envoi.'));
+
+        body.innerHTML = `
+            ${isFallback ? `<p class="ai-warning">${this._esc(result.message || 'AI service unavailable.')}</p>` : ''}
+
+            <div class="ai-readiness ${ready ? 'is-ready' : 'is-not-ready'}">
+                <span class="ai-readiness-icon" aria-hidden="true">${ready ? '✓' : '!'}</span>
+                <div>
+                    <div class="ai-readiness-title">${ready ? 'Demande prête à être envoyée' : 'Demande incomplète'}</div>
+                    <div class="ai-readiness-text">${overall}</div>
+                </div>
+            </div>
+
+            <div class="ai-section">
+                <div class="ai-section-title">Description reformulée</div>
+                <p class="ai-improved-text" id="ai-improved-text">${improved || '<em>(aucune)</em>'}</p>
+                <div class="ai-actions">
+                    <button type="button" class="btn btn-primary btn-small" id="ai-apply-description">UTILISER CE TEXTE</button>
+                    <button type="button" class="btn btn-small" id="ai-dismiss">REJETER</button>
+                </div>
+            </div>
+
+            ${issues ? `
+                <div class="ai-section">
+                    <div class="ai-section-title">Points à corriger</div>
+                    <ul class="ai-issues">${issues}</ul>
+                </div>
+            ` : ''}
+
+            ${docsHtml ? `
+                <div class="ai-section">
+                    <div class="ai-section-title">Documents requis</div>
+                    <ul class="ai-checklist">${docsHtml}</ul>
+                </div>
+            ` : ''}
+        `;
+    },
+
+    closeAiPanel() {
+        const panel = document.getElementById('ai-suggestion-panel');
+        if (panel) panel.hidden = true;
+    },
+
+    _esc(str) {
+        return String(str ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
     }
 };
 

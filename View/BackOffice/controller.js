@@ -48,9 +48,12 @@ const controller = {
 
     setupEventListeners() {
         document.addEventListener('click', async (e) => {
-            const target = e.target;
-            const action = target.dataset.action;
-            const id = target.dataset.id;
+            // Resolve the closest [data-action] element so clicks on inner spans
+            // (icons, etc.) still match.
+            const actionEl = e.target.closest && e.target.closest('[data-action]');
+            const target = actionEl || e.target;
+            const action = target.dataset?.action;
+            const id = target.dataset?.id;
 
             if (action === 'validate') {
                 await this.handleStatusUpdate(id, 'approved');
@@ -65,6 +68,15 @@ const controller = {
             } else if (action === 'reset-dashboard-filters') {
                 this.dashboardFilters = { query: '', status: 'all', sortBy: 'date_desc' };
                 this.renderFilteredWorkerDashboard();
+            } else if (action === 'ai-analyze') {
+                await this.handleAiAnalyze(parseInt(id));
+            }
+
+            const aiInsideModal = e.target.closest && e.target.closest('#ai-copy-comment, #ai-use-as-rejection, #ai-analysis-close');
+            if (aiInsideModal) {
+                if (aiInsideModal.id === 'ai-copy-comment')         this.copyAiComment();
+                else if (aiInsideModal.id === 'ai-use-as-rejection') await this.useAiCommentAsRejection();
+                else if (aiInsideModal.id === 'ai-analysis-close')   view.closeAiAnalysisModal();
             }
         });
 
@@ -214,6 +226,73 @@ const controller = {
         this.preserveInputFocus(() => {
             view.renderWorkerDashboard(rows, this.dashboardFilters);
         });
+    },
+
+    // ═════════════════════════════════════════════════════════════
+    //  AI ASSISTANT (Worker)
+    // ═════════════════════════════════════════════════════════════
+
+    async handleAiAnalyze(requestId) {
+        if (!requestId) return;
+        this._currentAiRequestId = requestId;
+        view.showAiAnalysisModal(requestId);
+        const result = await model.aiAnalyzeRequest(requestId);
+        this._lastAiAnalysis = result;
+        view.renderAiAnalysisResult(result);
+    },
+
+    copyAiComment() {
+        const ta = document.getElementById('ai-suggested-comment');
+        if (!ta) return;
+        const text = ta.value || '';
+        if (!text) {
+            view.renderToast('Aucun commentaire à copier.', 'danger');
+            return;
+        }
+        navigator.clipboard?.writeText(text).then(
+            () => view.renderToast('Commentaire copié.'),
+            () => {
+                ta.removeAttribute('readonly');
+                ta.select();
+                document.execCommand && document.execCommand('copy');
+                ta.setAttribute('readonly', 'readonly');
+                view.renderToast('Commentaire copié.');
+            }
+        );
+    },
+
+    async useAiCommentAsRejection() {
+        const ta = document.getElementById('ai-suggested-comment');
+        const requestId = this._currentAiRequestId;
+        if (!ta || !requestId) return;
+
+        const reason = (ta.value || '').trim();
+        if (!reason) {
+            view.renderToast('Pas de commentaire à utiliser.', 'danger');
+            return;
+        }
+
+        const request = model.getServiceRequests().find(r => r.id === requestId);
+        if (!request) return;
+
+        if (request.status !== 'under review') {
+            view.renderToast('La demande doit être "under review" pour être rejetée.', 'danger');
+            return;
+        }
+
+        const ok = confirm('Confirmer le rejet avec ce commentaire comme motif ?');
+        if (!ok) return;
+
+        const updated = await model.updateRequestStatus(requestId, 'rejected', reason);
+        if (!updated) {
+            view.renderToast('Refus enregistré, mais la transition a échoué.', 'danger');
+            return;
+        }
+
+        view.closeAiAnalysisModal();
+        await model.sync();
+        view.renderToast('Demande rejetée avec le motif IA. Décision validée par vous.');
+        this.renderFilteredWorkerDashboard();
     },
 
     handleProfileUpdate(formData) {

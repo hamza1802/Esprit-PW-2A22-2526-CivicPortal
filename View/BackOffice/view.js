@@ -134,6 +134,9 @@ const view = {
                 <td><span class="status-badge status-${(r.status || '').replace(/\s+/g, '-')}">${r.status}</span></td>
                 <td>
                     <button class="btn btn-small" data-action="view-docs" data-id="${r.id}" style="margin-bottom: 5px;">DOCS</button>
+                    <button class="btn btn-small btn-ai" data-action="ai-analyze" data-id="${r.id}" style="margin-bottom: 5px;">
+                        <span class="ai-icon" aria-hidden="true">✨</span> ANALYSER IA
+                    </button>
                     ${r.status === 'pending' ? `<button class="btn btn-small btn-primary" data-action="start-review" data-id="${r.id}" style="margin-bottom: 5px;">START REVIEW</button>` : ''}
                     ${r.status === 'under review' ? `
                         <button class="btn btn-small btn-success" data-action="validate" data-id="${r.id}" style="margin-bottom: 5px;">APPROVE</button>
@@ -374,6 +377,123 @@ const view = {
                 if (e.target === modal) close();
             });
         });
+    },
+
+    // ── AI Analysis Modal (Worker) ───────────────────────────────
+
+    showAiAnalysisModal(requestId) {
+        const existing = document.getElementById('ai-analysis-modal');
+        if (existing) existing.remove();
+
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.id = 'ai-analysis-modal';
+        modal.innerHTML = `
+            <div class="modal-card ai-analysis-card">
+                <div class="modal-header">
+                    <h3><span class="ai-icon" aria-hidden="true">✨</span> Analyse IA — Demande #${requestId}</h3>
+                    <button class="modal-close" id="ai-analysis-close" type="button">&times;</button>
+                </div>
+                <div class="ai-analysis-body" id="ai-analysis-body">
+                    <div class="ai-loading">
+                        <span class="ai-spinner" aria-hidden="true"></span>
+                        <span>Analyse en cours…</span>
+                    </div>
+                </div>
+                <p class="ai-disclaimer">
+                    L'IA est un assistant. La décision finale (approuver / rejeter)
+                    reste à votre charge.
+                </p>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        const close = () => modal.remove();
+        modal.querySelector('#ai-analysis-close')?.addEventListener('click', close);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) close();
+        });
+        return modal;
+    },
+
+    renderAiAnalysisResult(result) {
+        const body = document.getElementById('ai-analysis-body');
+        if (!body) return;
+
+        if (!result) {
+            body.innerHTML = `<p class="ai-error">L'analyse a échoué. Réessayez plus tard.</p>`;
+            return;
+        }
+
+        const isFallback = result.status && result.status !== 'ok';
+        const recLabel = {
+            approve: 'APPROUVER',
+            reject: 'REJETER',
+            request_more_info: 'DEMANDER + D\'INFOS'
+        }[result.recommendation] || 'À ÉVALUER';
+        const recClass = {
+            approve: 'rec-approve',
+            reject: 'rec-reject',
+            request_more_info: 'rec-info'
+        }[result.recommendation] || '';
+
+        const issues = (result.issues || []).map(i => `<li>${this._esc(i)}</li>`).join('');
+        const score = Math.max(0, Math.min(100, result.validityScore || 0));
+        const comment = this._esc(result.suggestedComment || '');
+
+        body.innerHTML = `
+            ${isFallback ? `<p class="ai-warning">${this._esc(result.message || 'AI service unavailable.')}</p>` : ''}
+
+            <div class="ai-section">
+                <div class="ai-section-title">Résumé</div>
+                <p>${this._esc(result.summary || '—')}</p>
+            </div>
+
+            <div class="ai-section ai-grid">
+                <div>
+                    <div class="ai-section-title">Score de validité</div>
+                    <div class="ai-score">
+                        <div class="ai-score-bar"><span style="width:${score}%"></span></div>
+                        <strong>${score}/100</strong>
+                    </div>
+                </div>
+                <div>
+                    <div class="ai-section-title">Recommandation</div>
+                    <span class="ai-rec ${recClass}">${recLabel}</span>
+                </div>
+            </div>
+
+            ${issues ? `
+                <div class="ai-section">
+                    <div class="ai-section-title">Problèmes détectés</div>
+                    <ul class="ai-issues">${issues}</ul>
+                </div>
+            ` : ''}
+
+            <div class="ai-section">
+                <div class="ai-section-title">Commentaire pour le citoyen</div>
+                <textarea class="ai-comment" id="ai-suggested-comment" rows="4" readonly>${comment}</textarea>
+                <div class="ai-actions">
+                    <button type="button" class="btn btn-small" id="ai-copy-comment">COPIER</button>
+                    <button type="button" class="btn btn-small btn-danger" id="ai-use-as-rejection" data-recommendation="${result.recommendation || ''}">
+                        UTILISER COMME MOTIF DE REJET
+                    </button>
+                </div>
+            </div>
+        `;
+    },
+
+    closeAiAnalysisModal() {
+        const m = document.getElementById('ai-analysis-modal');
+        if (m) m.remove();
+    },
+
+    _esc(str) {
+        return String(str ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
     },
 
     renderAdminInbox(complaints) {

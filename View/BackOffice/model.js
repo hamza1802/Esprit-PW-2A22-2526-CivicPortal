@@ -71,6 +71,34 @@ const model = {
         return await this.apiCall('get_request_audit_logs', { requestId });
     },
 
+    // ── AI Assistant ─────────────────────────────────────────────
+
+    async aiCall(action, data = {}) {
+        try {
+            const response = await fetch('../../Verification.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, data })
+            });
+            const text = await response.text();
+            let parsed;
+            try { parsed = JSON.parse(text); } catch (_e) {
+                return { status: 'error', message: `HTTP ${response.status}: ${text.slice(0, 200)}` };
+            }
+            if (!parsed.success) {
+                return { status: 'error', message: parsed.error || 'Backend error.' };
+            }
+            return parsed.data;
+        } catch (error) {
+            console.error("AI API Error:", error);
+            return { status: 'error', message: error.message || 'Network error.' };
+        }
+    },
+
+    async aiAnalyzeRequest(requestId) {
+        return await this.aiCall('ai_analyze_request', { requestId });
+    },
+
     setCurrentUser(role) {
         this.state.currentUser = this.state.users.find(u => u.role === role);
     },

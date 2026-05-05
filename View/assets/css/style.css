@@ -2457,3 +2457,322 @@ a:focus-visible {
     gap: 0.75rem;
     flex-wrap: wrap;
 }
+
+/* ────────────────────────────────────────────────────────────── */
+/*  AI Assistant — FrontOffice & BackOffice                         */
+/* ────────────────────────────────────────────────────────────── */
+
+.ai-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.ai-hint {
+    color: rgba(0, 0, 0, 0.55);
+    font-size: 0.78rem;
+    font-style: italic;
+}
+
+.btn-ai {
+    background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #EC4899 100%);
+    color: #fff;
+    border: none;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+.btn-ai:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(139, 92, 246, 0.35);
+    color: #fff;
+}
+.btn-ai.is-loading,
+.btn-ai:disabled {
+    opacity: 0.65;
+    cursor: progress;
+}
+.btn-ai .ai-icon {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.ai-panel {
+    margin-top: 0.85rem;
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    background: linear-gradient(180deg, rgba(99, 102, 241, 0.06), rgba(236, 72, 153, 0.04));
+    border-radius: var(--radius-md, 12px);
+    padding: 1rem 1.1rem;
+    box-shadow: 0 6px 18px rgba(99, 102, 241, 0.08);
+}
+
+.ai-panel[hidden] { display: none !important; }
+
+.ai-panel.ai-panel-error {
+    border-color: rgba(231, 76, 60, 0.45);
+    background: rgba(231, 76, 60, 0.05);
+}
+
+.ai-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    color: var(--primary-navy, #1D2A44);
+}
+
+.ai-panel-close {
+    background: transparent;
+    border: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    line-height: 1;
+    color: rgba(0, 0, 0, 0.55);
+}
+
+.ai-section { margin-top: 0.75rem; }
+
+.ai-section-title {
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: rgba(0, 0, 0, 0.55);
+    margin-bottom: 0.25rem;
+    font-weight: 800;
+}
+
+.ai-improved-text {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+    padding: 0.7rem 0.85rem;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.ai-issues, .ai-docs {
+    margin: 0;
+    padding-left: 1.2rem;
+    line-height: 1.55;
+}
+.ai-issues li { color: var(--danger, #E74C3C); }
+.ai-docs   li { color: var(--text-dark, #1A1A1A); }
+
+.ai-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.6rem;
+}
+
+.ai-loading {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    color: rgba(0, 0, 0, 0.65);
+    font-style: italic;
+}
+
+.ai-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(99, 102, 241, 0.25);
+    border-top-color: #6366F1;
+    border-radius: 50%;
+    animation: ai-spin 0.8s linear infinite;
+}
+@keyframes ai-spin { to { transform: rotate(360deg); } }
+
+.ai-error,
+.ai-warning {
+    margin: 0 0 0.5rem 0;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+.ai-error   { background: rgba(231, 76, 60, 0.08); color: #B03A2E; }
+.ai-warning { background: rgba(241, 196, 15, 0.12); color: #7D6608; }
+
+/* Worker Analysis Modal ────────────────────────────────────────── */
+
+.ai-analysis-card {
+    max-width: 640px;
+}
+
+.ai-analysis-body {
+    padding-top: 0.5rem;
+}
+
+.ai-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+@media (max-width: 540px) {
+    .ai-grid { grid-template-columns: 1fr; }
+}
+
+.ai-score {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+.ai-score-bar {
+    flex: 1;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
+}
+.ai-score-bar > span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #EF4444 0%, #F59E0B 50%, #10B981 100%);
+    border-radius: inherit;
+}
+
+.ai-rec {
+    display: inline-block;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    color: #fff;
+    background: #6B7280;
+}
+.ai-rec.rec-approve { background: var(--success, #27AE60); }
+.ai-rec.rec-reject  { background: var(--danger, #E74C3C); }
+.ai-rec.rec-info    { background: #F59E0B; }
+
+.ai-comment {
+    width: 100%;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 10px;
+    padding: 0.65rem 0.8rem;
+    font-family: inherit;
+    background: #fff;
+    resize: vertical;
+}
+
+.ai-disclaimer {
+    margin: 0.85rem 0 0 0;
+    padding-top: 0.6rem;
+    border-top: 1px dashed rgba(0, 0, 0, 0.12);
+    font-size: 0.78rem;
+    color: rgba(0, 0, 0, 0.55);
+    font-style: italic;
+}
+
+/* Readiness banner (FrontOffice AI panel) ─────────────────────── */
+
+.ai-readiness {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    padding: 0.75rem 0.9rem;
+    border-radius: 12px;
+    margin-bottom: 0.75rem;
+    border: 1px solid transparent;
+}
+
+.ai-readiness.is-ready {
+    background: rgba(39, 174, 96, 0.12);
+    border-color: rgba(39, 174, 96, 0.3);
+    color: #186A3B;
+}
+
+.ai-readiness.is-not-ready {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #7C4A03;
+}
+
+.ai-readiness-icon {
+    flex: 0 0 auto;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    color: #fff;
+}
+.ai-readiness.is-ready     .ai-readiness-icon { background: #27AE60; }
+.ai-readiness.is-not-ready .ai-readiness-icon { background: #F59E0B; }
+
+.ai-readiness-title {
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.15rem;
+}
+
+.ai-readiness-text {
+    font-size: 0.88rem;
+    line-height: 1.4;
+}
+
+/* Document checklist ──────────────────────────────────────────── */
+
+.ai-checklist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.ai-check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.55rem 0.7rem;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+}
+
+.ai-check-mark {
+    flex: 0 0 auto;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+}
+
+.ai-check-item.is-ok      .ai-check-mark { background: #27AE60; }
+.ai-check-item.is-missing .ai-check-mark { background: #E74C3C; }
+
+.ai-check-item.is-missing {
+    border-color: rgba(231, 76, 60, 0.35);
+    background: rgba(231, 76, 60, 0.04);
+}
+
+.ai-check-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.ai-check-text strong {
+    font-weight: 700;
+    font-size: 0.92rem;
+}
+
+.ai-check-text small {
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 0.8rem;
+}

@@ -153,6 +153,14 @@ const controller = {
                 this.listFilters = { query: '', sortBy: 'date_desc' };
                 this.renderFilteredRequests();
             }
+
+            // ── AI Assistant (FrontOffice) ───────────────────────
+            const aiBtn = target.closest && target.closest('#ai-improve-btn, #ai-panel-close, #ai-dismiss, #ai-apply-description');
+            if (aiBtn) {
+                if (aiBtn.id === 'ai-improve-btn')        await this.handleAiImprove();
+                else if (aiBtn.id === 'ai-panel-close' || aiBtn.id === 'ai-dismiss') view.closeAiPanel();
+                else if (aiBtn.id === 'ai-apply-description') this.applyAiDescription();
+            }
         });
 
         // ── Hash Routing ─────────────────────────────────────────
@@ -460,6 +468,106 @@ const controller = {
         model.updateUser(data);
         view.renderToast('Profile updated locally!');
         window.location.hash = '#home';
+    },
+
+    // ═════════════════════════════════════════════════════════════
+    //  AI ASSISTANT (FrontOffice)
+    // ═════════════════════════════════════════════════════════════
+
+    /** Maximum per-file size we send inline to the AI (raw bytes). */
+    _AI_INLINE_MAX_BYTES: 3 * 1024 * 1024,
+    /** Cumulative budget across all attached files (raw bytes). */
+    _AI_INLINE_TOTAL_BUDGET: 6 * 1024 * 1024,
+
+    /** Read a File as base64 (without the data:...;base64, prefix). */
+    _readFileAsBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const result = String(reader.result || '');
+                const idx = result.indexOf(',');
+                resolve(idx >= 0 ? result.slice(idx + 1) : result);
+            };
+            reader.onerror = () => reject(reader.error);
+            reader.readAsDataURL(file);
+        });
+    },
+
+    /** Best-effort MIME guess from the filename when File.type is empty. */
+    _guessMime(name) {
+        const ext = (name.split('.').pop() || '').toLowerCase();
+        return ({
+            pdf:  'application/pdf',
+            png:  'image/png',
+            jpg:  'image/jpeg',
+            jpeg: 'image/jpeg',
+            webp: 'image/webp',
+            gif:  'image/gif'
+        })[ext] || 'application/octet-stream';
+    },
+
+    async handleAiImprove() {
+        const titleEl = document.getElementById('request-title');
+        const descEl  = document.getElementById('request-description');
+        const btn     = document.getElementById('ai-improve-btn');
+        if (!descEl) return;
+
+        const serviceType = titleEl?.value || '';
+        const description = descEl.value || '';
+
+        if (btn) { btn.disabled = true; btn.classList.add('is-loading'); }
+        view.renderAiSuggestionLoading();
+
+        // Build a closed list of (label, provided?, fileName, type) plus the
+        // inline file content (base64) so Gemini can actually inspect the
+        // attachments and detect a wrong document.
+        // We respect both a per-file cap and a cumulative budget so the
+        // resulting JSON stays under typical PHP `post_max_size`.
+        const inputs = Array.from(document.querySelectorAll('.doc-file-input'));
+        let remainingBudget = this._AI_INLINE_TOTAL_BUDGET;
+        const requiredDocuments = await Promise.all(inputs.map(async (input) => {
+            const file = input.files?.[0] || null;
+            const entry = {
+                label:    input.dataset.label || '',
+                type:     input.dataset.doctype || 'other',
+                provided: !!file,
+                fileName: file ? file.name : ''
+            };
+            if (file) {
+                if (file.size > this._AI_INLINE_MAX_BYTES || file.size > remainingBudget) {
+                    entry.tooLarge = true;
+                } else {
+                    try {
+                        entry.mimeType   = file.type || this._guessMime(file.name);
+                        entry.base64Data = await this._readFileAsBase64(file);
+                        remainingBudget -= file.size;
+                    } catch (_e) { /* ignore — fall back to filename-only */ }
+                }
+            }
+            return entry;
+        }));
+
+        const result = await model.aiImproveDescription(serviceType, description, requiredDocuments);
+
+        if (btn) { btn.disabled = false; btn.classList.remove('is-loading'); }
+        view.renderAiSuggestion(result);
+
+        this._lastAiResult = result;
+    },
+
+    applyAiDescription() {
+        const result = this._lastAiResult;
+        const descEl = document.getElementById('request-description');
+        if (!result || !descEl) return;
+        const improved = (result.improvedDescription || '').trim();
+        if (!improved) {
+            view.renderToast('Aucun texte à appliquer.', 'danger');
+            return;
+        }
+        descEl.value = improved;
+        descEl.dispatchEvent(new Event('input', { bubbles: true }));
+        view.renderToast('Description mise à jour.');
+        view.closeAiPanel();
     },
 
     async handleComplaintSubmission(formData) {

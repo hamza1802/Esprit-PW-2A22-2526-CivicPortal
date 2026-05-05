@@ -5,6 +5,7 @@
  */
 
 require_once __DIR__ . '/../Model/AppModel.php';
+require_once __DIR__ . '/../Model/AIService.php';
 
 class MainController {
 
@@ -92,6 +93,24 @@ class MainController {
             // ── Stats ────────────────────────────────────────────
             case 'get_stats':
                 return AppModel::getStats();
+
+            // ── AI Assistant ─────────────────────────────────────
+            case 'ai_improve_description':
+                return AIService::improveDescription(
+                    (string)($data['serviceType'] ?? ''),
+                    (string)($data['description'] ?? ''),
+                    is_array($data['requiredDocuments'] ?? null) ? $data['requiredDocuments'] : []
+                );
+
+            case 'ai_analyze_request': {
+                $requestId = (int)($data['requestId'] ?? 0);
+                $request   = AppModel::getRequestById($requestId);
+                if (!$request) {
+                    throw new Exception("Request $requestId not found.");
+                }
+                $documents = AppModel::getDocumentsByRequest($requestId) ?: [];
+                return AIService::analyzeRequest($request, $documents);
+            }
 
             default:
                 throw new Exception("Invalid action: " . $action);
