@@ -490,4 +490,6 @@ const view = {
     }
 };
 
+window.renderToast = view.renderToast.bind(view);
+
 export default view;

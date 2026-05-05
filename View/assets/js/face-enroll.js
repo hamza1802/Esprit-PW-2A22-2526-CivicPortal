@@ -117,6 +117,11 @@ class FaceEnrollment {
             if (result.success) {
                 this.showFeedback('Face enrolled successfully!', 'success');
                 this.updateStatus('Enrolled', 'matched');
+                if (window.renderToast) {
+                    window.renderToast('Face ID saved successfully!');
+                } else {
+                    alert('Face ID saved successfully!');
+                }
             } else {
                 this.showFeedback(result.message, 'error');
                 this.saveBtn.disabled = false;

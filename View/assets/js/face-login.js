@@ -52,7 +52,11 @@ class FaceLogin {
         if (errorEl) {
             errorEl.textContent = msg;
         } else {
-            alert(msg);
+            if (window.renderToast) {
+                window.renderToast(msg, 'error');
+            } else {
+                alert(msg);
+            }
         }
     }
 
