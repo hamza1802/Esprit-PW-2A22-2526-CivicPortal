@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gunzip -c \"C:/Users/Administrator/.claude/projects/C--xampp-htdocs-CivicPortal/0c9af943-a470-494c-b827-bc6cccad151e/tool-results/webfetch-1777116732652-zxxs76.bin\")",
+      "Bash(tar -xOf - \"civic-portal/project/CivicPortal Prototype.html\")",
+      "Bash(python -c ' *)",
+      "Bash(python -)",
+      "Bash(node --input-type=module)",
+      "Bash(node *)",
+      "Bash(php *)",
+      "Bash(C:\\\\xampp\\\\php\\\\php.exe *)",
+      "Bash('C:\\\\xampp\\\\php\\\\php.exe' -r ' *)",
+      "Bash(\"C:\\\\xampp\\\\php\\\\php.exe\" -l \"C:\\\\xampp\\\\htdocs\\\\CivicPortal\\\\Verification.php\")",
+      "Bash(Select-String -Path \"C:\\\\xampp\\\\htdocs\\\\CivicPortal\\\\View\\\\BackOffice\\\\view.js\" -Pattern \"btn-generate-image\" -Context 15)"
+    ]
+  }
+}

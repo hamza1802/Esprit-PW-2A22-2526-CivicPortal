@@ -512,7 +512,7 @@ class UserController {
             $mail->setFrom($mailConfig['username'], $mailConfig['from_name']);
             $mail->addAddress($user->getEmail());
 
-            $resetLink = "http://" . $_SERVER['HTTP_HOST'] . "/a1/index.php?page=front_reset_password&token=" . $token;
+            $resetLink = "http://" . $_SERVER['HTTP_HOST'] . "/CivicPortal/index.php?page=front_reset_password&token=" . $token;
 
             $mail->isHTML(true);
             $mail->Subject = 'Reset Your CivicPortal Password';

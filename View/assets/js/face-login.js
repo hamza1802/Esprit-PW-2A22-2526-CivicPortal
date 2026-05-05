@@ -1,4 +1,4 @@
-const MODEL_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights';
+const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
 
 class FaceLogin {
     constructor() {
@@ -19,6 +19,10 @@ class FaceLogin {
     }
 
     async init() {
+        if (!window.faceapi) {
+            console.error('Face-API script not loaded.');
+            return;
+        }
         try {
             await Promise.all([
                 faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),

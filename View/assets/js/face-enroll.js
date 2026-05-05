@@ -1,4 +1,4 @@
-const MODEL_URL = 'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights';
+const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
 
 class FaceEnrollment {
     constructor() {
@@ -27,6 +27,10 @@ class FaceEnrollment {
     }
 
     async init() {
+        if (!window.faceapi) {
+            this.showFeedback('Face-API script not loaded. Please check your internet connection.', 'error');
+            return;
+        }
         this.updateStatus('Loading models...', 'scanning');
         try {
             await Promise.all([

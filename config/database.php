@@ -11,7 +11,7 @@ class Database {
     public static function getInstance(): PDO {
         if (self::$instance === null) {
             $host = '127.0.0.1';
-            $db   = 'civicportal';
+            $db   = 'civic';
             $user = 'root';
             $pass = '';
             $charset = 'utf8mb4';
