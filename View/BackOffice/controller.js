@@ -51,6 +51,8 @@ const controller = {
             if (!actionEl) {
                 if (e.target.id === 'btn-generate-image') {
                     this.handleImageGeneration(e.target);
+                } else if (e.target.id === 'btn-cancel-image-gen') {
+                    this._imgGenCancelled = true;
                 }
                 return;
             }
@@ -430,15 +432,104 @@ const controller = {
             return;
         }
 
+        const provider     = (document.getElementById('img-gen-provider')?.value) || 'auto';
+        this._imgGenCancelled = false;
+
         const originalText = btnElement.innerHTML;
-        btnElement.innerHTML = '⏳ GENERATING...';
+        const cancelBtn    = document.getElementById('btn-cancel-image-gen');
+        const providerSel  = document.getElementById('img-gen-provider');
+        const previewEl    = document.getElementById('prog-image-preview');
+
+        btnElement.innerHTML = '<i class="bi bi-stars"></i> GENERATING...';
         btnElement.disabled  = true;
+        if (cancelBtn)   cancelBtn.style.display = 'inline-block';
+        if (providerSel) providerSel.disabled     = true;
+
+        const stages = [
+            { pct: 15, label: 'Composing prompt...' },
+            { pct: 40, label: 'Sending to AI...' },
+            { pct: 65, label: 'Rendering image...' },
+            { pct: 85, label: 'Finalizing details...' },
+            { pct: 95, label: 'Almost done...' },
+        ];
+
+        const providerLabel = provider === 'puter' ? 'Puter.ai' : provider === 'pollinations' ? 'Pollinations.ai' : 'Auto';
+
+        previewEl.innerHTML = `
+            <div id="img-gen-progress" style="border:var(--border-main);border-radius:var(--radius-md);padding:1.2rem 1.4rem;background:var(--white);max-width:400px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem;">
+                    <span id="img-gen-label" style="font-size:0.82rem;font-weight:600;color:var(--primary-navy);letter-spacing:0.5px;">Initializing...</span>
+                    <span id="img-gen-pct" style="font-size:0.82rem;font-weight:700;color:var(--accent-blue);">0%</span>
+                </div>
+                <div style="font-size:0.75rem;color:#888;margin-bottom:0.6rem;">Provider: ${providerLabel}</div>
+                <div style="width:100%;height:6px;background:var(--secondary-grey,#eee);border-radius:99px;overflow:hidden;">
+                    <div id="img-gen-bar" style="height:100%;width:0%;background:var(--accent-blue);border-radius:99px;transition:width 0.5s ease;"></div>
+                </div>
+            </div>
+        `;
+
+        const bar     = document.getElementById('img-gen-bar');
+        const labelEl = document.getElementById('img-gen-label');
+        const pctEl   = document.getElementById('img-gen-pct');
+
+        let stageIdx = 0;
+        const advanceStage = () => {
+            if (stageIdx >= stages.length) return;
+            const { pct, label } = stages[stageIdx++];
+            bar.style.width     = pct + '%';
+            labelEl.textContent = label;
+            pctEl.textContent   = pct + '%';
+        };
+
+        advanceStage();
+        const stageTimer = setInterval(advanceStage, 3500);
+
+        const cleanup = () => {
+            clearInterval(stageTimer);
+            btnElement.innerHTML = originalText;
+            btnElement.disabled  = false;
+            if (cancelBtn)   cancelBtn.style.display = 'none';
+            if (providerSel) providerSel.disabled     = false;
+        };
 
         try {
-            const prompt     = `A professional, high-quality photograph for a community program. Theme: ${category}. Title: ${title}. ${desc}. Bright, inviting lighting. No text in the image.`;
-            const imgElement = await puter.ai.txt2img(prompt);
+            const prompt = `A professional, high-quality photograph for a community program. Theme: ${category}. Title: ${title}. ${desc}. Bright, inviting lighting. No text in the image.`;
+            let imgSrc = null;
 
-            const response = await fetch(imgElement.src);
+            if (provider === 'pollinations') {
+                labelEl.textContent = 'Sending to Pollinations.ai...';
+                const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=800&height=400&nologo=true`;
+                await new Promise((resolve, reject) => { const i = new Image(); i.onload = resolve; i.onerror = reject; i.src = url; });
+                imgSrc = url;
+            } else if (provider === 'puter') {
+                const imgElement = await puter.ai.txt2img(prompt);
+                imgSrc = imgElement.src;
+            } else {
+                try {
+                    const imgElement = await puter.ai.txt2img(prompt);
+                    imgSrc = imgElement.src;
+                } catch (puterErr) {
+                    if (this._imgGenCancelled) throw new Error('cancelled');
+                    console.warn('Puter.ai unavailable, switching to Pollinations.ai:', puterErr);
+                    labelEl.textContent = 'Switching to Pollinations.ai...';
+                    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=800&height=400&nologo=true`;
+                    await new Promise((resolve, reject) => { const i = new Image(); i.onload = resolve; i.onerror = reject; i.src = url; });
+                    imgSrc = url;
+                }
+            }
+
+            if (this._imgGenCancelled) throw new Error('cancelled');
+
+            clearInterval(stageTimer);
+            bar.style.width      = '100%';
+            labelEl.textContent  = 'Done!';
+            pctEl.textContent    = '100%';
+            bar.style.background = 'var(--success)';
+
+            await new Promise(r => setTimeout(r, 400));
+            if (this._imgGenCancelled) throw new Error('cancelled');
+
+            const response = await fetch(imgSrc);
             const blob     = await response.blob();
             const file     = new File([blob], 'generated_cover.jpg', { type: 'image/jpeg' });
 
@@ -446,17 +537,22 @@ const controller = {
             dataTransfer.items.add(file);
             document.getElementById('prog-image').files = dataTransfer.files;
 
-            document.getElementById('prog-image-preview').innerHTML = `
-                <img src="${imgElement.src}" style="width:100%;max-width:400px;height:200px;object-fit:cover;border:var(--border-main);">
+            previewEl.innerHTML = `
+                <img src="${imgSrc}" style="width:100%;max-width:400px;height:200px;object-fit:cover;border:var(--border-main);border-radius:var(--radius-md);">
                 <p style="font-size:0.8rem;color:var(--success);margin-top:0.5rem;font-weight:bold;">AI image generated and attached!</p>
             `;
             view.renderToast('AI Image generated successfully!');
         } catch (error) {
-            console.error('AI Generation Error:', error);
-            view.renderToast('Failed to generate image. Try again.', 'error');
+            clearInterval(stageTimer);
+            previewEl.innerHTML = '';
+            if (error.message === 'cancelled') {
+                view.renderToast('Image generation cancelled.', 'error');
+            } else {
+                console.error('AI Generation Error:', error);
+                view.renderToast('Failed to generate image. Try again.', 'error');
+            }
         } finally {
-            btnElement.innerHTML = originalText;
-            btnElement.disabled  = false;
+            cleanup();
         }
     },
 

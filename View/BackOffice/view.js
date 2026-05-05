@@ -625,9 +625,15 @@ const view = {
                         </div>
                         <div class="form-group">
                             <label for="prog-image">Program Image</label>
-                            <div style="display:flex;gap:1rem;align-items:center;">
-                                <input type="file" id="prog-image" name="image" accept="image/*" style="flex:1;">
-                                <button type="button" class="btn" id="btn-generate-image" style="padding:0.8rem 1.5rem;font-size:0.9rem;"><i class="bi bi-stars"></i> GENERATE WITH AI</button>
+                            <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+                                <input type="file" id="prog-image" name="image" accept="image/*" style="flex:1;min-width:0;">
+                                <select id="img-gen-provider" style="padding:0.75rem 1rem;font-size:0.85rem;border:var(--border-main);border-radius:var(--radius-sm);background:var(--white);color:var(--primary-navy);font-weight:600;cursor:pointer;">
+                                    <option value="auto">Auto</option>
+                                    <option value="puter">Puter.ai</option>
+                                    <option value="pollinations">Pollinations.ai</option>
+                                </select>
+                                <button type="button" class="btn" id="btn-generate-image" style="padding:0.8rem 1.5rem;font-size:0.9rem;white-space:nowrap;"><i class="bi bi-stars"></i> GENERATE WITH AI</button>
+                                <button type="button" id="btn-cancel-image-gen" style="display:none;padding:0.8rem 1.2rem;font-size:0.9rem;border:var(--border-main);border-radius:var(--radius-sm);background:var(--white);color:var(--danger,#E74C3C);font-weight:700;cursor:pointer;white-space:nowrap;letter-spacing:0.5px;">✕ CANCEL</button>
                             </div>
                             <div id="prog-image-preview" style="margin-top:1rem;">
                                 ${isEdit ? `<img src="../../get_image.php?type=program&id=${program.id}" style="max-width:200px;border:var(--border-main);" onerror="this.style.display='none'">` : ''}

@@ -1165,7 +1165,8 @@ nav {
 
 .status-cancelled {
     background-color: var(--danger);
-    color: var(--white);
+    color: var(--danger);
+    font
     border-color: var(--danger);
 }
 
@@ -1319,72 +1320,72 @@ nav {
 }
 
 .ticket-detail-item {
-        background: rgba(29, 42, 68, 0.04);
-        padding: 12px;
-        border-radius: 8px;
-    }
+    background: rgba(29, 42, 68, 0.04);
+    padding: 12px;
+    border-radius: 8px;
+}
 
-    .ticket-detail-label {
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: rgba(26, 26, 26, 0.65);
-        margin-bottom: 4px;
-    }
+.ticket-detail-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(26, 26, 26, 0.65);
+    margin-bottom: 4px;
+}
 
-    .ticket-detail-value {
-        font-weight: 700;
-        color: var(--text-dark);
-    }
+.ticket-detail-value {
+    font-weight: 700;
+    color: var(--text-dark);
+}
 
-    .ticket-detail-value.price {
-        color: var(--primary-navy);
-    }
+.ticket-detail-value.price {
+    color: var(--primary-navy);
+}
 
-    .ticket-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 24px;
-        padding-top: 16px;
-        border-top: 1px solid rgba(26, 26, 26, 0.08);
-    }
+.ticket-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(26, 26, 26, 0.08);
+}
 
-    .ticket-status-badge {
-        padding: 6px 16px;
-        border-radius: 999px;
-        font-size: 0.8rem;
-        font-weight: 800;
-        text-transform: uppercase;
-    }
+.ticket-status-badge {
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
 
-    .ticket-status-badge.valid {
-        background: rgba(34, 197, 94, 0.2);
-        color: #166534;
-        border: 1px solid rgba(34, 197, 94, 0.3);
-    }
+.ticket-status-badge.valid {
+    background: rgba(34, 197, 94, 0.2);
+    color: #166534;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
 
-    .ticket-status-badge.cancelled {
-        background: rgba(239, 68, 68, 0.12);
-        color: #b91c1c;
-        border: 1px solid rgba(239, 68, 68, 0.2);
-    }
+.ticket-status-badge.cancelled {
+    background: rgba(239, 68, 68, 0.12);
+    color: #b91c1c;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
 
-    .ticket-type-label {
-        font-size: 0.8rem;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        opacity: 0.9;
-        color: var(--primary-navy);
-        font-weight: 600;
-    }
+.ticket-type-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    opacity: 0.9;
+    color: var(--primary-navy);
+    font-weight: 600;
+}
 
-    .ticket-ref {
-        font-weight: 800;
-        font-size: 1.4rem;
-        color: var(--primary-navy);
-        letter-spacing: 1px;
-    }
+.ticket-ref {
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: var(--primary-navy);
+    letter-spacing: 1px;
+}
 
 .appt-detail-value {
     font-weight: 700;

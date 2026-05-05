@@ -218,9 +218,7 @@ const view = {
                         <p class="description-clamp" onclick="this.classList.toggle('expanded')"
                            title="Click to expand">${p.description}</p>
                         <div class="mt-auto flex-column gap-8" style="padding-bottom:5%;">
-                            <button class="btn btn-secondary btn-toggle-chat w-full no-bg" data-id="${p.id}" style="border:1px solid var(--color-primary);">
-                                <i class="bi bi-chat-stars"></i> Ask AI
-                            </button>
+
                             <button class="btn ${isEnrolled ? 'btn-success' : 'btn-primary'} w-full"
                                     data-id="${p.id}"
                                     data-action="enroll"

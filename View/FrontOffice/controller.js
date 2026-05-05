@@ -39,17 +39,7 @@ const controller = {
                 this.handleAISimplify(e.target.dataset.id, e.target);
                 return;
             }
-            if (e.target.closest('.btn-toggle-chat')) {
-                const id = e.target.closest('.btn-toggle-chat').dataset.id;
-                const chatBox = document.getElementById('ai-chat-' + id);
-                chatBox.style.display = chatBox.style.display === 'none' ? 'flex' : 'none';
-                return;
-            }
-            if (e.target.classList.contains('btn-ai-ask')) {
-                const id = e.target.dataset.id;
-                this.handleAIAssistant(id, document.getElementById('ai-input-' + id), e.target);
-                return;
-            }
+
             const target = e.target.closest('[data-action]') || e.target;
             const action = target.dataset.action;
             const id     = target.dataset.id;
