@@ -429,10 +429,39 @@ const controller = {
         resultsContainer.innerHTML = '<p class="ai-loading-indicator">Analyzing program catalog...</p>';
 
         const programs = model.getPrograms().map(p => ({ id: p.id, title: p.title, description: p.description, category: p.category }));
-        const prompt = `User request: "${input}"\n\nPrograms available: ${JSON.stringify(programs)}\n\nReturn a JSON array of the top 3 best matching programs. Format: [{"id": 1, "reason": "Why it matches"}]. Return ONLY valid JSON, nothing else.`;
+        const prompt = `CITIZEN INPUT: "${input}"\n\nPROGRAM CATALOG: ${JSON.stringify(programs)}`;
 
         try {
-            let jsonStr = await this.fetchGroq(prompt, 'You are an AI program matcher for a civic portal. Always return ONLY a raw JSON array.');
+            const systemPrompt = `You are an expert civic program eligibility matcher for CivicPortal.
+
+Your job: analyze the citizen's input and match them to the most relevant programs from the provided list.
+
+MATCHING RULES:
+- Match based on: age indicators, life situation, keywords, goals, and eligibility signals
+- Rank results by relevance (highest first)
+- Never invent programs not in the provided list
+- If no strong match exists, return the closest partial matches with honest scores
+
+OUTPUT: Return ONLY a raw JSON array. No markdown, no explanation, no wrapping text.
+
+FORMAT:
+[
+  {
+    "program_id": 12,
+    "program_name": "Youth Tech Workshop 2026",
+    "category": "Education",
+    "match_score": 92,
+    "match_reason": "Citizen described being a student aged 16 seeking tech skills — this program targets teenagers with technology training."
+  }
+]
+
+SCORING GUIDE:
+- 90–100: Direct match on multiple eligibility signals
+- 70–89: Strong match on at least one key signal
+- 50–69: Partial match, worth considering
+- Below 50: Omit from results`;
+
+            let jsonStr = await this.fetchGroq(prompt, systemPrompt);
             
             // Robust JSON extraction
             const jsonMatch = jsonStr.match(/\[[\s\S]*\]/);
@@ -445,16 +474,17 @@ const controller = {
                 return;
             }
 
-            let html = '<h4><i class="bi bi-stars"></i> Top AI Matches</h4>';
+            let html = '<h4><i class="bi bi-stars"></i> Top AI Eligibility Matches</h4>';
             matches.forEach(m => {
-                const prog = model.getPrograms().find(p => p.id == m.id);
+                const prog = model.getPrograms().find(p => p.id == m.program_id);
                 if (prog) {
                     html += `
-                        <div style="background:var(--surface-glass); border:var(--surface-border); padding:1rem; border-radius:var(--radius-sm);">
-                            <h5 style="margin:0 0 0.5rem 0; color:var(--primary-navy);">${prog.title}</h5>
+                        <div style="background:var(--surface-glass); border:var(--surface-border); padding:1rem; border-radius:var(--radius-sm); position:relative;">
+                            <div style="position:absolute; top:1rem; right:1rem; background:var(--primary-navy); color:white; font-size:0.7rem; padding:0.2rem 0.5rem; border-radius:10px; font-weight:800;">${m.match_score}% Match</div>
+                            <h5 style="margin:0 0 0.5rem 0; color:var(--primary-navy); padding-right: 4rem;">${prog.title}</h5>
                             <span class="category-badge" style="font-size:0.7rem; padding:0.2rem 0.5rem;">${prog.category}</span>
-                            <div class="ai-match-reason">${m.reason}</div>
-                            <button class="btn btn-small btn-primary" onclick="document.querySelector('[data-action=\\'enroll\\'][data-id=\\'${prog.id}\\']').click()" style="margin-top:0.5rem; width:100%;">Enroll</button>
+                            <div class="ai-match-reason" style="font-size:0.85rem; margin-top:0.5rem; line-height:1.4; color:var(--text-main);">${m.match_reason}</div>
+                            <button class="btn btn-small btn-primary" onclick="document.querySelector('[data-action=\\'enroll\\'][data-id=\\'${prog.id}\\']').click()" style="margin-top:0.5rem; width:100%;">Enroll Now</button>
                         </div>
                     `;
                 }
