@@ -1,0 +1,24 @@
+{
+  "name": "a1",
+  "version": "1.0.0",
+  "description": "🏛️ CivicPortal\r Modernizing Public Governance through Digital Accessibility",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hamza1802/Esprit-PW-2A22-2526-CivicPortal.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/hamza1802/Esprit-PW-2A22-2526-CivicPortal/issues"
+  },
+  "homepage": "https://github.com/hamza1802/Esprit-PW-2A22-2526-CivicPortal#readme"
+}

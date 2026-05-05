@@ -317,6 +317,26 @@ const view = {
                 <div class="pf-content">
                     ${editMode ? editForm : profileSummary}
                 </div>
+
+                <!-- Face ID Enrollment Section (Always Visible) -->
+                <div class="face-enroll-card reveal" style="margin-top: 2rem; background: white; padding: 2rem; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05);">
+                    <h2 style="font-size: 1.4rem; font-weight: 900; color: #1D2A44; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: -0.5px;">Security: Face ID Enrollment</h2>
+                    <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 1.5rem;">Register your face to enable quick login. Please ensure you are in a well-lit area.</p>
+                    
+                    <div id="enroll-status" class="face-id-status status-scanning" style="padding: 0.8rem; border-radius: 12px; font-weight: 700; font-size: 0.85rem; text-align: center; margin-bottom: 1.5rem; background: #f1f5f9; color: #64748b; text-transform: uppercase;">Loading Face ID...</div>
+                    
+                    <div class="webcam-container" style="max-width: 100%; margin: 1.5rem auto; position: relative; border-radius: 20px; overflow: hidden; background: #000; aspect-ratio: 4/3;">
+                        <video id="enroll-video" style="width: 100%; height: 100%; object-fit: cover;" autoplay muted></video>
+                        <canvas id="enroll-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+                    </div>
+
+                    <div id="enroll-feedback" class="face-id-feedback" style="margin: 1rem 0; padding: 0.8rem; border-radius: 12px; font-size: 0.85rem; text-align: center; display: none;"></div>
+                    
+                    <button id="enroll-save" class="btn btn-primary" disabled style="width: 100%; padding: 1rem; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.8rem;">
+                        <i class="bi bi-person-bounding-box"></i>
+                        Save My Face Data
+                    </button>
+                </div>
             </section>
         `;
         this.triggerObserver();

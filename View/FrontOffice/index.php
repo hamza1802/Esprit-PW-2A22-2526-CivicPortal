@@ -48,6 +48,9 @@ unset($_SESSION['success'], $_SESSION['errors']);
     <base href="/a1/">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="View/assets/css/style.css">
+    <link rel="stylesheet" href="View/assets/css/face-id.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script defer src="View/assets/js/face-enroll.js"></script>
 </head>
 <body>
 

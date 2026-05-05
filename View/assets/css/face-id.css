@@ -1,0 +1,142 @@
+:root {
+    --face-id-primary: #1D2A44;
+    --face-id-success: #28a745;
+    --face-id-error: #dc3545;
+    --face-id-warning: #ffc107;
+    --face-id-bg: rgba(255, 255, 255, 0.95);
+    --face-id-overlay: rgba(0, 0, 0, 0.5);
+    --face-id-border-radius: 12px;
+    --face-id-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+/* Face ID Button */
+.btn-face-id {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background-color: transparent;
+    border: 2px solid var(--face-id-primary);
+    color: var(--face-id-primary);
+    padding: 12px 24px;
+    border-radius: var(--face-id-border-radius);
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.btn-face-id:hover {
+    background-color: var(--face-id-primary);
+    color: white;
+}
+
+.btn-face-id svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Modal / Panel */
+.face-id-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--face-id-overlay);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.face-id-modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.face-id-content {
+    background-color: var(--face-id-bg);
+    padding: 2rem;
+    border-radius: var(--face-id-border-radius);
+    box-shadow: var(--face-id-shadow);
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    text-align: center;
+}
+
+.face-id-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--face-id-primary);
+}
+
+/* Webcam Container */
+.webcam-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4/3;
+    background-color: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 1.5rem 0;
+}
+
+.webcam-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.webcam-container canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Status Indicators */
+.face-id-status {
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    letter-spacing: 1px;
+}
+
+.status-scanning { color: var(--face-id-primary); }
+.status-detected { color: var(--face-id-warning); }
+.status-matched { color: var(--face-id-success); }
+.status-failed { color: var(--face-id-error); }
+
+/* Feedback Messages */
+.face-id-feedback {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    min-height: 1.2rem;
+}
+
+.feedback-error { color: var(--face-id-error); }
+.feedback-success { color: var(--face-id-success); }
+
+/* Enrollment UI */
+.face-enroll-card {
+    border: 1px solid #ddd;
+    border-radius: var(--face-id-border-radius);
+    padding: 1.5rem;
+    background: #fff;
+    margin-top: 2rem;
+}

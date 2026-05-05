@@ -1,4 +1,8 @@
 <?php require_once __DIR__ . '/../../includes/header.php'; ?>
+<link rel="stylesheet" href="View/assets/css/face-id.css">
+<script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script defer src="View/assets/js/face-enroll.js"></script>
+
 <div class="card">
     <h1>Mon profil</h1>
     <p>Vos informations personnelles et gestion des amis.</p>
@@ -106,6 +110,26 @@
                 </form>
             <?php endif; ?>
 
+            <!-- Face ID Enrollment Section -->
+            <div class="face-enroll-card">
+                <h2>Security: Face ID Enrollment</h2>
+                <p>Register your face to enable quick login. Please ensure you are in a well-lit area.</p>
+                
+                <div id="enroll-status" class="face-id-status status-scanning">Loading Face ID...</div>
+                
+                <div class="webcam-container" style="max-width: 400px; margin: 1.5rem auto;">
+                    <video id="enroll-video" width="400" height="300" autoplay muted></video>
+                    <canvas id="enroll-canvas"></canvas>
+                </div>
+
+                <div id="enroll-feedback" class="face-id-feedback"></div>
+                
+                <button id="enroll-save" class="button" disabled style="margin-top: 1rem;">
+                    <svg viewBox="0 0 24 24" fill="currentColor" style="width:20px; vertical-align:middle; margin-right:8px;"><path d="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z" /></svg>
+                    Save My Face Data
+                </button>
+            </div>
+
             <div style="margin-top: 1rem; padding: 1rem; border: 1px solid #d5d9e0; border-radius: 16px; background: #fafafa;">
                 <h2>Gestion des amis</h2>
 
@@ -157,4 +181,5 @@
         <p>Utilisateur non trouvé.</p>
     <?php endif; ?>
 </div>
+<?php require_once __DIR__ . '/../../includes/footer.php'; ?>
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>

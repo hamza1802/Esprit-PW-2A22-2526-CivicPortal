@@ -71,6 +71,9 @@ const controller = {
 
         if (hash !== '#profile') {
             this.profileEditMode = false;
+            if (window.faceEnrollment) {
+                window.faceEnrollment.stop();
+            }
         }
 
         // Allow guests to see pages but block them from performing actions
@@ -105,6 +108,9 @@ const controller = {
                 break;
             case '#profile':
                 view.renderProfile(user, this.profileEditMode);
+                if (window.initFaceEnrollment) {
+                    window.initFaceEnrollment();
+                }
                 break;
             case '#request-service':
                 view.renderServiceRequestForm();
