@@ -336,6 +336,10 @@ const model = {
 
     async forumDeleteComment(commentId) {
         return await this.apiCall('forum_delete_comment', { comment_id: commentId });
+    },
+
+    async getForumStats() {
+        return await this.apiCall('get_forum_stats');
     }
 };
 

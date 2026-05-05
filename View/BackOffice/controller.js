@@ -302,11 +302,17 @@ const controller = {
 
             case '#forum-moderation':
                 if (user.role === 'admin') {
-                    const [forumPosts, forumComments] = await Promise.all([
+                    const [forumPosts, forumComments, forumStats] = await Promise.all([
                         model.getForumPosts(),
-                        model.getForumComments()
+                        model.getForumComments(),
+                        model.getForumStats()
                     ]);
-                    view.renderForumModeration(forumPosts || [], forumComments || []);
+                    view.renderForumModeration(forumPosts || [], forumComments || [], forumStats || {});
+                    // Notify if flagged content exists
+                    const flaggedCount = (forumStats?.flagged_posts?.length || 0) + (forumStats?.flagged_comments?.length || 0);
+                    if (flaggedCount > 0) {
+                        view.renderToast(`⚠️ ${flaggedCount} flagged content item${flaggedCount !== 1 ? 's' : ''} require attention.`, 'error');
+                    }
                 } else {
                     window.location.hash = '#home';
                 }
@@ -1519,11 +1525,12 @@ const controller = {
        FORUM MODERATION
        ========================================================================= */
     async _refreshForum() {
-        const [posts, comments] = await Promise.all([
+        const [posts, comments, stats] = await Promise.all([
             model.getForumPosts(),
-            model.getForumComments()
+            model.getForumComments(),
+            model.getForumStats()
         ]);
-        view.renderForumModeration(posts || [], comments || []);
+        view.renderForumModeration(posts || [], comments || [], stats || {});
     },
 
     async handleForumStatusUpdate(postId, status) {

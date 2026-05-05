@@ -106,6 +106,7 @@ class MainController {
             'forum_update_status'  => 'admin',
             'forum_delete_post'    => 'admin',
             'forum_delete_comment' => 'admin',
+            'get_forum_stats'      => 'admin',
         ];
 
         $required = $map[$action] ?? 'admin';
@@ -350,6 +351,9 @@ class MainController {
                 $result = ForumCommentController::deleteComment((int)$data['comment_id'], 0, true);
                 if (!$result) throw new Exception('Failed to delete comment.');
                 return ['success' => 'Comment deleted.'];
+            case 'get_forum_stats':
+                require_once __DIR__ . '/AIModerator.php';
+                return AIModerator::getStats();
 
             // --- Notifications ---
             case 'get_notifications':

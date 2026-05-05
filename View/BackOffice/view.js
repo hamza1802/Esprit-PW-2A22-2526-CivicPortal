@@ -1094,19 +1094,98 @@ const view = {
     /* =========================================================================
        FORUM MODERATION (admin only)
        ========================================================================= */
-    renderForumModeration(posts, comments) {
+    renderForumModeration(posts, comments, stats) {
         const statusClass = s => s === 'open' ? 'pending' : s === 'pinned' ? 'validated' : 'rejected';
+        const aiClass = f => f === 'flagged' ? 'danger' : f === 'review' ? 'warning' : 'success';
 
+        // --- AI Stats Cards ---
+        const postFlags = {};
+        (stats?.post_flags || []).forEach(r => { postFlags[r.ai_flag || 'unscanned'] = parseInt(r.count); });
+        const commentFlags = {};
+        (stats?.comment_flags || []).forEach(r => { commentFlags[r.ai_flag || 'unscanned'] = parseInt(r.count); });
+
+        const flaggedPosts    = stats?.flagged_posts    || [];
+        const flaggedComments = stats?.flagged_comments || [];
+        const urgencyAlerts   = stats?.urgency_alerts   || [];
+        const totalFlagged    = flaggedPosts.length + flaggedComments.length;
+        const highUrgency     = urgencyAlerts.reduce((s, r) => s + parseInt(r.count), 0);
+
+        // Flagged alert banner
+        const alertBanner = totalFlagged > 0 ? `
+            <div class="reveal" style="margin-bottom:2rem;padding:1.2rem 1.5rem;border:2px solid var(--danger);border-radius:var(--radius-md);
+                        background:rgba(231,76,60,0.06);display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+                <i class="bi bi-exclamation-triangle-fill" style="font-size:1.5rem;color:var(--danger);"></i>
+                <div>
+                    <strong style="color:var(--danger);font-size:1rem;">${totalFlagged} Flagged Content Item${totalFlagged !== 1 ? 's' : ''}</strong>
+                    <span style="opacity:0.7;font-size:0.9rem;margin-left:0.5rem;">
+                        (${flaggedPosts.length} post${flaggedPosts.length !== 1 ? 's' : ''}, ${flaggedComments.length} comment${flaggedComments.length !== 1 ? 's' : ''})
+                    </span>
+                    ${highUrgency > 0 ? `<span style="margin-left:1rem;padding:0.2rem 0.6rem;background:rgba(192,57,43,0.15);color:#922b21;border-radius:20px;font-size:0.75rem;font-weight:800;">
+                        ${highUrgency} HIGH/CRITICAL URGENCY
+                    </span>` : ''}
+                </div>
+            </div>
+        ` : '';
+
+        // Stats cards
+        const statsHtml = `
+            <div class="reveal" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:2.5rem;">
+                <div style="padding:1.2rem;border:var(--border-main);border-radius:var(--radius-md);text-align:center;">
+                    <div style="font-size:2rem;font-weight:900;color:var(--success);">${postFlags['clean'] || 0}</div>
+                    <div style="font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;opacity:0.6;">Clean Posts</div>
+                </div>
+                <div style="padding:1.2rem;border:var(--border-main);border-radius:var(--radius-md);text-align:center;">
+                    <div style="font-size:2rem;font-weight:900;color:#d68910;">${postFlags['review'] || 0}</div>
+                    <div style="font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;opacity:0.6;">Under Review</div>
+                </div>
+                <div style="padding:1.2rem;border:var(--border-main);border-radius:var(--radius-md);text-align:center;${(postFlags['flagged'] || 0) > 0 ? 'border-color:var(--danger);background:rgba(231,76,60,0.04);' : ''}">
+                    <div style="font-size:2rem;font-weight:900;color:var(--danger);">${postFlags['flagged'] || 0}</div>
+                    <div style="font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;opacity:0.6;">Flagged Posts</div>
+                </div>
+                <div style="padding:1.2rem;border:var(--border-main);border-radius:var(--radius-md);text-align:center;">
+                    <div style="font-size:2rem;font-weight:900;color:var(--accent-blue);">${(posts || []).length}</div>
+                    <div style="font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;opacity:0.6;">Total Posts</div>
+                </div>
+                <div style="padding:1.2rem;border:var(--border-main);border-radius:var(--radius-md);text-align:center;">
+                    <div style="font-size:2rem;font-weight:900;color:var(--primary-navy);">${(comments || []).length}</div>
+                    <div style="font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;opacity:0.6;">Total Comments</div>
+                </div>
+                <div style="padding:1.2rem;border:var(--border-main);border-radius:var(--radius-md);text-align:center;${highUrgency > 0 ? 'border-color:#c0392b;background:rgba(192,57,43,0.04);' : ''}">
+                    <div style="font-size:2rem;font-weight:900;color:#922b21;">${highUrgency}</div>
+                    <div style="font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;opacity:0.6;">High Urgency</div>
+                </div>
+            </div>
+        `;
+
+        // --- Post Rows (with AI badge) ---
         const postRows = (posts || []).map(p => {
             const date = p.created_at
                 ? new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                 : '—';
+            const aiFlagBadge = p.ai_flag && p.ai_flag !== 'clean'
+                ? `<span style="display:inline-block;padding:0.15rem 0.5rem;border-radius:20px;font-size:0.65rem;font-weight:800;text-transform:uppercase;
+                            background:${p.ai_flag === 'flagged' ? 'rgba(231,76,60,0.12)' : 'rgba(243,156,18,0.12)'};
+                            color:${p.ai_flag === 'flagged' ? '#c0392b' : '#d68910'};
+                            border:1px solid ${p.ai_flag === 'flagged' ? 'rgba(231,76,60,0.3)' : 'rgba(243,156,18,0.3)'};"
+                        title="${this._esc(p.ai_reason || '')}">
+                        <i class="bi bi-robot"></i> ${p.ai_flag.toUpperCase()}
+                    </span>`
+                : '';
+            const urgencyBadge = p.ai_urgency && p.ai_urgency !== 'low'
+                ? `<span style="display:inline-block;padding:0.15rem 0.5rem;border-radius:20px;font-size:0.65rem;font-weight:800;text-transform:uppercase;
+                            background:${p.ai_urgency === 'critical' ? 'rgba(192,57,43,0.12)' : p.ai_urgency === 'high' ? 'rgba(230,126,34,0.12)' : 'rgba(52,152,219,0.12)'};
+                            color:${p.ai_urgency === 'critical' ? '#922b21' : p.ai_urgency === 'high' ? '#ca6f1e' : '#2471a3'};">
+                        <i class="bi bi-exclamation-diamond"></i> ${p.ai_urgency.toUpperCase()}
+                    </span>`
+                : '';
+            const rowBg = p.ai_flag === 'flagged' ? 'background:rgba(231,76,60,0.04);' : '';
             return `
-                <tr>
+                <tr style="${rowBg}">
                     <td><strong>#${p.post_id}</strong></td>
                     <td>
                         <strong>${this._esc(p.title)}</strong><br>
                         <span style="font-size:0.82rem;opacity:0.65;">${this._esc(p.author_name)}</span>
+                        ${aiFlagBadge || urgencyBadge ? `<div style="margin-top:0.3rem;display:flex;gap:0.3rem;flex-wrap:wrap;">${aiFlagBadge}${urgencyBadge}</div>` : ''}
                     </td>
                     <td><span class="status-badge">${this._esc(p.category)}</span></td>
                     <td><span class="status-badge status-${statusClass(p.status)}">${p.status.toUpperCase()}</span></td>
@@ -1129,15 +1208,25 @@ const view = {
             `;
         }).join('');
 
+        // --- Comment Rows (with AI badge) ---
         const commentRows = (comments || []).map(c => {
             const date = c.created_at
                 ? new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
                 : '—';
             const excerpt = c.content.length > 120 ? c.content.substring(0, 120) + '…' : c.content;
+            const aiFlagBadge = c.ai_flag && c.ai_flag !== 'clean'
+                ? `<span style="display:inline-block;padding:0.15rem 0.4rem;border-radius:20px;font-size:0.6rem;font-weight:800;text-transform:uppercase;margin-left:0.4rem;
+                            background:${c.ai_flag === 'flagged' ? 'rgba(231,76,60,0.12)' : 'rgba(243,156,18,0.12)'};
+                            color:${c.ai_flag === 'flagged' ? '#c0392b' : '#d68910'};"
+                        title="${this._esc(c.ai_reason || '')}">
+                        <i class="bi bi-robot"></i> ${c.ai_flag.toUpperCase()}
+                    </span>`
+                : '';
+            const rowBg = c.ai_flag === 'flagged' ? 'background:rgba(231,76,60,0.04);' : '';
             return `
-                <tr>
+                <tr style="${rowBg}">
                     <td><strong>#${c.comment_id}</strong></td>
-                    <td style="font-size:0.85rem;">${this._esc(excerpt)}</td>
+                    <td style="font-size:0.85rem;">${this._esc(excerpt)}${aiFlagBadge}</td>
                     <td style="font-size:0.82rem;">${this._esc(c.author_name)}</td>
                     <td style="font-size:0.82rem;">${this._esc(c.post_title || '—')}</td>
                     <td style="font-size:0.82rem;">${date}</td>
@@ -1154,6 +1243,9 @@ const view = {
             <section class="page-container">
                 <h2 class="reveal">Forum Moderation</h2>
                 <p class="reveal" style="margin-bottom:2rem;opacity:0.7;">Manage citizen forum posts and comments. Pin important discussions, close resolved threads, and remove inappropriate content.</p>
+
+                ${alertBanner}
+                ${statsHtml}
 
                 <h3 class="reveal" style="text-transform:uppercase;letter-spacing:1px;font-size:1rem;margin-bottom:1rem;">
                     <i class="bi bi-megaphone"></i> Posts (${(posts || []).length})
