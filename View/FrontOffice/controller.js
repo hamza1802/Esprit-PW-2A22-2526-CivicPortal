@@ -7,7 +7,11 @@ import model from './model.js';
 import view from './view.js';
 
 const controller = {
-        async init() {
+    /** Filters for the citizen "My Requests" dashboard panel. */
+    myReqFilters: { search: '', status: '', sort: 'date_desc' },
+    _myReqSearchDebounce: null,
+
+    async init() {
         try {
             console.log('Controller: Starting initialization...');
             this.setupEventListeners();
@@ -39,6 +43,28 @@ const controller = {
                 this.handleAISimplify(e.target.dataset.id, e.target);
                 return;
             }
+            if (e.target.closest('#btn-ai-improve-req')) {
+                e.preventDefault();
+                this.handleAIImproveRequest(e.target.closest('#btn-ai-improve-req'));
+                return;
+            }
+            if (e.target.id === 'btn-ai-apply-desc') {
+                e.preventDefault();
+                const improved  = document.getElementById('ai-req-improved');
+                const target    = document.getElementById('req-description');
+                if (improved && target) {
+                    target.value = improved.value;
+                    view.renderToast('Improved description applied.');
+                }
+                return;
+            }
+
+            if (e.target.id === 'my-req-reset') {
+                e.preventDefault();
+                this.myReqFilters = { search: '', status: '', sort: 'date_desc' };
+                view.refreshMyRequestsList(model.getServiceRequests(), this.myReqFilters);
+                return;
+            }
 
             const target = e.target.closest('[data-action]') || e.target;
             const action = target.dataset.action;
@@ -54,14 +80,57 @@ const controller = {
             if (action === 'cancel-appointment') {
                 this.handleCancelAppointment(parseInt(id));
             }
+            if (action === 'view-request') {
+                window.location.hash = `#request-details/${id}`;
+            }
+            if (action === 'edit-request') {
+                window.location.hash = `#request-edit/${id}`;
+            }
+            if (action === 'delete-request') {
+                if (confirm('Are you sure you want to delete this request? This cannot be undone.')) {
+                    this.handleDeleteRequest(parseInt(id));
+                }
+            }
+            if (action === 'delete-document') {
+                if (confirm('Delete this document?')) {
+                    this.handleDeleteDocument(parseInt(id), parseInt(target.dataset.requestId));
+                }
+            }
         });
 
         document.addEventListener('input', (e) => {
             if (e.target.id === 'prog-search') this.handleCatalogFilter();
+            if (e.target.id === 'my-req-search') {
+                clearTimeout(this._myReqSearchDebounce);
+                const value = e.target.value;
+                this._myReqSearchDebounce = setTimeout(() => {
+                    this.myReqFilters.search = value;
+                    view.refreshMyRequestsList(model.getServiceRequests(), this.myReqFilters);
+                    const el = document.getElementById('my-req-search');
+                    if (el) {
+                        el.focus();
+                        if (el.setSelectionRange) el.setSelectionRange(el.value.length, el.value.length);
+                    }
+                }, 250);
+            }
         });
 
         document.addEventListener('change', (e) => {
             if (e.target.id === 'prog-filter-cat') this.handleCatalogFilter();
+
+            if (e.target.id === 'my-req-status') {
+                this.myReqFilters.status = e.target.value;
+                view.refreshMyRequestsList(model.getServiceRequests(), this.myReqFilters);
+            }
+            if (e.target.id === 'my-req-sort') {
+                this.myReqFilters.sort = e.target.value;
+                view.refreshMyRequestsList(model.getServiceRequests(), this.myReqFilters);
+            }
+
+            // Service-request form: swap required-doc inputs when service type changes.
+            if (e.target.id === 'req-type') {
+                view.refreshRequiredDocs(model.getRequiredDocsFor(e.target.value));
+            }
         });
 
         window.addEventListener('hashchange', () => this.handleRouting());
@@ -71,6 +140,9 @@ const controller = {
 
             if (e.target.id === 'service-request-form') {
                 await this.handleServiceRequest(new FormData(e.target));
+
+            } else if (e.target.id === 'edit-request-form') {
+                await this.handleEditRequestSubmit(e.target);
 
             } else if (e.target.id === 'profile-form') {
                 await this.handleProfileUpdate(new FormData(e.target));
@@ -103,6 +175,15 @@ const controller = {
         const rawHash = window.location.hash || '#home';
         const [hashPath, queryStr] = rawHash.split('?');
         const user = model.getCurrentUser();
+
+        if (hashPath.startsWith('#request-details/')) {
+            await this.showRequestDetail(parseInt(hashPath.split('/')[1], 10));
+            return;
+        }
+        if (hashPath.startsWith('#request-edit/')) {
+            await this.showRequestEditForm(parseInt(hashPath.split('/')[1], 10));
+            return;
+        }
 
         switch (hashPath) {
             case '#home':
@@ -232,12 +313,189 @@ const controller = {
     },
 
     async handleServiceRequest(formData) {
+        // Collect the per-service required documents (input names start with "req_doc_").
+        const docInputs = Array.from(document.querySelectorAll('input.req-required-doc'));
+        const requiredEntries = docInputs.map(inp => ({
+            file:    inp.files?.[0] || null,
+            label:   inp.dataset.label   || '',
+            docType: inp.dataset.doctype || 'other',
+        }));
+
+        const missing = requiredEntries.filter(e => !e.file);
+        if (missing.length > 0) {
+            view.renderToast(`Missing ${missing.length} required document(s).`, 'error');
+            return;
+        }
+
+        // Strip the per-doc entries from FormData so the JSON request payload
+        // stays clean — they're uploaded via the dedicated multipart endpoint.
+        for (const inp of docInputs) formData.delete(inp.name);
+
         const result = await model.addServiceRequest(formData);
+        if (!result) {
+            view.renderToast('Failed to submit request. Please try again.', 'error');
+            return;
+        }
+
+        // Upload each required document with its proper docType.
+        if (requiredEntries.length > 0 && result.id) {
+            view.renderToast(`Uploading ${requiredEntries.length} document(s)...`);
+            const groups = requiredEntries.reduce((acc, e) => {
+                (acc[e.docType] ||= []).push(e.file);
+                return acc;
+            }, {});
+            let uploaded = 0;
+            let total    = requiredEntries.length;
+            for (const [docType, files] of Object.entries(groups)) {
+                const docs = await model.uploadRequestDocuments(result.id, files, docType);
+                if (Array.isArray(docs)) uploaded += docs.length;
+            }
+            if (uploaded < total) {
+                view.renderToast(`Request created. ${uploaded}/${total} files uploaded.`, 'error');
+            }
+        }
+
+        view.renderToast('Service request submitted successfully!');
+        window.location.hash = '#dashboard';
+    },
+
+    async handleEditRequestSubmit(form) {
+        const id   = parseInt(form.dataset.id, 10);
+        const desc = (form.querySelector('[name="description"]')?.value || '').trim();
+        if (!id || desc.length < 10) {
+            view.renderToast('Description must be at least 10 characters.', 'error');
+            return;
+        }
+        const result = await model.updateRequest(id, desc);
         if (result) {
-            view.renderToast('Service request submitted successfully!');
+            view.renderToast('Request updated.');
+            window.location.hash = `#request-details/${id}`;
+        } else {
+            view.renderToast('Failed to update request.', 'error');
+        }
+    },
+
+    async handleDeleteRequest(id) {
+        const ok = await model.deleteRequest(id);
+        if (ok) {
+            view.renderToast('Request deleted.');
+            await model.getMyRequests();
             window.location.hash = '#dashboard';
         } else {
-            view.renderToast('Failed to submit request. Please try again.', 'error');
+            view.renderToast('Failed to delete request.', 'error');
+        }
+    },
+
+    async handleDeleteDocument(docId, requestId) {
+        const ok = await model.deleteDocument(docId);
+        if (ok) {
+            view.renderToast('Document removed.');
+            if (requestId) await this.showRequestDetail(requestId);
+        } else {
+            view.renderToast('Failed to delete document.', 'error');
+        }
+    },
+
+    async showRequestDetail(id) {
+        const request = await model.getRequestDetail(id);
+        if (!request) {
+            view.renderToast('Request not found.', 'error');
+            window.location.hash = '#dashboard';
+            return;
+        }
+        view.renderRequestDetail(request);
+    },
+
+    async showRequestEditForm(id) {
+        const request = await model.getRequestDetail(id);
+        if (!request) {
+            view.renderToast('Request not found.', 'error');
+            window.location.hash = '#dashboard';
+            return;
+        }
+        if ((request.status || 'pending') !== 'pending') {
+            view.renderToast('Only pending requests can be edited.', 'error');
+            window.location.hash = `#request-details/${id}`;
+            return;
+        }
+        view.renderRequestEditForm(request);
+    },
+
+    /** Ask the AI to improve the description and review attached files. */
+    async handleAIImproveRequest(btn) {
+        const typeEl = document.getElementById('req-type');
+        const descEl = document.getElementById('req-description');
+        const mainEl = document.getElementById('req-attachment');
+        const extraEl= document.getElementById('req-extra-docs');
+
+        const serviceType = typeEl?.value || '';
+        const description = (descEl?.value || '').trim();
+
+        // Build the requiredDocuments[] payload from currently selected files.
+        const fileEntries = [];
+        const pushFile    = (label, file) => {
+            if (!file) {
+                fileEntries.push({ label, provided: false, fileName: '', type: '' });
+                return;
+            }
+            fileEntries.push({ label, provided: true, fileName: file.name, type: file.type, _file: file });
+        };
+
+        const mainFile = mainEl?.files?.[0] || null;
+        pushFile('Primary supporting image', mainFile);
+
+        const extras = extraEl?.files ? Array.from(extraEl.files) : [];
+        if (extras.length === 0) {
+            // No extras: skip silently, just one item.
+        } else {
+            extras.forEach((f, i) => pushFile(`Additional document #${i + 1}`, f));
+        }
+
+        // Encode each provided file as base64 (cap at 4 MB so the request
+        // payload doesn't explode).
+        const PER_FILE_MAX = 4 * 1024 * 1024;
+        const encoded = await Promise.all(fileEntries.map(async (entry) => {
+            if (!entry.provided || !entry._file) {
+                delete entry._file;
+                return entry;
+            }
+            const f = entry._file;
+            delete entry._file;
+            if (f.size > PER_FILE_MAX) {
+                entry.tooLarge = true;
+                return entry;
+            }
+            entry.base64Data = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload  = () => resolve(String(reader.result || '').split(',')[1] || '');
+                reader.onerror = reject;
+                reader.readAsDataURL(f);
+            });
+            entry.mimeType = f.type;
+            return entry;
+        }));
+
+        const original = btn.innerHTML;
+        btn.disabled  = true;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Asking AI...';
+
+        try {
+            const res = await model.aiImproveRequest(serviceType, description, encoded);
+            if (!res) {
+                view.renderToast('AI is currently unavailable.', 'error');
+                view.renderAIImproveResult(null);
+                return;
+            }
+            view.renderAIImproveResult(res);
+            if (res.status !== 'ok') {
+                view.renderToast(res.message || 'AI fallback used.', 'error');
+            }
+        } catch (e) {
+            console.error('[AI improve] error:', e);
+            view.renderToast('AI request failed.', 'error');
+        } finally {
+            btn.disabled  = false;
+            btn.innerHTML = original;
         }
     },
 

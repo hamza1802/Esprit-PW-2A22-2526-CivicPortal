@@ -7,6 +7,7 @@
  */
 
 require_once __DIR__ . '/../Model/AppModel.php';
+require_once __DIR__ . '/../Model/AIService.php';
 require_once __DIR__ . '/../Model/Database.php';
 require_once __DIR__ . '/../Model/Transport.php';
 require_once __DIR__ . '/../Model/TransportType.php';
@@ -31,6 +32,16 @@ class MainController {
             'logout'                => 'any',
             'get_my_requests'       => 'any',
             'add_request'           => 'any',
+            'get_request'           => 'any',  // ownership re-checked below
+            'update_request'        => 'any',  // citizen edits their own pending request
+            'delete_request'        => 'any',  // citizen deletes their own pending request
+            'get_request_history'   => 'any',  // ownership re-checked below
+            'get_documents'         => 'any',  // ownership re-checked below
+            'add_document'          => 'any',  // citizens may attach to their own request
+            'upload_files'          => 'any',  // multipart upload alias
+            'replace_file'          => 'any',
+            'delete_document'       => 'any',  // ownership re-checked below
+            'ai_improve_description'=> 'any',  // citizen-side AI helper
             'get_programs'          => 'any',
             'get_program_detail'    => 'any',
             'get_enrollments'       => 'any',
@@ -70,6 +81,7 @@ class MainController {
             'get_assigned_requests'      => 'staff',
             'get_agent_appointments'     => 'staff',
             'update_appointment_status'  => 'staff',
+            'ai_analyze_request'         => 'staff',
 
             // Admin only
             'add_program'          => 'admin',
@@ -155,10 +167,69 @@ class MainController {
 
             // --- Service Requests ---
             case 'get_requests':
-                return AppModel::getRequests();
+                return AppModel::getRequests([
+                    'search' => trim((string)($data['search'] ?? '')),
+                    'status' => trim((string)($data['status'] ?? '')),
+                    'sort'   => (string)($data['sort']  ?? 'created_at'),
+                    'order'  => (string)($data['order'] ?? 'DESC'),
+                ]);
             case 'get_my_requests':
                 $userId = $_SESSION['user_id'];
                 return AppModel::getRequestsByUser((int)$userId);
+            case 'get_request': {
+                $reqId   = (int)($data['id'] ?? 0);
+                $request = AppModel::getRequestById($reqId);
+                if (!$request) throw new Exception("Request not found.");
+                $role    = $_SESSION['user_role'] ?? '';
+                $userId  = (int)($_SESSION['user_id'] ?? 0);
+                $owner   = (int)($request['user_id'] ?? 0);
+                if ($role === 'citizen' && $owner !== $userId) {
+                    throw new Exception('Forbidden: not your request.');
+                }
+                $request['documents'] = AppModel::getDocumentsByRequest($reqId);
+                $request['history']   = AppModel::getRequestHistory($reqId);
+                return $request;
+            }
+            case 'get_request_history': {
+                $reqId   = (int)($data['id'] ?? $data['requestId'] ?? 0);
+                $request = AppModel::getRequestById($reqId);
+                if (!$request) throw new Exception("Request not found.");
+                $role    = $_SESSION['user_role'] ?? '';
+                $userId  = (int)($_SESSION['user_id'] ?? 0);
+                if ($role === 'citizen' && (int)$request['user_id'] !== $userId) {
+                    throw new Exception('Forbidden: not your request.');
+                }
+                return AppModel::getRequestHistory($reqId);
+            }
+            case 'update_request': {
+                $reqId   = (int)($data['id'] ?? 0);
+                $request = AppModel::getRequestById($reqId);
+                if (!$request) throw new Exception("Request not found.");
+                $role    = $_SESSION['user_role'] ?? '';
+                $userId  = (int)($_SESSION['user_id'] ?? 0);
+                if ($role === 'citizen' && (int)$request['user_id'] !== $userId) {
+                    throw new Exception('Forbidden: not your request.');
+                }
+                if ($role === 'citizen' && ($request['status'] ?? 'pending') !== 'pending') {
+                    throw new Exception('Only pending requests can be edited.');
+                }
+                return AppModel::updateRequest($reqId, (string)($data['description'] ?? ''));
+            }
+            case 'delete_request': {
+                $reqId   = (int)($data['id'] ?? 0);
+                $request = AppModel::getRequestById($reqId);
+                if (!$request) throw new Exception("Request not found.");
+                $role    = $_SESSION['user_role'] ?? '';
+                $userId  = (int)($_SESSION['user_id'] ?? 0);
+                if ($role === 'citizen' && (int)$request['user_id'] !== $userId) {
+                    throw new Exception('Forbidden: not your request.');
+                }
+                if ($role === 'citizen' && ($request['status'] ?? 'pending') !== 'pending') {
+                    throw new Exception('Only pending requests can be deleted.');
+                }
+                AppModel::deleteRequest($reqId);
+                return ['success' => 'Request deleted.'];
+            }
             case 'get_my_posts':
                 $userId = $_SESSION['user_id'];
                 return ForumPostController::getPostsByUserId((int)$userId);
@@ -173,6 +244,71 @@ class MainController {
                 return AppModel::getRequestsByAssignee((int)$agentId);
             case 'assign_request':
                 return AppModel::assignRequest((int)$data['request_id'], (int)$data['agent_id']);
+
+            // --- Documents ---
+            case 'get_documents': {
+                $reqId   = (int)($data['requestId'] ?? $data['request_id'] ?? 0);
+                $request = AppModel::getRequestById($reqId);
+                if (!$request) throw new Exception("Request not found.");
+                $role    = $_SESSION['user_role'] ?? '';
+                $userId  = (int)($_SESSION['user_id'] ?? 0);
+                if ($role === 'citizen' && (int)$request['user_id'] !== $userId) {
+                    throw new Exception('Forbidden: not your request.');
+                }
+                return AppModel::getDocumentsByRequest($reqId);
+            }
+            case 'add_document': {
+                $reqId   = (int)($data['requestId'] ?? $data['request_id'] ?? 0);
+                $request = AppModel::getRequestById($reqId);
+                if (!$request) throw new Exception("Request not found.");
+                $role    = $_SESSION['user_role'] ?? '';
+                $userId  = (int)($_SESSION['user_id'] ?? 0);
+                if ($role === 'citizen' && (int)$request['user_id'] !== $userId) {
+                    throw new Exception('Forbidden: not your request.');
+                }
+                return AppModel::addDocument(
+                    $reqId,
+                    (string)($data['filePath'] ?? ''),
+                    (string)($data['type']     ?? 'other')
+                );
+            }
+            case 'delete_document': {
+                $docId = (int)($data['id'] ?? 0);
+                $doc   = AppModel::getDocumentById($docId);
+                if (!$doc) throw new Exception("Document not found.");
+                $request = AppModel::getRequestById((int)$doc['requestId']);
+                $role    = $_SESSION['user_role'] ?? '';
+                $userId  = (int)($_SESSION['user_id'] ?? 0);
+                if ($role === 'citizen' && $request && (int)$request['user_id'] !== $userId) {
+                    throw new Exception('Forbidden: not your document.');
+                }
+                AppModel::deleteDocument($docId);
+                return ['success' => 'Document deleted.'];
+            }
+
+            // --- AI assistant (Service Requests) ---
+            case 'ai_improve_description':
+                return AIService::improveDescription(
+                    (string)($data['serviceType'] ?? ''),
+                    (string)($data['description'] ?? ''),
+                    is_array($data['requiredDocuments'] ?? null) ? $data['requiredDocuments'] : []
+                );
+            case 'ai_analyze_request': {
+                $reqId   = (int)($data['requestId'] ?? $data['id'] ?? 0);
+                $request = AppModel::getRequestById($reqId);
+                if (!$request) throw new Exception("Request $reqId not found.");
+                $documents = AppModel::getDocumentsByRequest($reqId);
+                $result    = AIService::analyzeRequest($request, $documents);
+                $rec       = strtoupper((string)($result['recommendation'] ?? 'review'));
+                AppModel::logRequestEvent(
+                    $reqId,
+                    'ai_analyzed',
+                    null,
+                    null,
+                    "AI analysis run — recommendation: {$rec}."
+                );
+                return $result;
+            }
 
             // --- Programs ---
             case 'get_programs':

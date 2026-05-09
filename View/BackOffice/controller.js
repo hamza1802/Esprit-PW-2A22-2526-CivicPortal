@@ -9,6 +9,12 @@ import { initRouteMap } from './map.js';
 
 const controller = {
 
+    /** Filters used by the service request queue toolbar. Persisted across re-renders. */
+    requestFilters: { search: '', status: '', sort: 'created_at', order: 'DESC' },
+
+    /** Pending debounce id for the search input. */
+    _reqSearchDebounce: null,
+
     async init() {
         await model.sync();
         this.setupEventListeners();
@@ -46,6 +52,18 @@ const controller = {
                 this.handleAIAnalyzeEnrollment(targetBtn.dataset.id, targetBtn);
                 return;
             }
+            const aiAnalyzeReqBtn = e.target.closest('#btn-ai-analyze-req');
+            if (aiAnalyzeReqBtn) {
+                e.preventDefault();
+                this.handleAIAnalyzeRequest(aiAnalyzeReqBtn.dataset.id, aiAnalyzeReqBtn);
+                return;
+            }
+            if (e.target.id === 'req-reset') {
+                e.preventDefault();
+                this.requestFilters = { search: '', status: '', sort: 'created_at', order: 'DESC' };
+                this._refreshRequestQueue();
+                return;
+            }
             
             const actionEl = e.target.closest('[data-action]');
             if (!actionEl) {
@@ -67,6 +85,9 @@ const controller = {
                     break;
                 case 'reject':
                     this.handleStatusUpdate(id, 'rejected');
+                    break;
+                case 'view-request':
+                    window.location.hash = `#request/${id}`;
                     break;
 
                 // Program actions
@@ -242,6 +263,31 @@ const controller = {
 
         window.addEventListener('hashchange', () => this.handleRouting());
 
+        // Service-request queue toolbar (search debounced; selects fire immediately).
+        document.addEventListener('input', (e) => {
+            if (e.target.id === 'req-search') {
+                clearTimeout(this._reqSearchDebounce);
+                const value = e.target.value;
+                this._reqSearchDebounce = setTimeout(() => {
+                    this.requestFilters.search = value;
+                    this._refreshRequestQueue({ keepFocus: 'req-search' });
+                }, 300);
+            }
+        });
+
+        document.addEventListener('change', (e) => {
+            if (e.target.id === 'req-filter-status') {
+                this.requestFilters.status = e.target.value;
+                this._refreshRequestQueue();
+            } else if (e.target.id === 'req-sort') {
+                this.requestFilters.sort = e.target.value;
+                this._refreshRequestQueue();
+            } else if (e.target.id === 'req-order') {
+                this.requestFilters.order = e.target.value;
+                this._refreshRequestQueue();
+            }
+        });
+
         document.addEventListener('submit', (e) => {
             e.preventDefault();
             if (e.target.id === 'profile-form') {
@@ -279,6 +325,15 @@ const controller = {
             return;
         }
 
+        if (hash.startsWith('#request/')) {
+            if (user.role !== 'agent' && user.role !== 'admin') {
+                window.location.hash = '#home';
+                return;
+            }
+            await this.showRequestDetail(parseInt(hash.split('/')[1], 10));
+            return;
+        }
+
         switch (hash) {
             case '#home':
                 view.renderHome(user);
@@ -286,7 +341,7 @@ const controller = {
 
             case '#worker-dashboard':
                 if (user.role === 'agent' || user.role === 'admin') {
-                    view.renderWorkerDashboard(model.getServiceRequests());
+                    await this._refreshRequestQueue();
                 } else {
                     window.location.hash = '#home';
                 }
@@ -419,7 +474,67 @@ const controller = {
     async handleStatusUpdate(requestId, status) {
         await model.updateRequestStatus(parseInt(requestId), status);
         view.renderToast(`Request ${status} successfully.`);
-        view.renderWorkerDashboard(model.getServiceRequests());
+
+        // If the user is on the detail view, refresh it; otherwise refresh the queue.
+        if ((window.location.hash || '').startsWith('#request/')) {
+            await this.showRequestDetail(parseInt(requestId, 10));
+        } else {
+            await this._refreshRequestQueue();
+        }
+    },
+
+    /**
+     * Re-fetch the request queue using the current toolbar filters and re-render.
+     * Restores focus to the search input after re-render so live typing works.
+     */
+    async _refreshRequestQueue({ keepFocus = null } = {}) {
+        const filters = this.requestFilters;
+        await model.fetchRequests(filters);
+        view.renderWorkerDashboard(model.getServiceRequests(), filters);
+
+        if (keepFocus) {
+            const el = document.getElementById(keepFocus);
+            if (el) {
+                el.focus();
+                if (typeof el.setSelectionRange === 'function') {
+                    el.setSelectionRange(el.value.length, el.value.length);
+                }
+            }
+        }
+    },
+
+    /** Load a single request (with documents) and render the detail page. */
+    async showRequestDetail(requestId) {
+        const request = await model.getRequestDetail(requestId);
+        if (!request) {
+            view.renderToast('Request not found or unauthorized.', 'error');
+            window.location.hash = '#worker-dashboard';
+            return;
+        }
+        view.renderRequestDetail(request);
+    },
+
+    /** Trigger AI analysis on the currently displayed request. */
+    async handleAIAnalyzeRequest(requestId, btn) {
+        const id = parseInt(requestId, 10);
+        if (!id) return;
+        const original = btn.innerHTML;
+        btn.disabled  = true;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Analyzing...';
+        try {
+            const result = await model.aiAnalyzeRequest(id);
+            view.renderAIAnalyzeResult(result);
+            if (result && result.status !== 'ok') {
+                view.renderToast(result.message || 'AI fallback used.', 'error');
+            }
+        } catch (e) {
+            console.error('[AI analyze] error:', e);
+            view.renderToast('AI request failed.', 'error');
+            view.renderAIAnalyzeResult(null);
+        } finally {
+            btn.disabled  = false;
+            btn.innerHTML = original;
+        }
     },
 
     handleProfileUpdate(formData) {

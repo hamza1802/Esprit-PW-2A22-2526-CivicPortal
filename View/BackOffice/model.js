@@ -123,6 +123,26 @@ const model = {
     // -------------------------------------------------------------------------
     getServiceRequests() { return this.state.serviceRequests; },
 
+    /**
+     * Re-fetch the request queue with optional search/status/sort/order filters.
+     * The backend (AppModel::getRequests) whitelists the sort column itself.
+     */
+    async fetchRequests({ search = '', status = '', sort = 'created_at', order = 'DESC' } = {}) {
+        const data = await this.apiCall('get_requests', { search, status, sort, order });
+        if (data) this.state.serviceRequests = data;
+        return data || [];
+    },
+
+    /** Detailed view of a single request (includes documents[]). */
+    async getRequestDetail(id) {
+        return await this.apiCall('get_request', { id });
+    },
+
+    /** Trigger the Gemini-backed analysis on the given request. */
+    async aiAnalyzeRequest(requestId) {
+        return await this.apiCall('ai_analyze_request', { requestId });
+    },
+
     async updateRequestStatus(requestId, status) {
         const response = await this.apiCall('update_status', { id: requestId, status });
         if (response !== null) {

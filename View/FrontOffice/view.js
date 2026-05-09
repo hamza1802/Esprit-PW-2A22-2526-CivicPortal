@@ -275,12 +275,15 @@ const view = {
     // Service Requests â€” Form + My Requests list
     // -------------------------------------------------------------------------
     renderServiceRequestForm(serviceTypes = []) {
-        const typeOptions = serviceTypes.length > 0
-            ? serviceTypes.map(t => `<option value="${t.value}">${t.label}</option>`).join('')
-            : `<option value="Birth Certificate">Birth Certificate</option>
-               <option value="ID Card Renewal">ID Card Renewal</option>
-               <option value="Residence Certificate">Residence Certificate</option>
-               <option value="Building Permit">Building Permit</option>`;
+        const types = (serviceTypes && serviceTypes.length > 0) ? serviceTypes : [
+            { value: 'Birth Certificate',     label: 'Birth Certificate',     requiredDocs: [] },
+            { value: 'ID Card Renewal',       label: 'ID Card Renewal',       requiredDocs: [] },
+            { value: 'Residence Certificate', label: 'Residence Certificate', requiredDocs: [] },
+            { value: 'Building Permit',       label: 'Building Permit',       requiredDocs: [] },
+        ];
+
+        const typeOptions = types.map(t => `<option value="${this._escapeHtml(t.value)}">${this._escapeHtml(t.label)}</option>`).join('');
+        const initialDocs = this._buildRequiredDocsHtml(types[0]?.requiredDocs || []);
 
         this.app.innerHTML = `
             <section class="page-container">
@@ -300,16 +303,36 @@ const view = {
                             <label for="req-description">Description / Details</label>
                             <textarea id="req-description" name="description" rows="4"
                                       placeholder="Describe your request in detail..."></textarea>
+                            <div class="flex gap-8 flex-wrap" style="margin-top:0.6rem;">
+                                <button type="button" id="btn-ai-improve-req" class="btn btn-small"
+                                        style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.4);color:var(--primary-navy);">
+                                    <i class="bi bi-stars"></i> Improve with AI
+                                </button>
+                                <span class="text-small opacity-7" style="align-self:center;">AI rewrites your text and reviews any attached files.</span>
+                            </div>
                         </div>
+
+                        <div id="ai-req-result" class="form-group" style="display:none;border:1px dashed rgba(99,102,241,0.4);border-radius:12px;padding:1rem;background:rgba(99,102,241,0.04);">
+                            <!-- AI suggestion injected here -->
+                        </div>
+
                         <div class="form-group">
                             <label for="req-attachment">
-                                <i class="bi bi-paperclip"></i> Supporting Document (PDF / Image, max 2MB)
+                                <i class="bi bi-paperclip"></i> Primary Supporting Image (JPEG / PNG / WebP, max 2 MB) &mdash; <span class="opacity-7">optional</span>
                             </label>
                             <input type="file" id="req-attachment" name="attachment"
-                                   accept=".pdf,image/*"
+                                   accept="image/jpeg,image/png,image/webp"
                                    class="no-border"
                                    style="padding:0.5rem 0;">
+                            <div class="text-small opacity-7" style="margin-top:0.3rem;">
+                                Stored inline with the request (one image only). PDFs and the per-service required documents go below.
+                            </div>
                         </div>
+
+                        <div id="required-docs-section" class="form-group">
+                            ${initialDocs}
+                        </div>
+
                         <button type="submit" class="btn btn-primary reveal w-full">
                             <i class="bi bi-send"></i> SUBMIT REQUEST
                         </button>
@@ -320,41 +343,436 @@ const view = {
         this.triggerObserver();
     },
 
-    _getRequestsHtml(requests = []) {
-        const statusColor = { pending: '#f59e0b', in_progress: '#6366f1', approved: '#10b981', rejected: '#ef4444', validated: '#10b981', resolved: '#6366f1' };
+    /**
+     * Build the per-service-type required-document file inputs.
+     * Each input uses name="req_doc_${idx}" and carries data-doctype + data-label
+     * so the controller can upload the files with the right metadata after the
+     * request is created.
+     */
+    _buildRequiredDocsHtml(docs = []) {
+        if (!docs || docs.length === 0) {
+            return `
+                <div style="padding:0.7rem 1rem;background:rgba(16,185,129,0.08);border:1px dashed rgba(16,185,129,0.4);border-radius:8px;">
+                    <i class="bi bi-check2-circle" style="color:#10b981;"></i>
+                    <span class="text-small">No supporting documents are required for this service type.</span>
+                </div>
+            `;
+        }
+        const heading = `
+            <h4 style="font-size:1.05rem;margin:0 0 0.4rem 0;">
+                <i class="bi bi-files"></i> Required Documents
+            </h4>
+            <div class="text-small opacity-7" style="margin-bottom:0.8rem;">
+                Each item below is required to process this request. Accepted: PDF or image (max 6 MB each).
+            </div>
+        `;
+        const items = docs.map((d, idx) => `
+            <div class="form-group" style="background:#fff;border:var(--border-main);border-radius:8px;padding:0.7rem 0.9rem;margin-bottom:0.6rem;">
+                <label for="req-doc-${idx}" class="text-small text-bold" style="display:block;margin-bottom:0.3rem;">
+                    <span style="color:var(--danger);">*</span> ${this._escapeHtml(d.label)}
+                </label>
+                <input type="file" id="req-doc-${idx}" name="req_doc_${idx}" required
+                       accept="${this._escapeHtml(d.accept || '.pdf,image/*')}"
+                       data-label="${this._escapeHtml(d.label)}"
+                       data-doctype="${this._escapeHtml(d.docType || 'other')}"
+                       class="no-border req-required-doc"
+                       style="padding:0.4rem 0;">
+            </div>
+        `).join('');
+        return heading + items;
+    },
 
-        const rows = requests.length === 0
-            ? `<tr><td colspan="5" class="text-center" style="padding:2rem;color:var(--text-dark);opacity:0.6;">
-                   No requests found. <a href="#request-service" style="color:var(--accent-blue);">File one?</a>
-               </td></tr>`
-            : requests.map(r => `
-                <tr>
-                    <td><strong>#${r.id}</strong></td>
-                    <td>${r.title || r.category || 'â€”'}</td>
-                    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.description || ''}">${r.description || 'â€”'}</td>
-                    <td>${r.created_at ? new Date(r.created_at).toLocaleDateString() : 'â€”'}</td>
-                    <td>
-                        <span class="status-pill" style="display:inline-block;padding:3px 10px;border-radius:99px;font-size:0.75rem;font-weight:800;
-                                     background:${(statusColor[r.status] || '#6b7280')}22;
-                                     color:${statusColor[r.status] || '#6b7280'};">
-                            ${r.status?.toUpperCase() || 'PENDING'}
-                        </span>
-                    </td>
-                </tr>
-            `).join('');
+    /** Re-render the required-docs section when the service type changes. */
+    refreshRequiredDocs(docs) {
+        const section = document.getElementById('required-docs-section');
+        if (section) section.innerHTML = this._buildRequiredDocsHtml(docs);
+    },
+
+    /** Escape helper used by FO renderers. */
+    _escapeHtml(s) {
+        return String(s ?? '')
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    },
+
+    /**
+     * Render the result of the "Improve with AI" call inside the existing
+     * #ai-req-result placeholder on the service-request form. Idempotent.
+     */
+    renderAIImproveResult(result) {
+        const box = document.getElementById('ai-req-result');
+        if (!box) return;
+        if (!result) {
+            box.style.display = 'none';
+            box.innerHTML = '';
+            return;
+        }
+
+        const issues = (result.issues || []).map(i => `<li>${i}</li>`).join('');
+        const docs   = (result.documentStatus || []).map(d => `
+            <li style="display:flex;gap:8px;align-items:flex-start;">
+                <span style="font-size:1.05rem;">${d.ok ? '✅' : '⚠️'}</span>
+                <span><strong>${d.label}</strong> &mdash; <span class="text-small">${d.comment || ''}</span></span>
+            </li>
+        `).join('');
+
+        const ready  = !!result.readyToSubmit;
+        const status = result.status === 'ok' ? '' :
+            `<div class="text-small" style="color:#b45309;margin-bottom:0.5rem;"><i class="bi bi-info-circle"></i> ${result.message || 'AI fallback used.'}</div>`;
+
+        box.style.display = 'block';
+        box.innerHTML = `
+            ${status}
+            <div class="flex-between flex-wrap gap-16 mb-16">
+                <h4 class="mb-0" style="font-size:1.05rem;"><i class="bi bi-stars"></i> AI Suggestion</h4>
+                <span class="status-pill" style="padding:3px 10px;border-radius:99px;font-size:0.75rem;font-weight:800;
+                             background:${ready ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)'};
+                             color:${ready ? '#10b981' : '#f59e0b'};">
+                    ${ready ? 'READY TO SUBMIT' : 'NEEDS REVIEW'}
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label class="text-small text-bold">Improved description</label>
+                <textarea id="ai-req-improved" rows="4" class="w-full"
+                          style="padding:0.7rem;border:var(--border-main);border-radius:8px;background:#fff;font-family:inherit;">${result.improvedDescription || ''}</textarea>
+                <button type="button" id="btn-ai-apply-desc" class="btn btn-small btn-primary" style="margin-top:0.4rem;">
+                    <i class="bi bi-check2"></i> Use this text
+                </button>
+            </div>
+
+            ${issues ? `<div class="form-group"><label class="text-small text-bold">Issues to fix</label><ul style="margin:0;padding-left:1.2rem;">${issues}</ul></div>` : ''}
+            ${docs   ? `<div class="form-group"><label class="text-small text-bold">Document checklist</label><ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;">${docs}</ul></div>` : ''}
+
+            ${result.overallComment ? `<div class="text-small" style="font-style:italic;opacity:0.8;">${result.overallComment}</div>` : ''}
+        `;
+    },
+
+    /**
+     * Returns the "My Requests" panel HTML for the dashboard.
+     * Filters/sorting are applied client-side over the cached `requests` array
+     * so we don't need an extra round-trip.
+     */
+    _getRequestsHtml(requests = [], filters = {}) {
+        const f = {
+            search: (filters.search || '').toLowerCase().trim(),
+            status: filters.status || '',
+            sort:   filters.sort   || 'date_desc',
+        };
+
+        let list = Array.isArray(requests) ? [...requests] : [];
+
+        if (f.search) {
+            list = list.filter(r =>
+                String(r.id).includes(f.search) ||
+                (r.title || '').toLowerCase().includes(f.search) ||
+                (r.description || '').toLowerCase().includes(f.search) ||
+                (r.category || '').toLowerCase().includes(f.search) ||
+                (r.status   || '').toLowerCase().includes(f.search)
+            );
+        }
+        if (f.status) {
+            list = list.filter(r => (r.status || '') === f.status);
+        }
+        const cmpDate = (a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0);
+        const cmpStr  = (k) => (a, b) => String(a[k] || '').localeCompare(String(b[k] || ''));
+        switch (f.sort) {
+            case 'date_asc':    list.sort(cmpDate); break;
+            case 'status_asc':  list.sort(cmpStr('status')); break;
+            case 'status_desc': list.sort((a, b) => -cmpStr('status')(a, b)); break;
+            case 'title_asc':   list.sort(cmpStr('title')); break;
+            case 'date_desc':
+            default:            list.sort((a, b) => -cmpDate(a, b)); break;
+        }
+
+        const cards = list.length === 0
+            ? `<div style="padding:2rem;text-align:center;border:var(--border-main);border-radius:12px;background:#fff;opacity:0.7;">
+                   No requests match your filters.
+                   <div style="margin-top:0.4rem;"><a href="#request-service" style="color:var(--accent-blue);">File a new one?</a></div>
+               </div>`
+            : list.map(r => {
+                const docCount = parseInt(r.documents_count ?? 0, 10);
+                const hasMain  = parseInt(r.has_attachment  ?? 0, 10) === 1;
+                const total    = (hasMain ? 1 : 0) + docCount;
+                const pending  = (r.status || 'pending') === 'pending';
+                return `
+                    <div class="reveal" style="border:var(--border-main);border-radius:12px;background:#fff;padding:1rem 1.1rem;margin-bottom:0.8rem;">
+                        <div class="flex-between flex-wrap gap-16" style="align-items:flex-start;">
+                            <div style="min-width:0;flex:1 1 240px;">
+                                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                                    <strong style="font-size:1.05rem;">#${r.id} &mdash; ${this._escapeHtml(r.title || r.category || 'Request')}</strong>
+                                    <span class="status-badge status-${this._escapeHtml(r.status || 'pending')}">${this._escapeHtml((r.status || 'pending'))}</span>
+                                </div>
+                                <div class="text-small opacity-7" style="margin-top:0.25rem;">
+                                    <i class="bi bi-calendar2"></i> ${r.created_at ? new Date(r.created_at).toLocaleDateString() : '—'}
+                                    ${total > 0 ? ` &nbsp; · &nbsp; <i class="bi bi-paperclip"></i> ${total} file${total === 1 ? '' : 's'}` : ''}
+                                </div>
+                                <div style="margin-top:0.4rem;color:var(--text-main);max-width:60ch;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">
+                                    ${this._escapeHtml(r.description || '—')}
+                                </div>
+                            </div>
+                            <div class="flex gap-8 flex-wrap" style="align-self:center;">
+                                <button class="btn btn-small" data-action="view-request" data-id="${r.id}">
+                                    <i class="bi bi-eye"></i> DETAILS
+                                </button>
+                                ${pending ? `
+                                    <button class="btn btn-small btn-primary" data-action="edit-request" data-id="${r.id}">
+                                        <i class="bi bi-pencil"></i> EDIT
+                                    </button>
+                                    <button class="btn btn-small btn-danger" data-action="delete-request" data-id="${r.id}">
+                                        <i class="bi bi-trash3"></i> DELETE
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+        const sortOptions = [
+            { v: 'date_desc',   l: 'Newest first' },
+            { v: 'date_asc',    l: 'Oldest first' },
+            { v: 'status_asc',  l: 'Status A-Z' },
+            { v: 'status_desc', l: 'Status Z-A' },
+            { v: 'title_asc',   l: 'Title A-Z' },
+        ].map(o => `<option value="${o.v}" ${o.v === f.sort ? 'selected' : ''}>${o.l}</option>`).join('');
+
+        const statusOptions = ['', 'pending', 'in_progress', 'validated', 'rejected', 'resolved']
+            .map(s => `<option value="${s}" ${s === f.status ? 'selected' : ''}>${s ? s.replace('_',' ').toUpperCase() : 'All statuses'}</option>`)
+            .join('');
 
         return `
             <div class="flex-between mb-24 flex-wrap gap-16">
                 <h3 class="mb-0" style="font-size:1.5rem;">My Requests</h3>
                 <a href="#request-service" class="btn btn-primary" style="text-decoration:none;padding:0.6rem 1.2rem;">+ New Request</a>
             </div>
-            <div class="table-responsive">
-                <table class="data-table">
-                    <thead><tr><th>Ref</th><th>Service</th><th>Details</th><th>Date</th><th>Status</th></tr></thead>
-                    <tbody>${rows}</tbody>
-                </table>
+
+            <div id="my-req-toolbar"
+                 style="display:flex;flex-wrap:wrap;gap:0.6rem;align-items:flex-end;margin-bottom:1rem;background:rgba(255,255,255,0.6);padding:0.7rem;border-radius:10px;border:var(--border-main);">
+                <div style="flex:1 1 240px;min-width:200px;">
+                    <label for="my-req-search" class="text-small text-bold">Search</label>
+                    <input id="my-req-search" type="search"
+                           placeholder="ID, title, description, status..."
+                           value="${this._escapeHtml(f.search)}"
+                           style="width:100%;padding:0.5rem 0.7rem;border:var(--border-main);border-radius:8px;">
+                </div>
+                <div style="flex:0 0 170px;">
+                    <label for="my-req-status" class="text-small text-bold">Status</label>
+                    <select id="my-req-status" style="width:100%;padding:0.5rem;border:var(--border-main);border-radius:8px;">
+                        ${statusOptions}
+                    </select>
+                </div>
+                <div style="flex:0 0 170px;">
+                    <label for="my-req-sort" class="text-small text-bold">Sort</label>
+                    <select id="my-req-sort" style="width:100%;padding:0.5rem;border:var(--border-main);border-radius:8px;">
+                        ${sortOptions}
+                    </select>
+                </div>
+                <button id="my-req-reset" type="button" class="btn btn-small" style="height:40px;">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </button>
+            </div>
+
+            <div id="my-req-list">
+                ${cards}
             </div>
         `;
+    },
+
+    /**
+     * Re-render only the request list section after filter changes,
+     * preserving toolbar input focus.
+     */
+    refreshMyRequestsList(requests, filters) {
+        const tab  = document.getElementById('tab-requests');
+        if (!tab) return;
+        tab.innerHTML = this._getRequestsHtml(requests, filters);
+        this.triggerObserver();
+    },
+
+    // -------------------------------------------------------------------------
+    // Request detail (citizen) — info, attachments, history timeline
+    // -------------------------------------------------------------------------
+    renderRequestDetail(request) {
+        const documents = request.documents || [];
+        const history   = request.history   || [];
+        const hasMain   = parseInt(request.has_attachment ?? 0, 10) === 1;
+        const pending   = (request.status || 'pending') === 'pending';
+
+        const docList = documents.length === 0
+            ? '<div class="text-small opacity-7">No additional documents attached.</div>'
+            : documents.map(d => {
+                const url = `../../get_document.php?id=${d.id}`;
+                const ext = (d.filePath || '').split('.').pop().toLowerCase();
+                const isPdf = ext === 'pdf';
+                const isImg = ['png','jpg','jpeg','webp','gif'].includes(ext);
+                const preview = isImg
+                    ? `<img src="${url}" alt="" style="max-width:100%;max-height:160px;border:var(--border-main);border-radius:8px;display:block;margin-top:0.4rem;">`
+                    : isPdf
+                        ? `<embed src="${url}" type="application/pdf" style="width:100%;height:240px;border:var(--border-main);border-radius:8px;display:block;margin-top:0.4rem;">`
+                        : '';
+                return `
+                    <li style="padding:0.6rem;border:var(--border-main);border-radius:8px;background:#fff;margin-bottom:0.5rem;list-style:none;">
+                        <div class="flex-between flex-wrap gap-8" style="align-items:center;">
+                            <div>
+                                <i class="bi bi-${isPdf ? 'file-earmark-pdf' : (isImg ? 'image' : 'file-earmark')}"></i>
+                                <strong>${this._escapeHtml(d.filePath || `doc-${d.id}`)}</strong>
+                                <span class="text-small opacity-7"> — ${this._escapeHtml(d.type || 'other')}</span>
+                            </div>
+                            <div class="flex gap-8">
+                                <a href="${url}" target="_blank" class="btn btn-small">
+                                    <i class="bi bi-box-arrow-up-right"></i> Open
+                                </a>
+                                ${pending ? `
+                                    <button class="btn btn-small btn-danger" data-action="delete-document" data-id="${d.id}" data-request-id="${request.id}">
+                                        <i class="bi bi-trash3"></i> Delete
+                                    </button>` : ''}
+                            </div>
+                        </div>
+                        ${preview}
+                    </li>
+                `;
+            }).join('');
+
+        const mainImg = hasMain
+            ? `<div class="form-group">
+                  <label class="text-small text-bold">Primary attached image</label>
+                  <img src="../../get_image.php?type=service&id=${request.id}"
+                       alt="Primary attachment"
+                       style="max-width:100%;max-height:280px;border:var(--border-main);border-radius:8px;display:block;">
+               </div>`
+            : '';
+
+        this.app.innerHTML = `
+            <section class="page-container">
+                <div class="flex-between mb-32 flex-wrap gap-16">
+                    <h2 class="reveal mb-0">Request #${request.id}</h2>
+                    <a href="#dashboard" class="btn reveal" style="text-decoration:none;">
+                        <i class="bi bi-arrow-left"></i> Back to dashboard
+                    </a>
+                </div>
+
+                <div class="form-card reveal">
+                    <table class="data-table" style="margin-bottom:1rem;">
+                        <tbody>
+                            <tr><th style="width:160px;">Service type</th><td>${this._escapeHtml(request.title || '—')}</td></tr>
+                            <tr><th>Status</th><td><span class="status-badge status-${this._escapeHtml(request.status || 'pending')}">${this._escapeHtml(request.status || 'pending')}</span></td></tr>
+                            <tr><th>Category</th><td>${this._escapeHtml(request.category || '—')}</td></tr>
+                            <tr><th>Created</th><td>${request.created_at ? new Date(request.created_at).toLocaleString() : '—'}</td></tr>
+                            <tr><th>Last update</th><td>${request.status_updated_at ? new Date(request.status_updated_at).toLocaleString() : (request.updated_at ? new Date(request.updated_at).toLocaleString() : '—')}</td></tr>
+                            <tr><th>Assigned to</th><td>${this._escapeHtml(request.agent_name || '— unassigned')}</td></tr>
+                        </tbody>
+                    </table>
+
+                    <div class="form-group">
+                        <label class="text-small text-bold">Description</label>
+                        <div style="padding:0.7rem;border:var(--border-main);border-radius:8px;background:#fff;white-space:pre-wrap;">${this._escapeHtml(request.description || '—')}</div>
+                    </div>
+
+                    ${mainImg}
+
+                    <div class="form-group">
+                        <label class="text-small text-bold">Documents (${documents.length})</label>
+                        <ul style="margin:0;padding:0;">${docList}</ul>
+                    </div>
+
+                    ${pending ? `
+                        <div class="flex gap-8 flex-wrap" style="margin-top:0.6rem;">
+                            <button class="btn btn-small btn-primary" data-action="edit-request" data-id="${request.id}">
+                                <i class="bi bi-pencil"></i> EDIT
+                            </button>
+                            <button class="btn btn-small btn-danger" data-action="delete-request" data-id="${request.id}">
+                                <i class="bi bi-trash3"></i> DELETE
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <div class="form-card reveal" style="margin-top:1.2rem;">
+                    <h3 style="font-size:1.1rem;margin-top:0;">
+                        <i class="bi bi-clock-history"></i> Request history
+                    </h3>
+                    ${this._renderHistoryTimeline(history)}
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    },
+
+    /** Edit form for a citizen-owned, still-pending request. */
+    renderRequestEditForm(request) {
+        this.app.innerHTML = `
+            <section class="page-container">
+                <div class="flex-between mb-32 flex-wrap gap-16">
+                    <h2 class="reveal mb-0">Edit request #${request.id}</h2>
+                    <a href="#request-details/${request.id}" class="btn reveal" style="text-decoration:none;">
+                        <i class="bi bi-arrow-left"></i> Cancel
+                    </a>
+                </div>
+                <div class="form-card reveal">
+                    <form id="edit-request-form" data-id="${request.id}">
+                        <div class="form-group">
+                            <label>Service type</label>
+                            <input type="text" value="${this._escapeHtml(request.title || '')}" disabled style="opacity:0.6;cursor:not-allowed;">
+                            <div class="text-small opacity-7" style="margin-top:0.3rem;">Service type cannot be changed after submission.</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-req-description">Description</label>
+                            <textarea id="edit-req-description" name="description" rows="6" required
+                                      minlength="10">${this._escapeHtml(request.description || '')}</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-full">
+                            <i class="bi bi-save"></i> SAVE CHANGES
+                        </button>
+                    </form>
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    },
+
+    /** Shared history-timeline renderer (used by FO request detail). */
+    _renderHistoryTimeline(history = []) {
+        if (!history || history.length === 0) {
+            return '<div class="text-small opacity-7">No activity recorded yet.</div>';
+        }
+        const iconFor = (action) => {
+            const map = {
+                'created':            'bi-plus-circle',
+                'status_changed':     'bi-arrow-repeat',
+                'description_edited': 'bi-pencil-square',
+                'document_added':     'bi-file-earmark-plus',
+                'document_deleted':   'bi-file-earmark-x',
+                'ai_analyzed':        'bi-stars',
+            };
+            return map[action] || 'bi-dot';
+        };
+        const items = history.map(h => {
+            const statusFlow = (h.from_status || h.to_status)
+                ? `<span class="text-small opacity-7"> &nbsp; ${this._escapeHtml(h.from_status || '∅')} → ${this._escapeHtml(h.to_status || '∅')}</span>`
+                : '';
+            return `
+                <li style="display:flex;gap:0.8rem;padding:0.7rem 0;border-bottom:1px dashed rgba(0,0,0,0.08);list-style:none;">
+                    <div style="flex:0 0 28px;text-align:center;color:var(--accent-blue);font-size:1.1rem;">
+                        <i class="bi ${iconFor(h.action)}"></i>
+                    </div>
+                    <div style="flex:1 1 auto;min-width:0;">
+                        <div>
+                            <strong>${this._escapeHtml((h.action || '').replace(/_/g, ' '))}</strong>
+                            ${statusFlow}
+                        </div>
+                        ${h.note ? `<div class="text-small" style="margin-top:0.2rem;">${this._escapeHtml(h.note)}</div>` : ''}
+                        <div class="text-small opacity-7" style="margin-top:0.2rem;">
+                            ${h.created_at ? new Date(h.created_at).toLocaleString() : ''}
+                            ${h.actor_name ? ` &nbsp; · &nbsp; by ${this._escapeHtml(h.actor_name)}` : ''}
+                            ${h.actor_role ? ` <span class="text-small opacity-7">(${this._escapeHtml(h.actor_role)})</span>` : ''}
+                        </div>
+                    </div>
+                </li>
+            `;
+        }).join('');
+        return `<ul style="padding:0;margin:0;">${items}</ul>`;
     },
 
     // -------------------------------------------------------------------------

@@ -181,24 +181,100 @@ const view = {
         this.triggerObserver();
     },
 
-    renderWorkerDashboard(requests) {
-        const tableRows = requests.map(r => `
-            <tr>
-                <td><strong>#${r.id}</strong></td>
-                <td>${r.title}</td>
-                <td>${r.category || '—'}</td>
-                <td>${r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</td>
-                <td><span class="status-badge status-${r.status}">${r.status}</span></td>
-                <td>
-                    <button class="btn btn-small btn-success" data-action="validate" data-id="${r.id}" style="margin-right:4px;"><i class="bi bi-check-lg"></i> VALIDATE</button>
-                    <button class="btn btn-small btn-danger" data-action="reject" data-id="${r.id}"><i class="bi bi-x-lg"></i> REJECT</button>
-                </td>
-            </tr>
-        `).join('');
+    /**
+     * Service request queue. Accepts an optional `filters` object so the
+     * search/status/sort controls survive re-renders without losing input focus.
+     *
+     * @param {Array}  requests
+     * @param {Object} [filters] { search, status, sort, order }
+     */
+    renderWorkerDashboard(requests, filters = {}) {
+        const f = {
+            search: filters.search ?? '',
+            status: filters.status ?? '',
+            sort:   filters.sort   ?? 'created_at',
+            order:  filters.order  ?? 'DESC'
+        };
+
+        const sortOptions = [
+            { v: 'created_at', l: 'Date created' },
+            { v: 'id',         l: 'Reference #' },
+            { v: 'title',      l: 'Title' },
+            { v: 'status',     l: 'Status' },
+            { v: 'category',   l: 'Category' },
+            { v: 'user_name',  l: 'Citizen' }
+        ].map(o => `<option value="${o.v}" ${o.v === f.sort ? 'selected' : ''}>${o.l}</option>`).join('');
+
+        const statusOptions = ['', 'pending', 'in_progress', 'validated', 'rejected', 'resolved']
+            .map(s => `<option value="${s}" ${s === f.status ? 'selected' : ''}>${s ? s.replace('_', ' ').toUpperCase() : 'All statuses'}</option>`)
+            .join('');
+
+        const tableRows = (requests || []).map(r => {
+            const docCount = parseInt(r.documents_count ?? 0, 10);
+            const hasMain  = parseInt(r.has_attachment  ?? 0, 10) === 1;
+            const fileBadge = (hasMain || docCount > 0)
+                ? `<span class="text-small" style="display:inline-flex;align-items:center;gap:4px;color:var(--accent-blue);">
+                       <i class="bi bi-paperclip"></i>${(hasMain ? 1 : 0) + docCount}
+                   </span>`
+                : '<span class="text-small opacity-7">—</span>';
+            return `
+                <tr>
+                    <td><strong>#${r.id}</strong></td>
+                    <td>
+                        ${r.title || '—'}
+                        ${r.user_name ? `<div class="text-small opacity-7">by ${r.user_name}</div>` : ''}
+                    </td>
+                    <td>${r.category || '—'}</td>
+                    <td>${r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</td>
+                    <td>${fileBadge}</td>
+                    <td><span class="status-badge status-${r.status}">${r.status}</span></td>
+                    <td style="white-space:nowrap;">
+                        <button class="btn btn-small" data-action="view-request" data-id="${r.id}" style="margin-right:4px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.4);color:var(--primary-navy);">
+                            <i class="bi bi-eye"></i> VIEW
+                        </button>
+                        <button class="btn btn-small btn-success" data-action="validate" data-id="${r.id}" style="margin-right:4px;"><i class="bi bi-check-lg"></i> VALIDATE</button>
+                        <button class="btn btn-small btn-danger"  data-action="reject"   data-id="${r.id}"><i class="bi bi-x-lg"></i> REJECT</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
 
         this.app.innerHTML = `
             <section class="page-container">
                 <h2 class="reveal">Service Request Queue</h2>
+
+                <div class="reveal" id="req-toolbar"
+                     style="display:flex;flex-wrap:wrap;gap:0.6rem;align-items:flex-end;margin-bottom:1.2rem;">
+                    <div style="flex:1 1 280px;min-width:240px;">
+                        <label for="req-search" class="text-small text-bold">Search</label>
+                        <input id="req-search" type="search" placeholder="Title, description, citizen, category..."
+                               value="${this._escapeHtml(f.search)}"
+                               style="width:100%;padding:0.55rem 0.7rem;border:var(--border-main);border-radius:8px;">
+                    </div>
+                    <div style="flex:0 0 180px;">
+                        <label for="req-filter-status" class="text-small text-bold">Status</label>
+                        <select id="req-filter-status" style="width:100%;padding:0.55rem 0.5rem;border:var(--border-main);border-radius:8px;">
+                            ${statusOptions}
+                        </select>
+                    </div>
+                    <div style="flex:0 0 180px;">
+                        <label for="req-sort" class="text-small text-bold">Sort by</label>
+                        <select id="req-sort" style="width:100%;padding:0.55rem 0.5rem;border:var(--border-main);border-radius:8px;">
+                            ${sortOptions}
+                        </select>
+                    </div>
+                    <div style="flex:0 0 110px;">
+                        <label for="req-order" class="text-small text-bold">Order</label>
+                        <select id="req-order" style="width:100%;padding:0.55rem 0.5rem;border:var(--border-main);border-radius:8px;">
+                            <option value="DESC" ${f.order === 'DESC' ? 'selected' : ''}>Desc</option>
+                            <option value="ASC"  ${f.order === 'ASC'  ? 'selected' : ''}>Asc</option>
+                        </select>
+                    </div>
+                    <button id="req-reset" class="btn btn-small" type="button" style="height:42px;">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </button>
+                </div>
+
                 <div class="reveal">
                     <div class="table-responsive">
                         <table class="data-table">
@@ -208,12 +284,13 @@ const view = {
                                     <th>Service Type</th>
                                     <th>Category</th>
                                     <th>Date</th>
+                                    <th>Files</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${tableRows.length > 0 ? tableRows : '<tr><td colspan="6" class="text-center" style="padding:2rem;">No requests found.</td></tr>'}
+                                ${tableRows.length > 0 ? tableRows : '<tr><td colspan="7" class="text-center" style="padding:2rem;">No requests found.</td></tr>'}
                             </tbody>
                         </table>
                     </div>
@@ -223,7 +300,235 @@ const view = {
         this.triggerObserver();
     },
 
+    /**
+     * Detail view of a single service request, with documents list, history
+     * timeline and an "Analyze with AI" panel. Includes inline PDF / image preview.
+     */
+    renderRequestDetail(request) {
+        const documents = request.documents || [];
+        const history   = request.history   || [];
+        const hasMain   = parseInt(request.has_attachment ?? 0, 10) === 1;
+
+        const docList = documents.map(d => {
+            const fileName = d.filePath || `doc-${d.id}`;
+            const url    = `../../get_document.php?id=${d.id}`;
+            const ext    = fileName.split('.').pop().toLowerCase();
+            const isPdf  = ext === 'pdf';
+            const isImg  = ['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext);
+            const preview = isImg
+                ? `<img src="${url}" alt="${this._escapeHtml(fileName)}" style="max-width:100%;max-height:160px;border:var(--border-main);border-radius:8px;display:block;margin-top:0.4rem;">`
+                : isPdf
+                    ? `<embed src="${url}" type="application/pdf" style="width:100%;height:240px;border:var(--border-main);border-radius:8px;display:block;margin-top:0.4rem;">`
+                    : '';
+            return `
+                <li style="padding:0.6rem;border:var(--border-main);border-radius:8px;background:#fff;margin-bottom:0.5rem;">
+                    <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;">
+                        <div>
+                            <i class="bi bi-${isPdf ? 'file-earmark-pdf' : (isImg ? 'image' : 'file-earmark')}"></i>
+                            <strong style="font-size:0.95rem;">${this._escapeHtml(fileName)}</strong>
+                            <span class="text-small opacity-7">— ${this._escapeHtml(d.type || 'other')}</span>
+                        </div>
+                        <a href="${url}" target="_blank" class="btn btn-small">
+                            <i class="bi bi-box-arrow-up-right"></i> Open
+                        </a>
+                    </div>
+                    ${preview}
+                </li>
+            `;
+        }).join('');
+
+        const mainImg = hasMain
+            ? `<div class="form-group">
+                  <label class="text-small text-bold">Primary attached image</label>
+                  <img src="../../get_image.php?type=service&id=${request.id}"
+                       alt="Primary attachment"
+                       style="max-width:100%;max-height:280px;border:var(--border-main);border-radius:8px;display:block;">
+               </div>`
+            : '';
+
+        this.app.innerHTML = `
+            <section class="page-container">
+                <div class="flex-between mb-32 flex-wrap gap-16">
+                    <h2 class="reveal mb-0">Request #${request.id} &mdash; ${this._escapeHtml(request.title || '')}</h2>
+                    <a href="#worker-dashboard" class="btn reveal" style="text-decoration:none;">
+                        <i class="bi bi-arrow-left"></i> Back to queue
+                    </a>
+                </div>
+
+                <div class="editorial-grid" style="grid-template-columns:1fr 1fr;gap:1.5rem;">
+                    <div class="form-card reveal">
+                        <h3 style="font-size:1.1rem;margin-top:0;"><i class="bi bi-info-circle"></i> Request details</h3>
+                        <table class="data-table" style="margin-bottom:1rem;">
+                            <tbody>
+                                <tr><th style="width:140px;">Status</th><td><span class="status-badge status-${request.status}">${request.status}</span></td></tr>
+                                <tr><th>Citizen</th><td>${this._escapeHtml(request.user_name || '—')}</td></tr>
+                                <tr><th>Category</th><td>${this._escapeHtml(request.category || '—')}</td></tr>
+                                <tr><th>Created</th><td>${request.created_at ? new Date(request.created_at).toLocaleString() : '—'}</td></tr>
+                                <tr><th>Assigned to</th><td>${this._escapeHtml(request.agent_name || '— unassigned')}</td></tr>
+                            </tbody>
+                        </table>
+
+                        <div class="form-group">
+                            <label class="text-small text-bold">Description</label>
+                            <div style="padding:0.7rem;border:var(--border-main);border-radius:8px;background:#fff;white-space:pre-wrap;">${this._escapeHtml(request.description || '—')}</div>
+                        </div>
+
+                        ${mainImg}
+
+                        <div class="form-group">
+                            <label class="text-small text-bold">
+                                Additional documents (${documents.length})
+                            </label>
+                            ${documents.length === 0
+                                ? '<div class="text-small opacity-7">No additional documents attached.</div>'
+                                : `<ul style="list-style:none;padding:0;margin:0;">${docList}</ul>`}
+                        </div>
+
+                        <div class="flex gap-8 flex-wrap" style="margin-top:1rem;">
+                            <button class="btn btn-small btn-success" data-action="validate" data-id="${request.id}">
+                                <i class="bi bi-check-lg"></i> VALIDATE
+                            </button>
+                            <button class="btn btn-small btn-danger" data-action="reject" data-id="${request.id}">
+                                <i class="bi bi-x-lg"></i> REJECT
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-card reveal">
+                        <div class="flex-between flex-wrap gap-16">
+                            <h3 style="font-size:1.1rem;margin-top:0;"><i class="bi bi-stars"></i> AI assistant</h3>
+                            <button id="btn-ai-analyze-req" class="btn btn-small btn-primary" data-id="${request.id}">
+                                <i class="bi bi-stars"></i> Analyze with AI
+                            </button>
+                        </div>
+                        <p class="text-small opacity-7" style="margin-top:0.4rem;">
+                            Asks Gemini to assess completeness, flag missing documents and suggest a next step.
+                        </p>
+                        <div id="ai-analyze-result"
+                             style="margin-top:1rem;border:1px dashed rgba(99,102,241,0.4);border-radius:12px;padding:1rem;background:rgba(99,102,241,0.04);min-height:80px;color:var(--text-main);">
+                            <span class="text-small opacity-7">Click "Analyze with AI" to inspect this request.</span>
+                        </div>
+
+                        <hr style="margin:1.2rem 0;border:none;border-top:1px dashed rgba(0,0,0,0.1);">
+
+                        <h3 style="font-size:1.1rem;margin-top:0;">
+                            <i class="bi bi-clock-history"></i> Request history
+                        </h3>
+                        ${this._renderHistoryTimeline(history)}
+                    </div>
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    },
+
+    /** Compact history-timeline renderer (used by BO request detail + admin stats). */
+    _renderHistoryTimeline(history = []) {
+        if (!history || history.length === 0) {
+            return '<div class="text-small opacity-7">No activity recorded yet.</div>';
+        }
+        const iconFor = (action) => ({
+            'created':            'bi-plus-circle',
+            'status_changed':     'bi-arrow-repeat',
+            'description_edited': 'bi-pencil-square',
+            'document_added':     'bi-file-earmark-plus',
+            'document_deleted':   'bi-file-earmark-x',
+            'ai_analyzed':        'bi-stars',
+        }[action] || 'bi-dot');
+
+        const items = history.map(h => {
+            const flow = (h.from_status || h.to_status)
+                ? `<span class="text-small opacity-7"> &nbsp; ${this._escapeHtml(h.from_status || '∅')} → ${this._escapeHtml(h.to_status || '∅')}</span>`
+                : '';
+            return `
+                <li style="display:flex;gap:0.7rem;padding:0.55rem 0;border-bottom:1px dashed rgba(0,0,0,0.08);list-style:none;">
+                    <div style="flex:0 0 24px;text-align:center;color:var(--accent-blue);font-size:1.05rem;">
+                        <i class="bi ${iconFor(h.action)}"></i>
+                    </div>
+                    <div style="flex:1 1 auto;min-width:0;">
+                        <div>
+                            <strong>${this._escapeHtml((h.action || '').replace(/_/g, ' '))}</strong>
+                            ${flow}
+                            ${h.request_title ? ` &nbsp; <span class="text-small opacity-7">on “${this._escapeHtml(h.request_title)}”</span>` : ''}
+                        </div>
+                        ${h.note ? `<div class="text-small" style="margin-top:0.15rem;">${this._escapeHtml(h.note)}</div>` : ''}
+                        <div class="text-small opacity-7" style="margin-top:0.15rem;">
+                            ${h.created_at ? new Date(h.created_at).toLocaleString() : ''}
+                            ${h.actor_name ? ` &nbsp; · &nbsp; by ${this._escapeHtml(h.actor_name)}` : ''}
+                            ${h.actor_role ? ` <span class="text-small opacity-7">(${this._escapeHtml(h.actor_role)})</span>` : ''}
+                        </div>
+                    </div>
+                </li>
+            `;
+        }).join('');
+        return `<ul style="padding:0;margin:0;">${items}</ul>`;
+    },
+
+    /** Render the result returned by AIService::analyzeRequest. */
+    renderAIAnalyzeResult(result) {
+        const box = document.getElementById('ai-analyze-result');
+        if (!box) return;
+        if (!result) {
+            box.innerHTML = '<span style="color:var(--color-danger,#ef4444);">AI is currently unavailable.</span>';
+            return;
+        }
+
+        const recColor = {
+            approve:    '#10b981',
+            request_more_info: '#f59e0b',
+            reject:     '#ef4444'
+        }[result.recommendation] || '#6b7280';
+
+        const issues = (result.issues || []).map(i => `<li>${this._escapeHtml(i)}</li>`).join('');
+        const missing = (result.missingDocuments || []).map(m => `<li>${this._escapeHtml(m)}</li>`).join('');
+        const docs    = (result.documentReview || []).map(d => `
+            <li style="display:flex;gap:8px;align-items:flex-start;">
+                <span>${d.acceptable ? '✅' : '⚠️'}</span>
+                <span><strong>${this._escapeHtml(d.label || d.fileName || 'Document')}</strong>
+                    &mdash; <span class="text-small">${this._escapeHtml(d.comment || '')}</span></span>
+            </li>
+        `).join('');
+
+        const status = result.status === 'ok' ? '' :
+            `<div class="text-small" style="color:#b45309;margin-bottom:0.5rem;">
+                <i class="bi bi-info-circle"></i> ${this._escapeHtml(result.message || 'AI fallback used.')}
+             </div>`;
+
+        box.innerHTML = `
+            ${status}
+            <div class="flex-between flex-wrap gap-16 mb-16">
+                <h4 class="mb-0" style="font-size:1.05rem;"><i class="bi bi-stars"></i> AI Analysis</h4>
+                <span class="status-pill" style="padding:3px 10px;border-radius:99px;font-size:0.75rem;font-weight:800;
+                             background:${recColor}22;color:${recColor};">
+                    ${(result.recommendation || 'review').toUpperCase().replace('_', ' ')}
+                </span>
+            </div>
+            ${result.summary ? `<p style="margin:0 0 0.8rem 0;">${this._escapeHtml(result.summary)}</p>` : ''}
+            ${issues  ? `<div class="form-group"><label class="text-small text-bold">Issues</label><ul style="margin:0;padding-left:1.2rem;">${issues}</ul></div>` : ''}
+            ${missing ? `<div class="form-group"><label class="text-small text-bold">Missing documents</label><ul style="margin:0;padding-left:1.2rem;">${missing}</ul></div>` : ''}
+            ${docs    ? `<div class="form-group"><label class="text-small text-bold">Document review</label><ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;">${docs}</ul></div>` : ''}
+            ${result.suggestedReply ? `<div class="form-group"><label class="text-small text-bold">Suggested reply to citizen</label><div style="padding:0.7rem;border:var(--border-main);border-radius:8px;background:#fff;white-space:pre-wrap;">${this._escapeHtml(result.suggestedReply)}</div></div>` : ''}
+        `;
+    },
+
+    /** Tiny helper, keeps strings injected into innerHTML safe. */
+    _escapeHtml(s) {
+        return String(s ?? '')
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    },
+
     renderAdminStats(stats) {
+        const breakdown = stats.statusBreakdown || {};
+        const breakdownChips = Object.keys(breakdown).length === 0
+            ? '<span class="text-small opacity-7">No service requests yet.</span>'
+            : Object.entries(breakdown).map(([status, count]) => `
+                <span class="status-badge status-${this._escapeHtml(status)}" style="margin-right:6px;margin-bottom:6px;">
+                    ${this._escapeHtml(status)}: ${count}
+                </span>
+            `).join('');
+
         this.app.innerHTML = `
             <section class="page-container">
                 <h2 class="reveal">System Statistics</h2>
@@ -237,6 +542,11 @@ const view = {
                         <i class="bi bi-file-earmark-arrow-up mb-8" style="font-size:2rem;display:block;"></i>
                         <h3>Service Requests</h3>
                         <p class="stats-number">${stats.requestsCount ?? 0}</p>
+                    </div>
+                    <div class="editorial-card reveal">
+                        <i class="bi bi-files mb-8" style="font-size:2rem;display:block;"></i>
+                        <h3>Documents</h3>
+                        <p class="stats-number">${stats.documentsCount ?? 0}</p>
                     </div>
                     <div class="editorial-card reveal">
                         <i class="bi bi-calendar2-event mb-8" style="font-size:2rem;display:block;"></i>
@@ -253,6 +563,23 @@ const view = {
                         <h3>Appointments</h3>
                         <p class="stats-number">${stats.appointmentsCount ?? 0}</p>
                     </div>
+                </div>
+
+                <div class="form-card reveal" style="margin-top:1.5rem;">
+                    <h3 style="font-size:1.1rem;margin-top:0;">
+                        <i class="bi bi-bar-chart-steps"></i> Request status breakdown
+                    </h3>
+                    <div style="margin-top:0.5rem;">${breakdownChips}</div>
+                </div>
+
+                <div class="form-card reveal" style="margin-top:1.2rem;">
+                    <h3 style="font-size:1.1rem;margin-top:0;">
+                        <i class="bi bi-clock-history"></i> Recent request activity
+                    </h3>
+                    <p class="text-small opacity-7" style="margin-top:0;">
+                        Last ${(stats.recentHistory || []).length} events across all service requests.
+                    </p>
+                    ${this._renderHistoryTimeline(stats.recentHistory || [])}
                 </div>
             </section>
         `;
