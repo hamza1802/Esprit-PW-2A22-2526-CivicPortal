@@ -316,19 +316,6 @@ const view = {
                             <!-- AI suggestion injected here -->
                         </div>
 
-                        <div class="form-group">
-                            <label for="req-attachment">
-                                <i class="bi bi-paperclip"></i> Primary Supporting Image (JPEG / PNG / WebP, max 2 MB) &mdash; <span class="opacity-7">optional</span>
-                            </label>
-                            <input type="file" id="req-attachment" name="attachment"
-                                   accept="image/jpeg,image/png,image/webp"
-                                   class="no-border"
-                                   style="padding:0.5rem 0;">
-                            <div class="text-small opacity-7" style="margin-top:0.3rem;">
-                                Stored inline with the request (one image only). PDFs and the per-service required documents go below.
-                            </div>
-                        </div>
-
                         <div id="required-docs-section" class="form-group">
                             ${initialDocs}
                         </div>
