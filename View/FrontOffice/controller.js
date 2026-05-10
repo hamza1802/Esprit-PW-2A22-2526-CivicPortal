@@ -425,31 +425,30 @@ const controller = {
     async handleAIImproveRequest(btn) {
         const typeEl = document.getElementById('req-type');
         const descEl = document.getElementById('req-description');
-        const mainEl = document.getElementById('req-attachment');
-        const extraEl= document.getElementById('req-extra-docs');
 
         const serviceType = typeEl?.value || '';
         const description = (descEl?.value || '').trim();
 
-        // Build the requiredDocuments[] payload from currently selected files.
+        // Build the requiredDocuments[] payload from the per-service required
+        // file inputs so the AI sees exactly the same checklist the citizen
+        // has to satisfy.
         const fileEntries = [];
-        const pushFile    = (label, file) => {
+        const pushFile    = (label, docType, file) => {
             if (!file) {
-                fileEntries.push({ label, provided: false, fileName: '', type: '' });
+                fileEntries.push({ label, docType, provided: false, fileName: '', type: '' });
                 return;
             }
-            fileEntries.push({ label, provided: true, fileName: file.name, type: file.type, _file: file });
+            fileEntries.push({ label, docType, provided: true, fileName: file.name, type: file.type, _file: file });
         };
 
-        const mainFile = mainEl?.files?.[0] || null;
-        pushFile('Primary supporting image', mainFile);
-
-        const extras = extraEl?.files ? Array.from(extraEl.files) : [];
-        if (extras.length === 0) {
-            // No extras: skip silently, just one item.
-        } else {
-            extras.forEach((f, i) => pushFile(`Additional document #${i + 1}`, f));
-        }
+        const requiredInputs = Array.from(document.querySelectorAll('input.req-required-doc'));
+        requiredInputs.forEach(inp => {
+            pushFile(
+                inp.dataset.label   || 'Required document',
+                inp.dataset.doctype || 'other',
+                inp.files?.[0] || null
+            );
+        });
 
         // Encode each provided file as base64 (cap at 4 MB so the request
         // payload doesn't explode).

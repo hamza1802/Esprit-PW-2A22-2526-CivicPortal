@@ -523,14 +523,14 @@ const controller = {
         btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Analyzing...';
         try {
             const result = await model.aiAnalyzeRequest(id);
-            view.renderAIAnalyzeResult(result);
+            view.renderAIAnalyzeResult(result, id);
             if (result && result.status !== 'ok') {
                 view.renderToast(result.message || 'AI fallback used.', 'error');
             }
         } catch (e) {
             console.error('[AI analyze] error:', e);
             view.renderToast('AI request failed.', 'error');
-            view.renderAIAnalyzeResult(null);
+            view.renderAIAnalyzeResult(null, id);
         } finally {
             btn.disabled  = false;
             btn.innerHTML = original;

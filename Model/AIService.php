@@ -284,28 +284,31 @@ EXACT schema:
 }
 
 Mindset:
-- Be REALISTIC and pragmatic. Do NOT demand extra information that municipal
-  workflows don't actually need. Only the "Service type" and the documents
-  attached to this very request matter; if the citizen attached supporting
-  documents and they look reasonable, that is enough.
-- Default stance: APPROVE when:
-  * The description matches the service type (or is at least clearly about it).
-  * At least one supporting document is attached.
-  * The attached files, when inspected, look like real, related documents.
-- Recommend "request_more_info" ONLY when something specific is missing or
-  unclear that the citizen could realistically provide (blurry scan,
-  unrelated file, wrong person, expired document).
-- Recommend "reject" ONLY for clear mismatches or fraud-looking content.
-- Do NOT invent strict eligibility rules the city did not state.
+- Be REALISTIC and pragmatic. Workers make the final decision; you give a balanced
+  second opinion. Do NOT demand extra information municipal workflows rarely need.
+
+Scoring mindset (IMPORTANT — be forgiving, not academic):
+- "validityScore" is NOT a grading exam. It reflects how workable the submission is today.
+- When evidence is plausible, default HIGH scores — staff can still clarify later.
+- Use this banding as a SOFT guide:
+  * 84–94: Routine / looks complete enough to process (default for solid submissions).
+  * 74–83: Mostly fine — small gaps or one minor doubt; still workable.
+  * 60–73: Meaningful ambiguity or missing clarity — encourage follow-up ("request_more_info").
+  * Below 60: Rare — only clearly wrong submissions, mismatched files, or strong red flags.
+- If you recommend "approve", validityScore SHOULD almost always be 74 or higher.
+- Prefer generous judgment: unclear scan quality alone should rarely push below ~70 unless unreadable.
+
+Decision rules (match recommendation to the case):
+- "approve": description plausibly matches the service type and supporting files look related and usable (or only filename was available and nothing contradicts them).
+- "request_more_info": something concrete is missing or unclear that a citizen can fix (blurry scan, wrong document class, ambiguous wording) — avoid this if a human could reasonably proceed.
+- "reject": reserve for strong mismatch or material that clearly does not belong to this request/service.
 
 Format rules:
 - "summary": 1-2 neutral sentences describing what the citizen is asking.
-- "issues": SHORT, FACTUAL bullet points (max 3) - only real problems.
-- "validityScore": integer 0..100. Score generously: 80+ for "looks fine",
-  60-79 for "minor doubt", 40-59 for "needs more info", below 40 only for
-  clearly wrong submissions.
-- "recommendation": "approve" | "reject" | "request_more_info" - see above.
-- "suggestedComment": polite text the worker can paste back to the citizen.
+- "issues": SHORT, FACTUAL bullet points (max 3) — only genuine problems or unknowns.
+- "validityScore": integer 0..100 strictly (see banding above; default generous).
+- "recommendation": "approve" | "reject" | "request_more_info" — harmonise with validityScore & issues.
+- "suggestedComment": polite text the worker can paste back to the citizen (professional, actionable).
 - Reply in the SAME language as the citizen's description.
 - Do NOT add anything outside the JSON object.
 
@@ -329,6 +332,7 @@ TXT;
                 'validityScore'    => 0,
                 'recommendation'   => 'request_more_info',
                 'suggestedComment' => "We need a moment to review your request manually. Thank you for your patience.",
+                'suggestedReply'   => "We need a moment to review your request manually. Thank you for your patience.",
                 'status'           => $response['status'],
                 'message'          => $response['message'],
             ];
@@ -342,12 +346,15 @@ TXT;
         $score = (int)($d['validityScore'] ?? 0);
         $score = max(0, min(100, $score));
 
+        $reply = trim((string)($d['suggestedComment'] ?? ''));
+
         return [
             'summary'          => (string)($d['summary'] ?? ''),
             'issues'           => self::stringList($d['issues'] ?? []),
             'validityScore'    => $score,
             'recommendation'   => $rec,
-            'suggestedComment' => (string)($d['suggestedComment'] ?? ''),
+            'suggestedComment' => $reply,
+            'suggestedReply'   => $reply,
             'status'           => 'ok',
             'message'          => 'AI analysis ready.',
         ];

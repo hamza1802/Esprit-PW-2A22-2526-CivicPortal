@@ -36,13 +36,23 @@ class AIConfig
 
     /**
      * Per-context API keys (Google AI Studio).
-     * Prefer environment variables for security; fall back to inline placeholders.
+     * Prefer environment variables for security; fall back to the inline keys
+     * below if those env vars are not set.
+     *
+     *   getenv('NAME')  reads the env var literally called NAME.
+     *   It does NOT take the API key string as its argument.
+     *
+     * To rotate keys without redeploying code, set these env vars:
+     *   GEMINI_API_KEY_FRONT  — used by the citizen "Improve with AI" button
+     *   GEMINI_API_KEY_BACK   — used by the staff  "Analyze with AI" panel
      */
     public static function getKeys(): array
     {
         return [
-            'frontoffice' => getenv('GEMINI_API_KEY_FRONT') ?: '',
-            'backoffice'  => getenv('GEMINI_API_KEY_BACK')  ?: '',
+            'frontoffice' => getenv('GEMINI_API_KEY_FRONT')
+                ?: 'AIzaSyC0L3xPfD6GkAFa6YbX6QOuV0Rfjt3Bh2M',
+            'backoffice'  => getenv('GEMINI_API_KEY_BACK')
+                ?: 'AIzaSyDBMXHnaDg7wguM29TbPUXMT02S0PF9JaY',
         ];
     }
 

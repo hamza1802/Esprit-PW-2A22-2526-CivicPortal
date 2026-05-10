@@ -404,7 +404,7 @@ const view = {
                         <p class="text-small opacity-7" style="margin-top:0.4rem;">
                             Asks Gemini to assess completeness, flag missing documents and suggest a next step.
                         </p>
-                        <div id="ai-analyze-result"
+                        <div id="ai-analyze-result" data-request-id="${request.id}"
                              style="margin-top:1rem;border:1px dashed rgba(99,102,241,0.4);border-radius:12px;padding:1rem;background:rgba(99,102,241,0.04);min-height:80px;color:var(--text-main);">
                             <span class="text-small opacity-7">Click "Analyze with AI" to inspect this request.</span>
                         </div>
@@ -465,21 +465,34 @@ const view = {
     },
 
     /** Render the result returned by AIService::analyzeRequest. */
-    renderAIAnalyzeResult(result) {
+    renderAIAnalyzeResult(result, requestId = null) {
         const box = document.getElementById('ai-analyze-result');
         if (!box) return;
+        const rid = requestId != null && requestId !== ''
+            ? parseInt(String(requestId), 10)
+            : parseInt(box.getAttribute('data-request-id') || '0', 10);
+
         if (!result) {
             box.innerHTML = '<span style="color:var(--color-danger,#ef4444);">AI is currently unavailable.</span>';
             return;
         }
 
-        const recColor = {
-            approve:    '#10b981',
+        const rec       = (result.recommendation || 'request_more_info').toLowerCase();
+        const recLabel  = rec === 'approve' ? 'APPROVE' : rec === 'reject' ? 'REJECT' : 'REQUEST MORE INFO';
+        const recColor  = {
+            approve:           '#10b981',
             request_more_info: '#f59e0b',
-            reject:     '#ef4444'
-        }[result.recommendation] || '#6b7280';
+            reject:            '#ef4444'
+        }[rec] || '#6b7280';
 
-        const issues = (result.issues || []).map(i => `<li>${this._escapeHtml(i)}</li>`).join('');
+        const scoreRaw = result.validityScore;
+        const score    = Math.max(0, Math.min(100, parseInt(String(scoreRaw ?? 0), 10) || 0));
+        let scoreBar   = '#6366f1';
+        if (score >= 74) scoreBar = '#10b981';
+        else if (score >= 60) scoreBar = '#f59e0b';
+        else scoreBar = '#ef4444';
+
+        const issues  = (result.issues || []).map(i => `<li>${this._escapeHtml(i)}</li>`).join('');
         const missing = (result.missingDocuments || []).map(m => `<li>${this._escapeHtml(m)}</li>`).join('');
         const docs    = (result.documentReview || []).map(d => `
             <li style="display:flex;gap:8px;align-items:flex-start;">
@@ -489,26 +502,95 @@ const view = {
             </li>
         `).join('');
 
+        const suggested = (result.suggestedComment || result.suggestedReply || '').trim();
+
         const status = result.status === 'ok' ? '' :
             `<div class="text-small" style="color:#b45309;margin-bottom:0.5rem;">
                 <i class="bi bi-info-circle"></i> ${this._escapeHtml(result.message || 'AI fallback used.')}
              </div>`;
 
+        /** One-click status: staff still confirm; primary button matches AI path. */
+        const primaryValidate = rec === 'approve'
+            ? `<button type="button" class="btn btn-small btn-success ai-suggested-action"
+                    data-action="validate" data-id="${rid}" title="Apply AI suggestion">
+                    <i class="bi bi-check-lg"></i> Validate (AI: approve)
+                </button>`
+            : `<button type="button" class="btn btn-small ai-suggested-action"
+                    data-action="validate" data-id="${rid}" style="opacity:0.92;border:1px dashed var(--success);color:var(--success);background:transparent;"
+                    title="Override AI — validate anyway">
+                    <i class="bi bi-check-lg"></i> Validate anyway
+                </button>`;
+
+        const primaryReject = rec === 'reject'
+            ? `<button type="button" class="btn btn-small btn-danger ai-suggested-action"
+                    data-action="reject" data-id="${rid}" title="Apply AI suggestion">
+                    <i class="bi bi-x-lg"></i> Reject (AI: reject)
+                </button>`
+            : `<button type="button" class="btn btn-small ai-suggested-action"
+                    data-action="reject" data-id="${rid}" style="opacity:0.92;border:1px dashed var(--danger);color:var(--danger);background:transparent;"
+                    title="Override AI — reject">
+                    <i class="bi bi-x-lg"></i> Reject anyway
+                </button>`;
+
+        const infoNote = rec === 'request_more_info'
+            ? `<p class="text-small" style="margin:0 0 0.6rem 0;color:#b45309;">
+                <i class="bi bi-info-circle"></i> AI suggests contacting the citizen for clarification before accepting or rejecting.</p>`
+            : '';
+
+        const copyBtn = suggested !== ''
+            ? `<button type="button" id="btn-copy-ai-suggestion" class="btn btn-small" style="margin-top:0.4rem;"
+                    title="Copy suggested reply to clipboard"><i class="bi bi-clipboard"></i> Copy suggestion</button>`
+            : '';
+
         box.innerHTML = `
             ${status}
-            <div class="flex-between flex-wrap gap-16 mb-16">
-                <h4 class="mb-0" style="font-size:1.05rem;"><i class="bi bi-stars"></i> AI Analysis</h4>
+            <div class="flex-between flex-wrap gap-16 mb-16" style="align-items:flex-start;">
+                <h4 class="mb-0" style="font-size:1.05rem;"><i class="bi bi-stars"></i> AI analysis</h4>
                 <span class="status-pill" style="padding:3px 10px;border-radius:99px;font-size:0.75rem;font-weight:800;
                              background:${recColor}22;color:${recColor};">
-                    ${(result.recommendation || 'review').toUpperCase().replace('_', ' ')}
+                    ${recLabel.replace('_', ' ')}
                 </span>
             </div>
+
+            <div class="flex flex-wrap gap-16 mb-16" style="align-items:center;">
+                <div style="flex:0 0 auto;text-align:center;">
+                    <div style="font-size:2rem;font-weight:900;line-height:1;color:${scoreBar};">${score}<span style="font-size:1rem;opacity:0.6;font-weight:700;">/100</span></div>
+                    <div class="text-small opacity-7" style="max-width:9rem;margin-top:0.2rem;">Readiness score (forgiving&nbsp;curve)</div>
+                </div>
+                <div style="flex:1 1 200px;min-width:160px;">
+                    <div style="height:10px;background:rgba(0,0,0,0.06);border-radius:99px;overflow:hidden;border:var(--border-main);">
+                        <div style="height:100%;width:${score}%;background:${scoreBar};border-radius:99px;transition:width 0.3s ease;"></div>
+                    </div>
+                    <p class="text-small opacity-8" style="margin:0.4rem 0 0 0;">Higher is typical for routine filings; mid scores mean “probably fine after a quick look.”</p>
+                </div>
+            </div>
+
             ${result.summary ? `<p style="margin:0 0 0.8rem 0;">${this._escapeHtml(result.summary)}</p>` : ''}
+            ${infoNote}
             ${issues  ? `<div class="form-group"><label class="text-small text-bold">Issues</label><ul style="margin:0;padding-left:1.2rem;">${issues}</ul></div>` : ''}
             ${missing ? `<div class="form-group"><label class="text-small text-bold">Missing documents</label><ul style="margin:0;padding-left:1.2rem;">${missing}</ul></div>` : ''}
             ${docs    ? `<div class="form-group"><label class="text-small text-bold">Document review</label><ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;">${docs}</ul></div>` : ''}
-            ${result.suggestedReply ? `<div class="form-group"><label class="text-small text-bold">Suggested reply to citizen</label><div style="padding:0.7rem;border:var(--border-main);border-radius:8px;background:#fff;white-space:pre-wrap;">${this._escapeHtml(result.suggestedReply)}</div></div>` : ''}
+            ${suggested ? `<div class="form-group"><label class="text-small text-bold">Suggested reply to citizen</label><div id="ai-suggestion-text" style="padding:0.7rem;border:var(--border-main);border-radius:8px;background:#fff;white-space:pre-wrap;">${this._escapeHtml(suggested)}</div>${copyBtn}</div>` : ''}
+
+            <div class="form-group" style="margin-top:0.5rem;margin-bottom:0;">
+                <label class="text-small text-bold">Decision (you are in charge)</label>
+                <div class="flex gap-8 flex-wrap" style="margin-top:0.4rem;">
+                    ${primaryValidate}
+                    ${primaryReject}
+                </div>
+                <p class="text-small opacity-7" style="margin-top:0.45rem;margin-bottom:0;">
+                    Filled buttons match the AI suggestion; outline buttons let you override.</p>
+            </div>
         `;
+
+        const copyEl = document.getElementById('btn-copy-ai-suggestion');
+        if (copyEl && suggested) {
+            copyEl.addEventListener('click', () => {
+                navigator.clipboard.writeText(suggested).then(() => {
+                    this.renderToast('Copied to clipboard.');
+                }).catch(() => this.renderToast('Could not copy.', 'error'));
+            });
+        }
     },
 
     /** Tiny helper, keeps strings injected into innerHTML safe. */
