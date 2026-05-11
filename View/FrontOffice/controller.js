@@ -35,7 +35,13 @@ const controller = {
 
     setupEventListeners() {
         document.addEventListener('click', (e) => {
+            const user = model.getCurrentUser();
+            
             if (e.target.id === 'btn-ai-match') {
+                if (user.isGuest) {
+                    view.renderToast('Please log in to use AI Matching.', 'error');
+                    return;
+                }
                 this.handleAIMatch();
                 return;
             }
@@ -45,6 +51,10 @@ const controller = {
             }
             if (e.target.closest('#btn-ai-improve-req')) {
                 e.preventDefault();
+                if (user.isGuest) {
+                    view.renderToast('Please log in to use AI tools.', 'error');
+                    return;
+                }
                 this.handleAIImproveRequest(e.target.closest('#btn-ai-improve-req'));
                 return;
             }
@@ -70,6 +80,15 @@ const controller = {
             const action = target.dataset.action;
             const id     = target.dataset.id;
 
+            if (user.isGuest && action) {
+                // Ignore safe actions that might be present
+                if (action !== 'view-request' && action !== 'view-profile') {
+                    e.preventDefault();
+                    view.renderToast('Please log in to perform this action.', 'error');
+                    return;
+                }
+            }
+
             if (action === 'edit-profile') {
                 view.renderProfile(model.getCurrentUser(), true);
                 return;
@@ -79,7 +98,6 @@ const controller = {
                 return;
             }
             if (action === 'enroll') {
-                const user = model.getCurrentUser();
                 this.handleEnrollment(user.id, parseInt(id));
             }
             if (action === 'cancel-ticket') {
@@ -145,6 +163,12 @@ const controller = {
 
         document.addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            if (model.getCurrentUser().isGuest) {
+                view.renderToast('Please log in to submit forms.', 'error');
+                window.location.href = 'login.php';
+                return;
+            }
 
             if (e.target.id === 'service-request-form') {
                 await this.handleServiceRequest(new FormData(e.target));
@@ -183,6 +207,18 @@ const controller = {
         const rawHash = window.location.hash || '#home';
         const [hashPath, queryStr] = rawHash.split('?');
         const user = model.getCurrentUser();
+
+        if (user.isGuest) {
+            const restricted = [
+                '#request-details/', '#request-edit/', '#profile', 
+                '#dashboard', '#my-requests', '#my-appointments', '#my-tickets'
+            ];
+            if (restricted.some(r => hashPath.startsWith(r))) {
+                window.location.hash = '#home';
+                view.renderToast('Please log in to access this section.', 'error');
+                return;
+            }
+        }
 
         if (hashPath.startsWith('#request-details/')) {
             await this.showRequestDetail(parseInt(hashPath.split('/')[1], 10));

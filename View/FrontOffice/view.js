@@ -34,6 +34,24 @@ const view = {
             ? `<a href="../BackOffice/index.php" class="user-role-badge" style="text-decoration:none;">Access BackOffice</a>`
             : `<div class="user-role-badge">Citizen</div>`;
 
+        let userControls = '';
+        if (user.isGuest) {
+            userControls = `
+                <a href="login.php" class="btn btn-primary" style="text-decoration:none; padding: 0.5rem 1.5rem; border-radius: 99px;">
+                    <i class="bi bi-box-arrow-in-right"></i> Login
+                </a>
+            `;
+        } else {
+            userControls = `
+                ${roleBadge}
+                <a href="#"
+                   onclick="event.preventDefault();fetch('../../Verification.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'logout'})}).then(()=>window.location.href='login.php')"
+                   class="logout-link">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
+            `;
+        }
+
         nav.innerHTML = `
             <div class="nav-brand"><i class="bi bi-building"></i> CivicPortal</div>
             <div class="nav-backdrop"></div>
@@ -44,19 +62,16 @@ const view = {
                 <li><a href="#home">home</a></li>
                 <li><a href="#programs">programs</a></li>
                 <li><a href="forum.php">forum</a></li>
-                <li><a href="#request-service">requests</a></li>
-                <li><a href="#appointments">appointments</a></li>
-                <li><a href="#transport">transport</a></li>
-                <li><a href="#dashboard">dashboard</a></li>
-                <li><a href="#profile">profile</a></li>
+                ${user.isGuest ? '' : `
+                    <li><a href="#request-service">requests</a></li>
+                    <li><a href="#appointments">appointments</a></li>
+                    <li><a href="#transport">transport</a></li>
+                    <li><a href="#dashboard">dashboard</a></li>
+                    <li><a href="#profile">profile</a></li>
+                `}
             </ul>
             <div class="user-controls">
-                ${roleBadge}
-                <a href="#"
-                   onclick="event.preventDefault();fetch('../../Verification.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'logout'})}).then(()=>window.location.href='login.php')"
-                   class="logout-link">
-                    <i class="bi bi-box-arrow-right"></i> Logout
-                </a>
+                ${userControls}
             </div>
         `;
 
@@ -88,11 +103,22 @@ const view = {
     // Home
     // -------------------------------------------------------------------------
     renderHome(user) {
+        let bannerHtml = '';
+        if (user.isGuest) {
+            bannerHtml = `
+                <div class="guest-notice-banner">
+                    <i class="bi bi-info-circle"></i> Viewing as Guest. 
+                    <a href="login.php">Sign in</a> to access all features.
+                </div>
+            `;
+        }
+
         this.app.innerHTML = `
+            ${bannerHtml}
             <div class="hero-container dashboard-mode reveal">
                 <section class="hero-section">
                     <h1>CivicPortal</h1>
-                    <p>Welcome back, ${user.name}. Navigate municipal services with clarity and precision.</p>
+                    <p>${user.isGuest ? 'Welcome to CivicPortal. Browse our municipal services and programs.' : `Welcome back, ${user.name}. Navigate municipal services with clarity and precision.`}</p>
                     
                     <div class="smart-status-bar">
                         <div class="status-item" id="weather-status-widget">
@@ -117,6 +143,13 @@ const view = {
                             </div>
                         </div>
                     </div>
+                    ${user.isGuest ? `
+                        <div class="mt-24">
+                            <a href="login.php" class="btn btn-primary" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px;">
+                                <i class="bi bi-box-arrow-in-right"></i> Log in for full access
+                            </a>
+                        </div>
+                    ` : ''}
                 </section>
             </div>
             <section class="page-container w-full" style="padding: 6rem 0; overflow: hidden;">
@@ -218,13 +251,18 @@ const view = {
                         <p class="description-clamp" onclick="this.classList.toggle('expanded')"
                            title="Click to expand">${p.description}</p>
                         <div class="mt-auto flex-column gap-8" style="padding-bottom:5%;">
-
-                            <button class="btn ${isEnrolled ? 'btn-success' : 'btn-primary'} w-full"
-                                    data-id="${p.id}"
-                                    data-action="enroll"
-                                    ${isEnrolled ? 'disabled' : ''}>
-                                ${isEnrolled ? 'ENROLLED' : 'ENROLL'}
-                            </button>
+                            ${window.SERVER_USER?.isGuest ? `
+                                <button class="btn btn-primary w-full" onclick="window.location.href='login.php'">
+                                    LOG IN TO ENROLL
+                                </button>
+                            ` : `
+                                <button class="btn ${isEnrolled ? 'btn-success' : 'btn-primary'} w-full"
+                                        data-id="${p.id}"
+                                        data-action="enroll"
+                                        ${isEnrolled ? 'disabled' : ''}>
+                                    ${isEnrolled ? 'ENROLLED' : 'ENROLL'}
+                                </button>
+                            `}
                         </div>
                     </div>
                 </div>
@@ -239,11 +277,13 @@ const view = {
                     <div class="filter-controls reveal flex gap-16 flex-wrap">
                         <input type="text" id="prog-search" placeholder="Search by title..."
                                class="no-bg"
+                               ${window.SERVER_USER?.isGuest ? 'disabled title="Login to search"' : ''}
                                style="flex-grow:1;padding:1rem;border:var(--border-main);
                                       font-family:inherit;font-size:1.1rem;font-weight:600;
                                       color:var(--primary-navy);outline:none;">
                         <select id="prog-filter-cat"
                                 class="no-bg"
+                                ${window.SERVER_USER?.isGuest ? 'disabled title="Login to filter"' : ''}
                                 style="padding:1rem 2rem 1rem 1rem;border:var(--border-main);
                                        font-family:inherit;font-size:1.1rem;font-weight:600;
                                        color:var(--primary-navy);outline:none;cursor:pointer;">
@@ -258,8 +298,12 @@ const view = {
                     <h3 class="mb-16" style="color: var(--color-accent-blue);"><i class="bi bi-magic"></i> AI Program Matcher</h3>
                     <p>Describe what you're looking for or your current situation, and our AI will find the best programs for you.</p>
                     <div class="flex gap-16 mt-16 flex-center">
-                        <input type="text" id="ai-match-input" placeholder="e.g., I'm a student looking for part-time community service..." class="no-bg" style="flex:1; padding:1rem; border-radius:var(--radius-sm); border:var(--border-main); font-family:inherit; color:var(--primary-navy); outline:none;">
-                        <button id="btn-ai-match" class="btn btn-primary" style="min-width:120px;">Match Me</button>
+                        <input type="text" id="ai-match-input" placeholder="e.g., I'm a student looking for part-time community service..." class="no-bg" 
+                               ${window.SERVER_USER?.isGuest ? 'disabled title="Login to use AI Matcher"' : ''}
+                               style="flex:1; padding:1rem; border-radius:var(--radius-sm); border:var(--border-main); font-family:inherit; color:var(--primary-navy); outline:none;">
+                        <button id="btn-ai-match" class="btn btn-primary" 
+                                ${window.SERVER_USER?.isGuest ? 'disabled' : ''}
+                                style="min-width:120px;">Match Me</button>
                     </div>
                     <div id="ai-match-results" style="display:none;" class="ai-matches-grid"></div>
                 </div>
@@ -294,36 +338,47 @@ const view = {
                     </a>
                 </div>
                 <div class="form-card reveal">
-                    <form id="service-request-form" enctype="multipart/form-data">
-                        <div class="form-group">
-                            <label for="req-type">Service Type</label>
-                            <select id="req-type" name="type" required>${typeOptions}</select>
+                    ${window.SERVER_USER?.isGuest ? `
+                        <div class="text-center" style="padding: 3rem 1rem;">
+                            <i class="bi bi-lock" style="font-size: 3rem; color: var(--primary-navy); opacity: 0.3;"></i>
+                            <h3>Login Required</h3>
+                            <p>You must be logged in to submit service requests and track their status.</p>
+                            <a href="login.php" class="btn btn-primary mt-16" style="text-decoration:none;">
+                                <i class="bi bi-box-arrow-in-right"></i> Log In
+                            </a>
                         </div>
-                        <div class="form-group">
-                            <label for="req-description">Description / Details</label>
-                            <textarea id="req-description" name="description" rows="4"
-                                      placeholder="Describe your request in detail..."></textarea>
-                            <div class="flex gap-8 flex-wrap" style="margin-top:0.6rem;">
-                                <button type="button" id="btn-ai-improve-req" class="btn btn-small"
-                                        style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.4);color:var(--primary-navy);">
-                                    <i class="bi bi-stars"></i> Improve with AI
-                                </button>
-                                <span class="text-small opacity-7" style="align-self:center;">AI rewrites your text and reviews any attached files.</span>
+                    ` : `
+                        <form id="service-request-form" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label for="req-type">Service Type</label>
+                                <select id="req-type" name="type" required>${typeOptions}</select>
                             </div>
-                        </div>
+                            <div class="form-group">
+                                <label for="req-description">Description / Details</label>
+                                <textarea id="req-description" name="description" rows="4"
+                                          placeholder="Describe your request in detail..."></textarea>
+                                <div class="flex gap-8 flex-wrap" style="margin-top:0.6rem;">
+                                    <button type="button" id="btn-ai-improve-req" class="btn btn-small"
+                                            style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.4);color:var(--primary-navy);">
+                                        <i class="bi bi-stars"></i> Improve with AI
+                                    </button>
+                                    <span class="text-small opacity-7" style="align-self:center;">AI rewrites your text and reviews any attached files.</span>
+                                </div>
+                            </div>
 
-                        <div id="ai-req-result" class="form-group" style="display:none;border:1px dashed rgba(99,102,241,0.4);border-radius:12px;padding:1rem;background:rgba(99,102,241,0.04);">
-                            <!-- AI suggestion injected here -->
-                        </div>
+                            <div id="ai-req-result" class="form-group" style="display:none;border:1px dashed rgba(99,102,241,0.4);border-radius:12px;padding:1rem;background:rgba(99,102,241,0.04);">
+                                <!-- AI suggestion injected here -->
+                            </div>
 
-                        <div id="required-docs-section" class="form-group">
-                            ${initialDocs}
-                        </div>
+                            <div id="required-docs-section" class="form-group">
+                                ${initialDocs}
+                            </div>
 
-                        <button type="submit" class="btn btn-primary reveal w-full">
-                            <i class="bi bi-send"></i> SUBMIT REQUEST
-                        </button>
-                    </form>
+                            <button type="submit" class="btn btn-primary reveal w-full">
+                                <i class="bi bi-send"></i> SUBMIT REQUEST
+                            </button>
+                        </form>
+                    `}
                 </div>
             </section>
         `;
@@ -786,34 +841,45 @@ const view = {
                     </a>
                 </div>
                 <div class="form-card reveal">
-                    <form id="appointment-form">
-                        <div class="form-group">
-                            <label for="appt-type">Service Type</label>
-                            <select id="appt-type" name="service_type" required>
-                                ${typeOptions}
-                            </select>
+                    ${window.SERVER_USER?.isGuest ? `
+                        <div class="text-center" style="padding: 3rem 1rem;">
+                            <i class="bi bi-calendar-x" style="font-size: 3rem; color: var(--primary-navy); opacity: 0.3;"></i>
+                            <h3>Login Required</h3>
+                            <p>You must be logged in to book appointments with municipal agents.</p>
+                            <a href="login.php" class="btn btn-primary mt-16" style="text-decoration:none;">
+                                <i class="bi bi-box-arrow-in-right"></i> Log In
+                            </a>
                         </div>
-                        <div class="gap-16" style="display:grid;grid-template-columns:1fr 1fr;">
+                    ` : `
+                        <form id="appointment-form">
                             <div class="form-group">
-                                <label for="appt-date">Preferred Date</label>
-                                <input type="date" id="appt-date" name="preferred_date"
-                                       min="${today}" required>
+                                <label for="appt-type">Service Type</label>
+                                <select id="appt-type" name="service_type" required>
+                                    ${typeOptions}
+                                </select>
+                            </div>
+                            <div class="gap-16" style="display:grid;grid-template-columns:1fr 1fr;">
+                                <div class="form-group">
+                                    <label for="appt-date">Preferred Date</label>
+                                    <input type="date" id="appt-date" name="preferred_date"
+                                           min="${today}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="appt-time">Preferred Time</label>
+                                    <input type="time" id="appt-time" name="preferred_time"
+                                           min="08:00" max="17:00" required>
+                                </div>
                             </div>
                             <div class="form-group">
-                                <label for="appt-time">Preferred Time</label>
-                                <input type="time" id="appt-time" name="preferred_time"
-                                       min="08:00" max="17:00" required>
+                                <label for="appt-notes">Notes (optional)</label>
+                                <textarea id="appt-notes" name="notes" rows="3"
+                                          placeholder="Any specific details about your visit..."></textarea>
                             </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="appt-notes">Notes (optional)</label>
-                            <textarea id="appt-notes" name="notes" rows="3"
-                                      placeholder="Any specific details about your visit..."></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary reveal w-full">
-                            <i class="bi bi-calendar2-plus"></i> REQUEST APPOINTMENT
-                        </button>
-                    </form>
+                            <button type="submit" class="btn btn-primary reveal w-full">
+                                <i class="bi bi-calendar2-plus"></i> REQUEST APPOINTMENT
+                            </button>
+                        </form>
+                    `}
                 </div>
             </section>
         `;
@@ -1111,13 +1177,18 @@ const view = {
                         </div>
                     </div>
                     <div class="mt-auto">
-                        ${!isFull
-                            ? `<form class="book-transport-form" data-id="${trajet.idTrajet}">
-                                   <button type="submit" class="btn btn-primary w-full">
-                                       <i class="bi bi-ticket-perforated"></i> Book Ticket
-                                   </button>
-                               </form>`
-                            : `<button disabled class="btn btn-danger w-full" style="opacity:0.6;">Sold Out</button>`}
+                        ${isFull
+                            ? `<button disabled class="btn btn-danger w-full" style="opacity:0.6;">Sold Out</button>`
+                            : window.SERVER_USER?.isGuest
+                                ? `<button class="btn btn-primary w-full" onclick="window.location.href='login.php'">
+                                       <i class="bi bi-box-arrow-in-right"></i> Log in to Book
+                                   </button>`
+                                : `<form class="book-transport-form" data-id="${trajet.idTrajet}">
+                                       <button type="submit" class="btn btn-primary w-full">
+                                           <i class="bi bi-ticket-perforated"></i> Book Ticket
+                                       </button>
+                                   </form>`
+                        }
                     </div>
                 </div>`;
             }).join('');
@@ -1131,16 +1202,22 @@ const view = {
                     </h2>
                     <form id="sort-transport-form" data-type="${type}"
                           class="flex gap-8 flex-wrap" style="align-items:stretch;">
-                        <select name="sort" class="no-bg text-bold" style="padding:0.8rem;border:var(--border-main);font-family:inherit;color:var(--primary-navy);">
+                        <select name="sort" class="no-bg text-bold" 
+                                ${window.SERVER_USER?.isGuest ? 'disabled title="Login to sort"' : ''}
+                                style="padding:0.8rem;border:var(--border-main);font-family:inherit;color:var(--primary-navy);">
                             <option value="departure"   ${sortBy==='departure'   ? 'selected':''}>Sort by Departure</option>
                             <option value="destination" ${sortBy==='destination' ? 'selected':''}>Sort by Destination</option>
                             <option value="price"       ${sortBy==='price'       ? 'selected':''}>Sort by Price</option>
                         </select>
-                        <select name="order" class="no-bg text-bold" style="padding:0.8rem;border:var(--border-main);font-family:inherit;color:var(--primary-navy);">
+                        <select name="order" class="no-bg text-bold" 
+                                ${window.SERVER_USER?.isGuest ? 'disabled title="Login to sort"' : ''}
+                                style="padding:0.8rem;border:var(--border-main);font-family:inherit;color:var(--primary-navy);">
                             <option value="ASC"  ${order==='ASC'  ? 'selected':''}>A → Z</option>
                             <option value="DESC" ${order==='DESC' ? 'selected':''}>Z → A</option>
                         </select>
-                        <button type="submit" class="btn btn-primary" style="padding:0.8rem 1.5rem;">Sort</button>
+                        <button type="submit" class="btn btn-primary" 
+                                ${window.SERVER_USER?.isGuest ? 'disabled' : ''}
+                                style="padding:0.8rem 1.5rem;">Sort</button>
                     </form>
                 </div>
                 <div class="editorial-grid">${routeCards}</div>

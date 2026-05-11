@@ -56,11 +56,13 @@ $successMsg = isset($_GET['success']) ? htmlspecialchars($_GET['success']) : '';
             <li><a href="index.php">home</a></li>
             <li><a href="index.php#programs">programs</a></li>
             <li><a href="forum.php" class="active">forum</a></li>
-            <li><a href="index.php#request-service">requests</a></li>
-            <li><a href="index.php#appointments">appointments</a></li>
-            <li><a href="index.php#transport">transport</a></li>
-            <li><a href="index.php#dashboard">dashboard</a></li>
-            <li><a href="index.php#profile">profile</a></li>
+            <?php if ($isLoggedIn): ?>
+                <li><a href="index.php#request-service">requests</a></li>
+                <li><a href="index.php#appointments">appointments</a></li>
+                <li><a href="index.php#transport">transport</a></li>
+                <li><a href="index.php#dashboard">dashboard</a></li>
+                <li><a href="index.php#profile">profile</a></li>
+            <?php endif; ?>
         </ul>
         <div class="user-controls">
             <?php if ($isLoggedIn): ?>

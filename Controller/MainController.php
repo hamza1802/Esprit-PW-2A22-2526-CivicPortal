@@ -25,11 +25,15 @@ class MainController {
     private static function authorize(string $action): void {
         static $map = [
             // Public — no session needed
-            'login'           => 'public',
-            'register'        => 'public',
-            'request_reset'   => 'public',
-            'reset_password'  => 'public',
-            'verify_otp'      => 'public',
+            'login'                 => 'public',
+            'register'              => 'public',
+            'request_reset'         => 'public',
+            'reset_password'        => 'public',
+            'verify_otp'            => 'public',
+            'get_programs'          => 'public',
+            'list_transport_types'  => 'public',
+            'get_service_types'     => 'public',
+            'list_trajets'          => 'public',
 
             // Any authenticated user
             'logout'                => 'any',
@@ -45,7 +49,6 @@ class MainController {
             'replace_file'          => 'any',
             'delete_document'       => 'any',  // ownership re-checked below
             'ai_improve_description'=> 'any',  // citizen-side AI helper
-            'get_programs'          => 'any',
             'get_program_detail'    => 'any',
             'get_enrollments'       => 'any',
             'enroll_user'           => 'any',
@@ -59,16 +62,13 @@ class MainController {
             'get_my_appointments'   => 'any',
             'cancel_appointment'    => 'any',
             'get_available_slots'   => 'any',
-            'get_service_types'     => 'any',
             // Notifications
             'get_notifications'     => 'any',
             'mark_notification_read'=> 'any',
             // Transport (citizens can view, only admins can create/edit)
-            'list_transport_types'  => 'any',
             'list_transports'       => 'any',
             'get_transport'         => 'any',
             'list_all_trajets'      => 'any',
-            'list_trajets'          => 'any',
             'list_tickets'          => 'any',
             'list_tickets_enriched' => 'any',
             'book_ticket'           => 'any',

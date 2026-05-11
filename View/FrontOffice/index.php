@@ -7,25 +7,38 @@ require_once __DIR__ . '/../../bootstrap.php';
 require_once __DIR__ . '/../../Controller/UserController.php';
 define('_CIVICPORTAL_BOOTSTRAP_', true);
 
-if (empty($_SESSION['user_id'])) {
-    header('Location: login.php');
-    exit;
+$isGuest = empty($_SESSION['user_id']);
+
+if (!$isGuest) {
+    $realUser = UserController::getUserById((int)$_SESSION['user_id']);
+    $profile = UserController::getProfileByUserId((int)$_SESSION['user_id']);
+
+    $currentUser = [
+        'id'              => (int)$_SESSION['user_id'],
+        'name'            => $realUser ? $realUser->getDisplayName() : ($_SESSION['user_name'] ?? 'Citizen'),
+        'email'           => $realUser ? $realUser->getEmail() : ($_SESSION['user_email'] ?? ''),
+        'role'            => $realUser ? $realUser->getRole() : ($_SESSION['user_role'] ?? 'citizen'),
+        'two_fa_enabled'  => $realUser ? $realUser->isTwoFaEnabled() : 0,
+        'has_profile_pic' => $realUser ? $realUser->hasProfilePic() : false,
+        'bio'             => $profile ? $profile->getBio() : '',
+        'phone_number'    => $profile ? $profile->getPhoneNumber() : '',
+        'date_of_birth'   => $profile ? $profile->getDateOfBirth() : '',
+        'isGuest'         => false
+    ];
+} else {
+    $currentUser = [
+        'id'              => 0,
+        'name'            => 'Guest',
+        'email'           => '',
+        'role'            => 'guest',
+        'two_fa_enabled'  => 0,
+        'has_profile_pic' => false,
+        'bio'             => '',
+        'phone_number'    => '',
+        'date_of_birth'   => '',
+        'isGuest'         => true
+    ];
 }
-
-$realUser = UserController::getUserById((int)$_SESSION['user_id']);
-$profile = UserController::getProfileByUserId((int)$_SESSION['user_id']);
-
-$currentUser = [
-    'id'              => (int)$_SESSION['user_id'],
-    'name'            => $realUser ? $realUser->getDisplayName() : ($_SESSION['user_name'] ?? 'Citizen'),
-    'email'           => $realUser ? $realUser->getEmail() : ($_SESSION['user_email'] ?? ''),
-    'role'            => $realUser ? $realUser->getRole() : ($_SESSION['user_role'] ?? 'citizen'),
-    'two_fa_enabled'  => $realUser ? $realUser->isTwoFaEnabled() : 0,
-    'has_profile_pic' => $realUser ? $realUser->hasProfilePic() : false,
-    'bio'             => $profile ? $profile->getBio() : '',
-    'phone_number'    => $profile ? $profile->getPhoneNumber() : '',
-    'date_of_birth'   => $profile ? $profile->getDateOfBirth() : '',
-];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -43,7 +56,7 @@ $currentUser = [
     <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
     <script defer src="../assets/js/face-enroll.js"></script>
 </head>
-<body>
+<body class="<?= $isGuest ? 'guest-mode' : '' ?>">
     <div class="aurora-bg">
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>

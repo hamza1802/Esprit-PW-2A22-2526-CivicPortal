@@ -114,39 +114,45 @@ const model = {
     // -------------------------------------------------------------------------
     async sync() {
         console.log('Model: Starting sync...');
+        const user = this.getCurrentUser();
         
         try {
-            const promises = [
-                this.apiCall('get_my_requests'),
+            const publicPromises = [
                 this.apiCall('get_programs'),
-                this.apiCall('get_enrollments', { userId: this.state.currentUser.id }),
                 this.transportApi('list_transport_types'),
-                this.apiCall('get_service_types'),
-                this.apiCall('get_my_posts')
+                this.apiCall('get_service_types')
             ];
+
+            const [programs, transportTypes, serviceTypes] = await Promise.all(publicPromises);
             
-            console.log('Model: Waiting for all API calls...');
-            const [requests, programs, enrollments, types, svcTypes, posts] = await Promise.all(promises);
-            
-            console.log('Model: API calls complete');
-            console.log('  - requests:', requests);
-            console.log('  - programs:', programs);
-            console.log('  - enrollments:', enrollments);
-            console.log('  - types:', types);
-            console.log('  - svcTypes:', svcTypes);
-            console.log('  - posts:', posts);
-            
-            if (requests) this.state.serviceRequests = requests;
             if (programs) this.state.programs = programs;
-            if (enrollments) this.state.enrollments = enrollments;
-            if (types) this.state.transportTypes = types;
-            if (svcTypes) this.state.serviceTypes = svcTypes;
-            if (posts) this.state.myPosts = posts;
+            if (transportTypes) this.state.transportTypes = transportTypes;
+            if (serviceTypes) this.state.serviceTypes = serviceTypes;
+
+            if (!user.isGuest) {
+                console.log('Model: Fetching personal data for authenticated user...');
+                const privatePromises = [
+                    this.apiCall('get_my_requests'),
+                    this.apiCall('get_enrollments', { userId: user.id }),
+                    this.apiCall('get_my_posts')
+                ];
+                
+                const [requests, enrollments, posts] = await Promise.all(privatePromises);
+                
+                if (requests) this.state.serviceRequests = requests;
+                if (enrollments) this.state.enrollments = enrollments;
+                if (posts) this.state.myPosts = posts;
+            } else {
+                console.log('Model: Skipping personal data for guest.');
+                this.state.serviceRequests = [];
+                this.state.enrollments = [];
+                this.state.myPosts = [];
+            }
             
             console.log('Model: Sync complete, state updated');
         } catch (error) {
             console.error('Model: Error during sync:', error);
-            throw error; // Re-throw so controller can handle it
+            throw error; 
         }
     },
 
