@@ -317,7 +317,10 @@ a.user-role-badge:hover {
 .slider {
     position: absolute;
     cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background-color: #ccc;
     transition: .4s;
     border-radius: 34px;
@@ -337,21 +340,22 @@ a.user-role-badge:hover {
     border: 2px solid var(--primary-navy);
 }
 
-input:checked + .slider {
+input:checked+.slider {
     background-color: #cfd8dc;
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
     transform: translateX(26px);
 }
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-family: var(--font-primary);
-    background: none;
-    border: none;
-    cursor: pointer;
-    transition: var(--transition-fast);
+
+display: flex;
+align-items: center;
+gap: 4px;
+font-family: var(--font-primary);
+background: none;
+border: none;
+cursor: pointer;
+transition: var(--transition-fast);
 }
 
 .logout-link:hover {
@@ -717,8 +721,8 @@ input:checked + .slider:before {
 }
 
 .btn-success {
-    background-color: var(--success) !important;
-    color: var(--white) !important;
+    background-color: var(--white) !important;
+    color: var(--success) !important;
     border-color: var(--success) !important;
 }
 
@@ -825,14 +829,14 @@ input:checked + .slider:before {
 }
 
 .status-validated {
-    background-color: var(--success);
-    color: var(--white);
+    background-color: var(--white);
+    color: var(--success);
     border-color: var(--success);
 }
 
 .status-rejected {
-    background-color: var(--danger);
-    color: var(--white);
+    background-color: var(--white);
+    color: var(--danger);
     border-color: var(--danger);
 }
 
@@ -1265,8 +1269,8 @@ input:checked + .slider:before {
 }
 
 .status-approved {
-    background-color: var(--success);
-    color: var(--white);
+    background-color: var(--white);
+    color: var(--success);
     border-color: var(--success);
 }
 
@@ -1877,10 +1881,11 @@ nav {
    later cascade order with equal specificity. */
 .status-badge.status-validated,
 .status-badge.status-approved {
-    background-color: var(--success) !important;
-    color: var(--white) !important;
+    background-color: var(--white) !important;
+    color: var(--success) !important;
     border-color: var(--success) !important;
 }
+
 .status-badge.status-rejected,
 .status-badge.status-cancelled,
 .status-badge.status-full {
@@ -1888,31 +1893,37 @@ nav {
     color: var(--white) !important;
     border-color: var(--danger) !important;
 }
+
 .status-badge.status-in_progress {
     background-color: #6f42c1 !important;
     color: var(--white) !important;
     border-color: #6f42c1 !important;
 }
+
 .status-badge.status-resolved {
     background-color: #20c997 !important;
     color: var(--white) !important;
     border-color: #20c997 !important;
 }
+
 .status-badge.status-completed {
     background-color: #0d6efd !important;
     color: var(--white) !important;
     border-color: #0d6efd !important;
 }
+
 .status-badge.status-rescheduled {
     background-color: #fd7e14 !important;
     color: var(--white) !important;
     border-color: #fd7e14 !important;
 }
+
 .status-badge.status-pending {
     background-color: rgba(255, 255, 255, 0.6) !important;
     color: var(--primary-navy) !important;
     border-color: var(--primary-navy) !important;
 }
+
 .status-badge.status-active,
 .status-badge.status-confirmed {
     background-color: var(--white) !important;

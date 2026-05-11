@@ -911,60 +911,99 @@ const view = {
     },
 
     /* =========================================================================
-       PROGRAMS MANAGER — Premium Card Grid with Notification Dots
+       PROGRAMS MANAGER — List View with Action Buttons
        ========================================================================= */
     renderProgramsManager(programs, role) {
         const totalEnrollments = programs.reduce((sum, p) => sum + parseInt(p.enrollment_count || 0), 0);
 
-        const programCards = programs.map(p => {
-            const enrolled = parseInt(p.enrollment_count || 0);
-            const pending  = parseInt(p.pending_count   || 0);
-            const confirmed= parseInt(p.confirmed_count || 0);
-            const cap      = parseInt(p.capacity || 1);
-            const fillPct  = Math.min(Math.round((enrolled / cap) * 100), 100);
-            const isFull   = enrolled >= cap;
+        const tableRows = programs.map(p => {
+            const enrolled  = parseInt(p.enrollment_count || 0);
+            const pending   = parseInt(p.pending_count   || 0);
+            const confirmed = parseInt(p.confirmed_count || 0);
+            const cap       = parseInt(p.capacity || 1);
+            const fillPct   = Math.min(Math.round((enrolled / cap) * 100), 100);
+            const isFull    = enrolled >= cap;
+
+            const badgeColor = isFull ? 'rejected' : (fillPct > 80 ? 'warning' : 'validated');
+            const statusLabel = isFull ? 'FULL' : `${fillPct}%`;
 
             return `
-                <div class="program-mgmt-card reveal" data-action="view-program" data-id="${p.id}" style="cursor:pointer;">
-                    <div class="program-mgmt-header">
-                        <div class="program-mgmt-img" style="background-image:url('../../get_image.php?type=program&id=${p.id}');"></div>
-                        ${enrolled > 0 ? `<span class="program-dot${pending > 0 ? ' has-pending' : ''}">${enrolled}</span>` : ''}
-                    </div>
-                    <div class="program-mgmt-body">
-                        <span class="category-badge">${p.category || 'Uncategorized'}</span>
-                        <h3 style="margin:0.5rem 0;">${p.title || 'Untitled Program'}</h3>
-                        <p class="mb-16" style="font-size:0.95rem;flex-grow:1;">
-                            ${(p.description || '').substring(0, 80)}${(p.description || '').length > 80 ? '...' : ''}
-                        </p>
-                        <div class="flex gap-8 text-small mb-8" style="align-items:center;">
-                            <span class="text-bold"><i class="bi bi-geo-alt-fill"></i> ${p.location || 'No location'}</span>
-                            <span class="text-bold" style="margin-left:auto;">${enrolled}/${cap} enrolled</span>
+                <tr>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <img src="../../get_image.php?type=program&id=${p.id}" 
+                                 style="width:50px;height:35px;object-fit:cover;border-radius:4px;border:var(--border-main);"
+                                 onerror="this.src='https://placehold.co/50x35?text=No+Img'">
+                            <div style="min-width:0;">
+                                <strong style="display:block;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.title}</strong>
+                                <span class="category-badge" style="font-size:0.7rem;padding:1px 6px;">${p.category || 'Uncategorized'}</span>
+                            </div>
                         </div>
-                        <div class="capacity-track">
-                            <div class="capacity-fill${isFull ? ' full' : ''}" style="width:${fillPct}%;"></div>
+                    </td>
+                    <td><span class="text-small"><i class="bi bi-geo-alt"></i> ${p.location || '—'}</span></td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div class="capacity-track" style="flex:1;height:6px;min-width:60px;">
+                                <div class="capacity-fill${isFull ? ' full' : ''}" style="width:${fillPct}%;"></div>
+                            </div>
+                            <span class="text-bold" style="font-size:0.8rem;white-space:nowrap;">${enrolled}/${cap}</span>
                         </div>
-                        <div class="flex gap-8 text-small" style="margin-top:1rem;">
-                            ${pending   > 0 ? `<span class="mini-stat pending">${pending} pending</span>` : ''}
-                            ${confirmed > 0 ? `<span class="mini-stat confirmed">${confirmed} confirmed</span>` : ''}
-                            ${isFull ? '<span class="mini-stat full">FULL</span>' : ''}
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:4px;">
+                            ${pending > 0 ? `<span class="status-badge status-pending" title="Pending" style="padding:2px 6px;font-size:0.7rem;">${pending}P</span>` : ''}
+                            ${confirmed > 0 ? `<span class="status-badge status-validated" title="Confirmed" style="padding:2px 6px;font-size:0.7rem;">${confirmed}C</span>` : ''}
                         </div>
-                    </div>
-                </div>
+                    </td>
+                    <td><span class="status-badge status-${p.status === 'active' ? 'validated' : 'rejected'}" style="text-transform:uppercase;font-size:0.7rem;">${p.status}</span></td>
+                    <td style="text-align:right;white-space:nowrap;">
+                        <button class="btn btn-small" data-action="view-program" data-id="${p.id}" title="View Details" style="padding:0.4rem 0.6rem;background:rgba(99,102,241,0.08);color:var(--primary-navy);border:1px solid rgba(99,102,241,0.3);">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        ${role === 'admin' ? `
+                            <button class="btn btn-small" data-action="edit-program" data-id="${p.id}" title="Edit" style="padding:0.4rem 0.6rem;margin-left:4px;">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <button class="btn btn-small btn-danger" data-action="delete-program" data-id="${p.id}" title="Delete" style="padding:0.4rem 0.6rem;margin-left:4px;">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        ` : ''}
+                    </td>
+                </tr>
             `;
         }).join('');
 
         this.app.innerHTML = `
             <section class="page-container">
-                <div class="flex-between mb-32 flex-wrap gap-16">
-                    <h2 class="reveal no-border" style="margin:0;padding:0;">Parks &amp; Recreation</h2>
-                    <div class="flex gap-16" style="align-items:center;">
-                        <span class="reveal text-bold" style="font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;">${totalEnrollments} total enrollments</span>
-                        ${role === 'admin' ? '<button class="btn reveal" data-action="manage-categories" style="border:2px solid var(--primary-navy);"><i class="bi bi-tags"></i> CATEGORIES</button>' : ''}
-                        ${role === 'admin' ? '<button class="btn btn-primary reveal" data-action="new-program">+ NEW PROGRAM</button>' : ''}
+                <div class="flex-between mb-32 flex-wrap gap-16" style="border-bottom: 2px solid var(--primary-navy); padding-bottom: 1.5rem;">
+                    <h2 class="reveal no-border" style="margin:0;padding:0;font-size:2.2rem;font-weight:900;">Parks &amp; Recreation</h2>
+                    <div class="flex gap-12" style="align-items:center;">
+                        <div class="reveal text-bold" style="font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;background:var(--primary-navy);color:#fff;padding:0.5rem 1rem;border-radius:4px;">
+                            ${totalEnrollments} ENROLLMENTS
+                        </div>
+                        ${role === 'admin' ? '<button class="btn reveal" data-action="manage-categories" style="font-weight:800;border:2px solid var(--primary-navy);"><i class="bi bi-tags"></i> CATEGORIES</button>' : ''}
+                        ${role === 'admin' ? '<button class="btn btn-primary reveal" data-action="new-program" style="font-weight:900;box-shadow:4px 4px 0 var(--primary-navy);">+ NEW PROGRAM</button>' : ''}
                     </div>
                 </div>
-                <div class="programs-mgmt-grid">
-                    ${programCards.length > 0 ? programCards : '<p class="reveal text-center" style="padding:3rem;">No programs found.</p>'}
+
+                <div class="reveal">
+                    <div class="table-responsive" style="background:white;border:2px solid var(--primary-navy);box-shadow: 10px 10px 0px rgba(29, 42, 68, 0.05);">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:30%;">Program</th>
+                                    <th>Location</th>
+                                    <th style="width:15%;">Capacity</th>
+                                    <th>Stats</th>
+                                    <th>Status</th>
+                                    <th style="text-align:right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRows.length > 0 ? tableRows : '<tr><td colspan="6" class="text-center" style="padding:4rem;opacity:0.6;">No programs found. Start by creating your first program.</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
         `;
