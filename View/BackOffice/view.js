@@ -1445,7 +1445,7 @@ const view = {
                 <td>${s.agent_name || '—'}</td>
                 <td>${s.service_type}</td>
                 <td>${DAYS[s.day_of_week] ?? s.day_of_week}</td>
-                <td>${s.start_time.substring(0,5)} – ${s.end_time.substring(0,5)}</td>
+                <td>${s.start_time ? s.start_time.substring(0,5) : '—'} – ${s.end_time ? s.end_time.substring(0,5) : '—'}</td>
                 <td><span class="status-badge status-${s.is_active ? 'validated' : 'rejected'}">${s.is_active ? 'Active' : 'Inactive'}</span></td>
                 <td>
                     <button class="btn btn-small btn-danger" data-action="delete-slot" data-id="${s.id}"><i class="bi bi-trash3"></i></button>
