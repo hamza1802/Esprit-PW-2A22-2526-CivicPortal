@@ -15,14 +15,20 @@ $PY = 'http://localhost:5001';
 function ensure_service_running() {
     $host = '127.0.0.1';
     $port = 5001;
-    $connection = @fsockopen($host, $port, $errno, $errstr, 0.1);
+    // Increased timeout from 0.1s to 0.5s to be more resilient to slow responses
+    $connection = @fsockopen($host, $port, $errno, $errstr, 0.5);
     if (!$connection) {
         // Service is down, launch it in the background (Windows specific)
         $root = __DIR__;
-        $cmd = "cd /d \"$root\" && start /B python face_service/app.py";
+        
+        // Use the discovered working Python path (Thonny portable) as primary, with fallbacks
+        $thonny = 'C:\\Users\\bahaz\\Desktop\\thonny-4.1.7-windows-portable\\python.exe';
+        $pyCmd = file_exists($thonny) ? "\"$thonny\"" : "python";
+        
+        $cmd = "cd /d \"$root\" && start /B cmd /c \"$pyCmd face_service/app.py || python face_service/app.py || python3 face_service/app.py || py face_service/app.py\"";
         pclose(popen($cmd, "r"));
-        // Give it a moment to initialize
-        usleep(800000); // 0.8s
+        // Give it a bit more time to initialize
+        usleep(1500000); // 1.5s
     } else {
         fclose($connection);
     }
