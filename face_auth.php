@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/Model/Database.php';
 require_once __DIR__ . '/Controller/UserController.php';
 
 header('Content-Type: application/json');
@@ -102,17 +102,30 @@ function call_python_service($url, $data) {
     $ch = curl_init($url);
     $payload = json_encode($data);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
     $result = curl_exec($ch);
-    
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
     if (curl_errno($ch)) {
         $error_msg = curl_error($ch);
         curl_close($ch);
-        return json_encode(['success' => false, 'message' => 'Python Service Error: ' . $error_msg]);
+        return json_encode(['success' => false, 'match' => false, 'message' => 'Face service unavailable. Please use password login.']);
     }
-    
+
     curl_close($ch);
+
+    if ($result === false || $result === "") {
+        return json_encode(['success' => false, 'match' => false, 'message' => 'Face service returned no response.']);
+    }
+
+    // Guard against HTML error pages from the Python service
+    $decoded = json_decode($result, true);
+    if ($decoded === null) {
+        return json_encode(['success' => false, 'match' => false, 'message' => 'Face service error (HTTP ' . $http_code . '). Please try again.']);
+    }
+
     return $result;
 }
 

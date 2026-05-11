@@ -565,6 +565,15 @@ const controller = {
                 }
                 break;
 
+            case '#all-enrollments':
+                if (user.role === 'admin' || user.role === 'agent') {
+                    const enrollments = await model.getAllEnrollments();
+                    view.renderAllEnrollments(enrollments || []);
+                } else {
+                    window.location.hash = '#home';
+                }
+                break;
+
             case '#add-program':
                 view.renderProgramForm(null, model.getCategories());
                 break;

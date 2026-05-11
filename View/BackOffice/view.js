@@ -1098,19 +1098,19 @@ const view = {
 
     renderAllEnrollments(enrollments) {
         const enrollmentRows = enrollments.map(e => {
-            const isPending = e.status === 'pending';
             return `
                 <tr>
-                    <td><strong>#${e.id}</strong></td>
-                    <td>${e.username}</td>
-                    <td>${e.program_title}</td>
-                    <td>${new Date(e.enrolled_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-                    <td><span class="status-badge status-${e.status}">${e.status}</span></td>
                     <td>
-                        ${isPending ? `
-                            <button class="btn btn-small btn-success" data-action="confirm-enroll" data-id="${e.id}" style="margin-right:4px;">CONFIRM</button>
-                            <button class="btn btn-small btn-danger"  data-action="cancel-enroll"  data-id="${e.id}">REJECT</button>
-                        ` : `<span class="opacity-7 text-small" style="font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">—</span>`}
+                        <strong>${e.username}</strong><br>
+                        <span class="text-small opacity-7">${e.email || ''}</span>
+                    </td>
+                    <td>
+                        ${e.program_title}<br>
+                        <span class="status-badge status-${e.status}" style="margin-top:4px;display:inline-block;">${e.status}</span>
+                    </td>
+                    <td>
+                        <button class="btn btn-small btn-success" data-action="confirm-enroll" data-id="${e.id}" style="margin-right:4px;">CONFIRM</button>
+                        <button class="btn btn-small btn-danger"  data-action="cancel-enroll"  data-id="${e.id}">REJECT</button>
                     </td>
                 </tr>
             `;
@@ -1129,11 +1129,13 @@ const view = {
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>ID</th><th>Citizen</th><th>Program</th><th>Enrolled</th><th>Status</th><th>Actions</th>
+                                    <th>Citizen Name</th>
+                                    <th>Program</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${enrollmentRows.length > 0 ? enrollmentRows : '<tr><td colspan="6" class="text-center" style="padding:4rem;opacity:0.6;">No enrollments found.</td></tr>'}
+                                ${enrollmentRows.length > 0 ? enrollmentRows : '<tr><td colspan="3" class="text-center" style="padding:4rem;opacity:0.6;">No enrollments found.</td></tr>'}
                             </tbody>
                         </table>
                     </div>

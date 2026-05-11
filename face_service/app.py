@@ -10,7 +10,7 @@ db_config = {
     'host': '127.0.0.1',
     'user': 'root',
     'password': '',
-    'database': 'civic'
+    'database': 'civicportal'
 }
 
 def get_db_connection():
@@ -21,13 +21,13 @@ def euclidean_distance(v1, v2):
 
 @app.route('/enroll', methods=['POST'])
 def enroll():
-    data = request.json
+    data = request.json or {}
     user_id = data.get('user_id')
     face_descriptor = data.get('face_descriptor')
-    
+
     if not user_id or not face_descriptor:
         return jsonify({'success': False, 'message': 'Missing user_id or face_descriptor'}), 400
-    
+
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -56,13 +56,13 @@ def enroll():
 
 @app.route('/verify', methods=['POST'])
 def verify():
-    data = request.json
+    data = request.json or {}
     user_id = data.get('user_id')
     input_descriptor = data.get('face_descriptor')
-    
+
     if not user_id or not input_descriptor:
         return jsonify({'match': False, 'message': 'Missing user_id or face_descriptor'}), 400
-    
+
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
@@ -111,7 +111,7 @@ def verify():
 
 @app.route('/disable', methods=['POST'])
 def disable():
-    data = request.json
+    data = request.json or {}
     user_id = data.get('user_id')
     
     if not user_id:

@@ -117,11 +117,11 @@ const model = {
 
     async getPendingEnrollments() {
         return await this.apiCall('get_pending_enrollments');
-    }
+    },
 
     async getAllEnrollments() {
         return await this.apiCall('get_all_enrollments');
-    }
+    },
 
     async getEnrollmentsByProgram(programId) {
         return await this.apiCall('get_enrollments_by_program', { programId });

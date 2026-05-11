@@ -104,7 +104,7 @@ class FaceEnrollment {
         this.saveBtn.disabled = true;
         
         try {
-            const response = await fetch('face_auth.php', {
+            const response = await fetch('../../face_auth.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
