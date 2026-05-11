@@ -73,21 +73,25 @@ class UserController {
         $stmt = $pdo->prepare($query);
         $stmt->execute($params);
         $rows = $stmt->fetchAll();
-        return array_map(fn($row) => [
-            'id' => (int)$row['id'],
-            'username' => $row['username'],
-            'email' => $row['email'],
-            'role' => $row['role'],
-            'created_at' => $row['created_at'],
-            'is_active' => (bool)$row['is_active'],
-            'has_pic' => (bool)$row['has_pic'],
-            'profile' => [
-                'bio' => $row['bio'],
-                'phone' => $row['phone_number'],
-                'dob' => $row['date_of_birth'],
-                'avatar' => $row['avatar_url']
-            ]
-        ], $rows);
+        return array_map(function($row) {
+            $userObj = User::fromRow($row);
+            return [
+                'id' => (int)$row['id'],
+                'username' => $row['username'],
+                'email' => $row['email'],
+                'role' => $row['role'],
+                'created_at' => $row['created_at'],
+                'is_active' => (bool)$row['is_active'],
+                'has_pic' => (bool)$row['has_pic'],
+                'user' => $userObj,
+                'profile' => [
+                    'bio' => $row['bio'],
+                    'phone' => $row['phone_number'],
+                    'dob' => $row['date_of_birth'],
+                    'avatar' => $row['avatar_url']
+                ]
+            ];
+        }, $rows);
     }
 
     public static function getUserById(int $id): ?User {

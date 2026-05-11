@@ -385,6 +385,15 @@ const controller = {
                 case 'complete-appointment':
                     this.handleAppointmentStatus(parseInt(id), 'completed');
                     break;
+                case 'submit-user-form': {
+                    const form = document.getElementById('create-user-form') || document.getElementById('user-form');
+                    if (form) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.handleUserCreate(new FormData(form));
+                    }
+                    break;
+                }
             }
         });
 
@@ -439,9 +448,10 @@ const controller = {
             } else if (form.id === 'slot-form') {
                 e.preventDefault();
                 this.handleSlotCreate(new FormData(form));
-            } else if (form.id === 'create-user-form') {
+            } else if (form.id === 'create-user-form' || form.id === 'user-form') {
                 e.preventDefault();
-                console.log('Form [create-user-form] submit caught.');
+                e.stopPropagation();
+                console.log('[CivicPortal] User form submit caught via event listener.');
                 this.handleUserCreate(new FormData(form));
             } else if (form.id === 'add-type-form') {
                 e.preventDefault();
@@ -1569,13 +1579,13 @@ const controller = {
     },
 
     async handleUserCreate(formData) {
-        console.log('Registering user with data:', Object.fromEntries(formData.entries()));
-        
         const btn = document.getElementById('submit-btn');
         const originalText = btn ? btn.innerText : 'COMPLETE PORTAL REGISTRATION';
         if (btn) {
             btn.disabled = true;
             btn.innerText = 'PROCESSING...';
+        } else {
+            console.warn('[User Management] Submit button not found in DOM.');
         }
 
         // Clear previous inline errors
@@ -1591,101 +1601,79 @@ const controller = {
         console.log('[User Management] Submitting form...', { id, name, email, role });
 
         try {
+            // --- Client-side validation ---
             if (!name || !email || !role) {
-                if (!name) document.getElementById('error-name').textContent = 'NAME IS REQUIRED.';
+                if (!name)  document.getElementById('error-name').textContent  = 'NAME IS REQUIRED.';
                 if (!email) document.getElementById('error-email').textContent = 'VALID EMAIL IS REQUIRED.';
-                if (!role) document.getElementById('error-role').textContent = 'ASSIGNED ROLE IS REQUIRED.';
-                view.renderToast('Missing required fields.', 'error');
+                if (!role)  document.getElementById('error-role').textContent  = 'ASSIGNED ROLE IS REQUIRED.';
                 return;
             }
-
             if (/\d/.test(name)) {
                 document.getElementById('error-name').textContent = 'NAME CANNOT CONTAIN NUMBERS.';
-                view.renderToast('Invalid name format.', 'error');
                 return;
             }
-
-            // For NEW users (no id), password is required and must be 8+ chars
-            if (!id) {
-                if (!password || password.length < 8) {
-                    const pErr = document.getElementById('error-password');
-                    if (pErr) pErr.textContent = 'SECURE PASSWORD IS REQUIRED (8+ CHARS).';
-                    view.renderToast('Registration Rejected: Password too weak.', 'error');
-                    return;
-                }
+            if (!id && (!password || password.length < 8)) {
+                const pErr = document.getElementById('error-password');
+                if (pErr) pErr.textContent = 'SECURE PASSWORD IS REQUIRED (8+ CHARS).';
+                view.renderToast('Registration Rejected: Password too weak.', 'error');
+                return;
             }
-
-            // Only validate password mismatch if the user actually typed something in either field
             if ((password || confirm) && password !== confirm) {
                 const errSpan = document.getElementById('error-confirm_password');
                 if (errSpan) errSpan.textContent = 'PASSWORDS DO NOT MATCH.';
-                view.renderToast('Credential mismatch detected.', 'error');
+                return;
+            }
+            if (id && password && password.length < 8) {
+                const errSpan = document.getElementById('error-password');
+                if (errSpan) errSpan.textContent = 'PASSWORD MUST BE AT LEAST 8 CHARACTERS.';
                 return;
             }
 
-            let result;
+            // --- API call (throws on any failure) ---
             if (id) {
-                if (password && password.length < 8) {
-                    const errSpan = document.getElementById('error-password');
-                    if (errSpan) errSpan.textContent = 'PASSWORD MUST BE AT LEAST 8 CHARACTERS.';
-                    return;
-                }
-                result = await model.apiCall('update_user', formData);
+                const result = await model.apiCall('update_user', formData);
                 console.log('[User Management] Update API Response:', result);
-                
-                if (result && !result.errors) {
-                    view.renderToast(`PROFILE UPDATED SUCCESSFULLY.`);
-                    
-                    const panel = document.getElementById('user-registration-section');
-                    if (panel) {
-                        panel.style.opacity = '0';
-                        panel.style.transform = 'translateX(50px)';
-                        panel.style.transition = 'all 0.3s ease';
-                        
-                        setTimeout(() => {
-                            panel.style.display = 'none';
-                            this._refreshUsers({ highlightId: id });
-                        }, 350);
-                    }
-                } else {
-                    console.warn('[User Management] Update Failed:', result?.errors);
-                    this._displayValidationErrors(result?.errors);
+
+                view.renderToast('PROFILE UPDATED SUCCESSFULLY.');
+                const panel = document.getElementById('user-registration-section');
+                if (panel) {
+                    panel.style.opacity    = '0';
+                    panel.style.transform  = 'translateX(50px)';
+                    panel.style.transition = 'all 0.3s ease';
+                    setTimeout(() => {
+                        panel.style.display = 'none';
+                        this._refreshUsers({ highlightId: id });
+                    }, 350);
                 }
             } else {
-                if (!password || password.length < 8) {
-                    const errSpan = document.getElementById('error-password');
-                    if (errSpan) errSpan.textContent = 'SECURE PASSWORD IS REQUIRED (8+ CHARS).';
-                    return;
-                }
-                
-                result = await model.createUser(formData);
-                
-                if (result && !result.errors) {
-                    view.renderToast(`New Access Created: "${name}" is now registered.`);
-                    const searchInput = document.getElementById('user-search');
-                    if (searchInput) searchInput.value = '';
-                    
-                    const panel = document.getElementById('user-registration-section');
-                    panel.style.opacity = '0';
-                    panel.style.transform = 'scale(0.95)';
+                const result = await model.createUser(formData);
+                console.log('[User Management] Create API Response:', result);
+
+                view.renderToast(`New Access Created: "${name}" is now registered.`);
+                const searchInput = document.getElementById('user-search');
+                if (searchInput) searchInput.value = '';
+
+                const panel = document.getElementById('user-registration-section');
+                if (panel) {
+                    panel.style.opacity    = '0';
+                    panel.style.transform  = 'scale(0.95)';
                     panel.style.transition = 'all 0.3s ease';
-                    
-                    const newId = result.user?.id || result.user_id;
+
+                    const newId = result?.user?.id || result?.user_id;
                     setTimeout(() => {
                         panel.style.display = 'none';
                         const form = document.getElementById('create-user-form');
                         if (form) form.reset();
                         this._refreshUsers({ highlightId: newId });
                     }, 350);
-                } else {
-                    this._displayValidationErrors(result?.errors, 'Registration failed.');
                 }
             }
 
         } catch (err) {
-            console.error('[User Management] System Error:', err);
+            console.error('[User Management] Error:', err);
             if (err.errors) {
-                this._displayValidationErrors(err.errors, 'Validation error from server.');
+                // Field-level validation errors from server
+                this._displayValidationErrors(err.errors);
             } else if (err.message) {
                 view.renderToast(err.message, 'error');
             } else {
@@ -1693,7 +1681,7 @@ const controller = {
             }
         } finally {
             if (btn) {
-                btn.disabled = false;
+                btn.disabled  = false;
                 btn.innerText = id ? 'SAVE IDENTITY CHANGES' : 'COMPLETE PORTAL REGISTRATION';
             }
         }

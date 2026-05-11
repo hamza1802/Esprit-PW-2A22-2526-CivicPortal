@@ -776,7 +776,7 @@ const view = {
                         Portal Registration
                     </h2>
 
-                    <form id="create-user-form" onsubmit="event.preventDefault();" novalidate>
+                    <form id="create-user-form" onsubmit="return false;" novalidate>
                         <input type="hidden" name="id" id="edit-user-id" value="">
                         
                         <div class="form-group" style="margin-bottom: 2rem;">
@@ -824,7 +824,7 @@ const view = {
                         </div>
 
                         <div style="display: flex; flex-direction: column; gap: 1rem;">
-                            <button id="submit-btn" class="btn btn-primary" type="submit" style="padding: 1.5rem; font-size: 1.2rem; font-weight: 900; letter-spacing: 1px;">
+                            <button id="submit-btn" class="btn btn-primary" type="submit" data-action="submit-user-form" style="padding: 1.5rem; font-size: 1.2rem; font-weight: 900; letter-spacing: 1px;">
                                 COMPLETE PORTAL REGISTRATION
                             </button>
                             <button type="button" id="cancel-user-btn" class="btn" data-action="toggle-create-user" style="padding: 1rem; font-weight: 800; background: transparent; border-color: transparent !important;">CANCEL AND DISCARD</button>

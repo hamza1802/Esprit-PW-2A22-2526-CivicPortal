@@ -14,29 +14,43 @@ const model = {
     },
 
     async apiCall(action, data = {}) {
-        try {
-            let options = { method: 'POST', body: null };
+        let options = { method: 'POST', body: null };
 
-            if (data instanceof FormData) {
-                data.append('action', action);
-                options.body = data;
-            } else {
-                options.headers = { 'Content-Type': 'application/json' };
-                options.body = JSON.stringify({ action, data });
-            }
-
-            const response = await fetch('../../Verification.php', options);
-            const result   = await response.json();
-            if (!result.success) {
-                const err = new Error(result.error);
-                if (result.errors) err.errors = result.errors;
-                throw err;
-            }
-            return result.data;
-        } catch (error) {
-            console.error('API Error:', error);
-            return error.errors ? { errors: error.errors } : null;
+        if (data instanceof FormData) {
+            // Don't mutate caller's FormData — clone it
+            const fd = new FormData();
+            for (const [k, v] of data.entries()) fd.append(k, v);
+            fd.append('action', action);
+            options.body = fd;
+        } else {
+            options.headers = { 'Content-Type': 'application/json' };
+            options.body = JSON.stringify({ action, data });
         }
+
+        const response = await fetch('../../Verification.php', options);
+        if (!response.ok && response.status !== 400) {
+            throw new Error(`HTTP ${response.status}: Server returned an error.`);
+        }
+
+        const result = await response.json();
+
+        // Verification.php returns { success: true, data: {...} } or { success: false, error: "..." }
+        if (!result.success) {
+            const err = new Error(result.error || 'Request failed.');
+            if (result.errors) err.errors = result.errors;
+            throw err;
+        }
+
+        // result.data is what UserController returned.
+        // If it contains { errors: {...} } that means the controller returned validation errors.
+        // We surface this as a thrown error with err.errors so callers can handle field errors.
+        if (result.data && result.data.errors) {
+            const err = new Error('Validation failed.');
+            err.errors = result.data.errors;
+            throw err;
+        }
+
+        return result.data;
     },
 
     // -------------------------------------------------------------------------
