@@ -950,7 +950,20 @@ const controller = {
         const success = await model.updateEnrollmentStatus(enrollmentId, status);
         if (success) {
             view.renderToast(`Enrollment ${status}.`);
-            await this.showProgramDetail(programId);
+            
+            const currentHash = window.location.hash || '#home';
+            if (currentHash === '#all-enrollments') {
+                const enrollments = await model.getAllEnrollments();
+                view.renderAllEnrollments(enrollments || []);
+            } else if (currentHash.startsWith('#program/')) {
+                await this.showProgramDetail(programId);
+            } else {
+                // Fallback for cases like dashboard widgets
+                await model.sync();
+                const user = model.getCurrentUser();
+                if (currentHash === '#home') view.renderHome(user);
+            }
+
             const counts = await model.getEnrollmentCounts();
             view.renderNavBar(model.getCurrentUser().role, counts);
         } else {
