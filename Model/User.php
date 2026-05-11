@@ -16,12 +16,16 @@ class User implements JsonSerializable {
     private string $role;
     private ?string $passwordHash;
     private ?string $createdAt;
+    private bool $twoFaEnabled;
+    private ?string $otpCode;
+    private ?string $otpExpiry;
     private bool $isActive;
     private bool $hasProfilePic;
 
     public function __construct(
         int $id, string $name, string $email, string $role = 'citizen',
         ?string $passwordHash = null, ?string $createdAt = null,
+        bool $twoFaEnabled = false, ?string $otpCode = null, ?string $otpExpiry = null,
         bool $isActive = true, bool $hasProfilePic = false
     ) {
         $this->id = $id;
@@ -30,6 +34,9 @@ class User implements JsonSerializable {
         $this->role = $role;
         $this->passwordHash = $passwordHash;
         $this->createdAt = $createdAt;
+        $this->twoFaEnabled = $twoFaEnabled;
+        $this->otpCode = $otpCode;
+        $this->otpExpiry = $otpExpiry;
         $this->isActive = $isActive;
         $this->hasProfilePic = $hasProfilePic;
     }
@@ -40,12 +47,16 @@ class User implements JsonSerializable {
     public function getRole(): string { return $this->role; }
     public function getPasswordHash(): ?string { return $this->passwordHash; }
     public function getCreatedAt(): ?string { return $this->createdAt; }
+    public function isTwoFaEnabled(): bool { return $this->twoFaEnabled; }
+    public function getOtpCode(): ?string { return $this->otpCode; }
+    public function getOtpExpiry(): ?string { return $this->otpExpiry; }
     public function isActive(): bool { return $this->isActive; }
     public function hasProfilePic(): bool { return $this->hasProfilePic; }
 
     public function setName(string $name): void { $this->name = $name; }
     public function setEmail(string $email): void { $this->email = $email; }
     public function setRole(string $role): void { $this->role = $role; }
+    public function setTwoFaEnabled(bool $enabled): void { $this->twoFaEnabled = $enabled; }
     public function setActive(bool $active): void { $this->isActive = $active; }
 
     // Get display name
@@ -60,8 +71,10 @@ class User implements JsonSerializable {
             'email' => $this->email,
             'role' => $this->role,
             'created_at' => $this->createdAt,
+            'two_fa_enabled' => $this->twoFaEnabled,
             'is_active' => $this->isActive,
             'has_profile_pic' => $this->hasProfilePic,
+            'avatar' => $this->hasProfilePic ? 'get_image.php?type=profile&id=' . $this->id . '&t=' . time() : null,
         ];
     }
 
@@ -73,6 +86,9 @@ class User implements JsonSerializable {
             $row['role'] ?? 'citizen',
             $row['password_hash'] ?? null,
             $row['created_at'] ?? null,
+            (bool)($row['two_fa_enabled'] ?? false),
+            $row['otp_code'] ?? null,
+            $row['otp_expiry'] ?? null,
             isset($row['is_active']) ? (bool)$row['is_active'] : true,
             !empty($row['profile_pic'])
         );

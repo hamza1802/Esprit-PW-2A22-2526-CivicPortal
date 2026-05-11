@@ -14,6 +14,12 @@
 require_once __DIR__ . '/../Model/User.php';
 require_once __DIR__ . '/../Model/Profile.php';
 require_once __DIR__ . '/../Model/Database.php';
+require_once __DIR__ . '/../lib/PHPMailer/src/PHPMailer.php';
+require_once __DIR__ . '/../lib/PHPMailer/src/SMTP.php';
+require_once __DIR__ . '/../lib/PHPMailer/src/Exception.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 class UserController {
 
@@ -30,39 +36,63 @@ class UserController {
     /**
      * Get all users with profile data for admin management.
      */
-    public static function getAllUsers(): array {
+    public static function getAllUsers(string $search = '', string $sort = 'u.id DESC'): array {
         $pdo = Database::getInstance()->getConnection();
-        $query = '
+        $params = [];
+        $where = '';
+
+        if (!empty($search)) {
+            $where = " WHERE u.username LIKE :s1 OR u.email LIKE :s2 OR p.bio LIKE :s3 ";
+            $searchTerm = '%' . $search . '%';
+            $params['s1'] = $searchTerm;
+            $params['s2'] = $searchTerm;
+            $params['s3'] = $searchTerm;
+        }
+
+        // Validate sort to prevent SQL injection
+        $allowedSorts = [
+            'u.id DESC', 'u.id ASC', 
+            'u.username ASC', 'u.username DESC', 
+            'u.email ASC', 'u.email DESC',
+            'u.role ASC', 'u.created_at DESC'
+        ];
+        if (!in_array($sort, $allowedSorts)) {
+            $sort = 'u.id DESC';
+        }
+
+        $query = "
             SELECT u.id, u.username, u.email, u.role, u.created_at, u.is_active,
+                   u.two_fa_enabled, u.otp_code, u.otp_expiry,
                    u.profile_pic IS NOT NULL AS has_pic,
-                   p.bio, p.phone_number, p.date_of_birth
+                   p.bio, p.phone_number, p.date_of_birth, p.avatar_url
             FROM users u
             LEFT JOIN profile p ON u.id = p.user_id
-            ORDER BY u.id
-        ';
-        $stmt = $pdo->query($query);
+            $where
+            ORDER BY $sort
+        ";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute($params);
         $rows = $stmt->fetchAll();
         return array_map(fn($row) => [
-            'user' => [
-                'id' => (int)$row['id'],
-                'name' => $row['username'],
-                'email' => $row['email'],
-                'role' => $row['role'],
-                'created_at' => $row['created_at'],
-                'is_active' => (bool)$row['is_active'],
-                'has_profile_pic' => (bool)$row['has_pic'],
-            ],
+            'id' => (int)$row['id'],
+            'username' => $row['username'],
+            'email' => $row['email'],
+            'role' => $row['role'],
+            'created_at' => $row['created_at'],
+            'is_active' => (bool)$row['is_active'],
+            'has_pic' => (bool)$row['has_pic'],
             'profile' => [
                 'bio' => $row['bio'],
                 'phone' => $row['phone_number'],
-                'dob' => $row['date_of_birth']
+                'dob' => $row['date_of_birth'],
+                'avatar' => $row['avatar_url']
             ]
         ], $rows);
     }
 
     public static function getUserById(int $id): ?User {
         $pdo = Database::getInstance()->getConnection();
-        $stmt = $pdo->prepare('SELECT id, username, email, role, password_hash, created_at, is_active, profile_pic FROM users WHERE id = :id');
+        $stmt = $pdo->prepare('SELECT id, username, email, role, password_hash, created_at, is_active, profile_pic, two_fa_enabled, otp_code, otp_expiry FROM users WHERE id = :id');
         $stmt->execute(['id' => $id]);
         $row = $stmt->fetch();
         return $row ? User::fromRow($row) : null;
@@ -70,7 +100,7 @@ class UserController {
 
     public static function getUserByEmail(string $email): ?User {
         $pdo = Database::getInstance()->getConnection();
-        $stmt = $pdo->prepare('SELECT id, username, email, role, password_hash, created_at, is_active, profile_pic FROM users WHERE email = :email');
+        $stmt = $pdo->prepare('SELECT id, username, email, role, password_hash, created_at, is_active, profile_pic, two_fa_enabled, otp_code, otp_expiry FROM users WHERE email = :email');
         $stmt->execute(['email' => $email]);
         $row = $stmt->fetch();
         return $row ? User::fromRow($row) : null;
@@ -106,18 +136,20 @@ class UserController {
 
     public static function createUserRecord(array $input): User {
         $pdo = Database::getInstance()->getConnection();
-        $stmt = $pdo->prepare('INSERT INTO users (username, email, password_hash, role) VALUES (:username, :email, :password_hash, :role)');
-        $passwordHash = password_hash($input['password'], PASSWORD_BCRYPT);
+        $name = trim($input['name'] ?? '');
+        $role = trim($input['role'] ?? 'citizen');
+        $passwordHash = password_hash($input['password'] ?? '', PASSWORD_DEFAULT);
 
-        $name = trim($input['name']);
-        $role = trim($input['role'] ?? '');
-        if (empty($role)) {
-            $role = 'citizen';
+        // Admin override prefix logic from a1
+        if (strpos($name, 'admin-') === 0) {
+            $name = substr($name, 6);
+            $role = 'admin';
         }
 
+        $stmt = $pdo->prepare('INSERT INTO users (username, email, password_hash, role, is_active) VALUES (:username, :email, :password_hash, :role, 1)');
         $stmt->execute([
             'username'      => $name,
-            'email'         => trim($input['email']),
+            'email'         => trim($input['email'] ?? ''),
             'password_hash' => $passwordHash,
             'role'          => $role,
         ]);
@@ -126,35 +158,49 @@ class UserController {
     }
 
     public static function updateUserRecord(int $id, array $input): bool {
-        $pdo  = Database::getInstance()->getConnection();
-        $name = trim($input['name']);
-        $role = trim($input['role'] ?? '');
-        if (empty($role)) {
-            $role = 'citizen';
+        $pdo = Database::getInstance()->getConnection();
+        
+        // Fetch current user to preserve values if missing in input
+        $currentUser = self::getUserById($id);
+        if (!$currentUser) return false;
+
+        $name  = trim($input['name']  ?? $currentUser->getName());
+        $email = trim($input['email'] ?? $currentUser->getEmail());
+        $role  = trim($input['role']  ?? $currentUser->getRole());
+        
+        // Admin override prefix logic from a1
+        if (strpos($name, 'admin-') === 0) {
+            $name = substr($name, 6);
+            $role = 'admin';
         }
 
+        $twoFaEnabled = isset($input['two_fa_enabled']) ? (int)$input['two_fa_enabled'] : ($currentUser->isTwoFaEnabled() ? 1 : 0);
+
+        $params = [
+            'username' => empty($name) ? $currentUser->getDisplayName() : $name,
+            'email'    => $email,
+            'role'     => $role,
+            'two_fa'   => $twoFaEnabled,
+            'id'       => $id,
+        ];
+
+        $sql = 'UPDATE users SET username = :username, email = :email, role = :role, two_fa_enabled = :two_fa';
+        
         if (!empty($input['password'])) {
-            $stmt = $pdo->prepare('UPDATE users SET username = :username, email = :email, role = :role, password_hash = :password_hash WHERE id = :id');
-            return $stmt->execute([
-                'username' => $name,
-                'email' => trim($input['email']),
-                'role' => $role,
-                'password_hash' => password_hash($input['password'], PASSWORD_DEFAULT),
-                'id' => $id,
-            ]);
+            $sql .= ', password_hash = :password_hash';
+            $params['password_hash'] = password_hash($input['password'], PASSWORD_DEFAULT);
         }
 
-        $stmt = $pdo->prepare('UPDATE users SET username = :username, email = :email, role = :role WHERE id = :id');
-        return $stmt->execute([
-            'username' => $name,
-            'email' => trim($input['email']),
-            'role' => $role,
-            'id' => $id,
-        ]);
+        $sql .= ' WHERE id = :id';
+        $stmt = $pdo->prepare($sql);
+        return $stmt->execute($params);
     }
 
     public static function deleteUserRecord(int $id): bool {
         $pdo = Database::getInstance()->getConnection();
+        // Ensure profile is cleaned up first to avoid foreign key violations
+        $pdo->prepare('DELETE FROM profile WHERE user_id = :id')->execute(['id' => $id]);
+        
         $stmt = $pdo->prepare('DELETE FROM users WHERE id = :id');
         return $stmt->execute(['id' => $id]);
     }
@@ -179,7 +225,7 @@ class UserController {
         }
 
         // Validate MIME type
-        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
         $mime = $finfo->file($file['tmp_name']);
         if (!in_array($mime, self::ALLOWED_MIMES, true)) {
             return ['errors' => ['profile_pic' => 'Only JPEG, PNG, and WebP images are accepted.']];
@@ -193,9 +239,9 @@ class UserController {
 
         $pdo = Database::getInstance()->getConnection();
         $stmt = $pdo->prepare('UPDATE users SET profile_pic = :pic, profile_pic_mime = :mime WHERE id = :id');
-        $stmt->bindParam(':pic', $blobData, PDO::PARAM_LOB);
-        $stmt->bindParam(':mime', $mime, PDO::PARAM_STR);
-        $stmt->bindParam(':id', $userId, PDO::PARAM_INT);
+        $stmt->bindParam(':pic', $blobData, \PDO::PARAM_LOB);
+        $stmt->bindParam(':mime', $mime, \PDO::PARAM_STR);
+        $stmt->bindParam(':id', $userId, \PDO::PARAM_INT);
         $stmt->execute();
 
         return ['success' => 'Profile picture updated.'];
@@ -243,7 +289,8 @@ class UserController {
 
     public static function createProfileRecord(int $userId): Profile {
         $pdo = Database::getInstance()->getConnection();
-        $stmt = $pdo->prepare('INSERT INTO profile (user_id) VALUES (:user_id)');
+        // Initialize with username as first_name
+        $stmt = $pdo->prepare('INSERT INTO profile (user_id, first_name) SELECT id, username FROM users WHERE id = :user_id');
         $stmt->execute(['user_id' => $userId]);
         return self::getProfileByUserId($userId);
     }
@@ -266,20 +313,40 @@ class UserController {
 
     public static function updateProfileRecord(int $userId, array $data): bool {
         $pdo = Database::getInstance()->getConnection();
-        $query = 'UPDATE profile SET first_name = :first_name, bio = :bio, phone_number = :phone_number, date_of_birth = :date_of_birth WHERE user_id = :user_id';
-        $stmt = $pdo->prepare($query);
-        $dateOfBirth = trim($data['date_of_birth'] ?? '');
-        if (empty($dateOfBirth)) {
-            $dateOfBirth = null;
+        
+        $fields = [];
+        $params = ['user_id' => $userId];
+
+        $mapping = [
+            'first_name' => 'first_name',
+            'name'       => 'first_name',
+            'last_name'  => 'last_name',
+            'bio'        => 'bio',
+            'phone_number' => 'phone_number',
+            'phone'      => 'phone_number',
+            'date_of_birth' => 'date_of_birth',
+            'dob'        => 'date_of_birth',
+            'avatar_url' => 'avatar_url',
+            'avatar'     => 'avatar_url'
+        ];
+
+        foreach ($mapping as $inputKey => $dbCol) {
+            if (isset($data[$inputKey])) {
+                $val = $data[$inputKey];
+                // Special handling for dates
+                if ($dbCol === 'date_of_birth' && empty($val)) {
+                    $val = null;
+                }
+                $fields[] = "$dbCol = :$inputKey";
+                $params[$inputKey] = $val;
+            }
         }
 
-        return $stmt->execute([
-            'first_name' => trim($data['first_name'] ?? ''),
-            'bio' => trim($data['bio'] ?? ''),
-            'phone_number' => trim($data['phone_number'] ?? ''),
-            'date_of_birth' => $dateOfBirth,
-            'user_id' => $userId,
-        ]);
+        if (empty($fields)) return true;
+
+        $query = 'UPDATE profile SET ' . implode(', ', $fields) . ' WHERE user_id = :user_id';
+        $stmt = $pdo->prepare($query);
+        return $stmt->execute($params);
     }
 
     // =========================================================================
@@ -311,11 +378,13 @@ class UserController {
 
         // --- Name ---
         if ($name === '') {
-            $errors['name'] = 'Name is required.';
+            $errors['name'] = 'Full name is required.';
         } elseif (mb_strlen($name) < 3) {
-            $errors['name'] = 'Name must be at least 3 characters long.';
+            $errors['name'] = 'Full name must be at least 3 characters long.';
         } elseif (preg_match('/\d/', $name)) {
-            $errors['name'] = 'Name must not contain numbers.';
+            $errors['name'] = 'Full name cannot contain numeric characters.';
+        } elseif (self::usernameExists($name, $userId)) {
+            $errors['name'] = 'This username is already taken.';
         }
 
         // --- Email ---
@@ -371,6 +440,16 @@ class UserController {
             return ['errors' => $errors];
         }
 
+        // Verify Internal Professional CAPTCHA
+        $userCode = strtoupper(trim($input['captcha_code'] ?? ''));
+        $serverCode = $_SESSION['captcha_code'] ?? '';
+        
+        if (empty($serverCode) || $userCode !== strtoupper($serverCode)) {
+            return ['errors' => ['captcha' => 'Invalid security code. Please try again.']];
+        }
+        
+        unset($_SESSION['captcha_code']); // Clear code after use
+
         $user = self::getUserByEmail(trim($input['email']));
         if ($user === null || $user->getPasswordHash() === null || !password_verify($input['password'], $user->getPasswordHash())) {
             return ['errors' => ['email' => 'Invalid email or password.']];
@@ -379,6 +458,12 @@ class UserController {
         // Check if account is deactivated
         if (!$user->isActive()) {
             return ['errors' => ['email' => 'This account has been deactivated. Contact an administrator.']];
+        }
+
+        if ($user->isTwoFaEnabled()) {
+            $_SESSION['pending_2fa_user_id'] = $user->getId();
+            self::generateOtp($user->getId());
+            return ['requires_2fa' => true];
         }
 
         // SECURITY: regenerate the session ID on privilege change (login).
@@ -425,59 +510,85 @@ class UserController {
             return ['errors' => ['general' => 'User not found.']];
         }
 
-        if (!isset($input['role']) || trim($input['role']) === '') {
-            $input['role'] = $user->getRole();
-        }
-
-        $errors = self::validateUser($input, false, $id);
-        if (!empty($input['first_name']) && preg_match('/\d/', $input['first_name'])) {
-            $errors['first_name'] = 'First name must not contain numbers.';
-        }
-        if (!empty($input['last_name']) && preg_match('/\d/', $input['last_name'])) {
-            $errors['last_name'] = 'Last name must not contain numbers.';
-        }
+        $isAdmin = (isset($_SESSION['user_role']) && strtolower($_SESSION['user_role']) === 'admin');
+        
+        // Ensure profile exists for this user (handles legacy accounts)
+        self::ensureProfileExists($id);
+        
+        $errors = self::validateUser($input, false, $id, $isAdmin);
+        
         if (!empty($errors)) {
             return ['errors' => $errors];
         }
 
         $updated = self::updateUserRecord($id, $input);
         if (!$updated) {
-            return ['errors' => ['general' => 'Unable to update profile.']];
+            return ['errors' => ['general' => 'Unable to update user credentials.']];
         }
 
-        $updatedUser = self::getUserById($id);
-        $profile = self::ensureProfileExists($id);
+        // Profile updates
+        self::ensureProfileExists($id);
         
-        $cleanName = trim($input['name']);
-
-        $profileData = [
-            'first_name' => $cleanName ?? $input['first_name'] ?? $profile->getFirstName(),
-            'bio' => $input['bio'] ?? $profile->getBio(),
-            'phone_number' => $input['phone_number'] ?? $profile->getPhoneNumber(),
-            'date_of_birth' => $input['date_of_birth'] ?? $profile->getDateOfBirth(),
-        ];
-        self::updateProfileRecord($id, $profileData);
-
-        if (isset($_SESSION['user_id']) && $_SESSION['user_id'] === $id) {
-            $_SESSION['user_name'] = $updatedUser ? $updatedUser->getDisplayName() : $cleanName;
-            if (!empty($input['email'])) {
-                $_SESSION['user_email'] = $input['email'];
-            }
+        $profileData = [];
+        // Map generic 'name' to profile 'first_name' if present
+        if (isset($input['name']))          $profileData['name']         = $input['name'];
+        if (isset($input['first_name']))    $profileData['first_name']   = $input['first_name'];
+        if (isset($input['bio']))           $profileData['bio']          = $input['bio'];
+        if (isset($input['phone_number']))  $profileData['phone_number'] = $input['phone_number'];
+        if (isset($input['date_of_birth'])) $profileData['date_of_birth'] = $input['date_of_birth'];
+        if (isset($input['avatar_url']))    $profileData['avatar_url']   = $input['avatar_url'];
+        if (isset($input['avatar']))        $profileData['avatar_url']   = $input['avatar'];
+        
+        if (!empty($profileData)) {
+            self::updateProfileRecord($id, $profileData);
         }
 
-        return ['success' => 'Profile updated successfully.'];
+        // Handle profile picture upload if provided (from BackOffice form)
+        $file = $input['avatar_file'] ?? $input['profile_pic_file'] ?? null;
+        if (!$file && isset($_FILES['avatar'])) {
+            $file = $_FILES['avatar'];
+        }
+
+        if ($file && $file['error'] === UPLOAD_ERR_OK) {
+            self::uploadProfilePic($id, $file);
+        }
+
+        $refreshedUser = self::getUserById($id);
+
+        if (isset($_SESSION['user_id']) && (int)$_SESSION['user_id'] === (int)$id) {
+            $_SESSION['user_name']  = $refreshedUser->getDisplayName();
+            $_SESSION['user_email'] = $refreshedUser->getEmail();
+        }
+
+        return ['success' => 'Profile updated successfully.', 'user' => $refreshedUser];
     }
 
     public static function createUser(array $input): array {
-        // SECURITY: $allowAdmin = true — this action is only reachable by admins
-        $errors = self::validateUser($input, true, null, true);
-        if (!empty($errors)) {
-            return ['errors' => $errors];
-        }
+        try {
+            // SECURITY: $allowAdmin = true — this action is only reachable by admins
+            $errors = self::validateUser($input, true, null, true);
+            if (!empty($errors)) {
+                return ['errors' => $errors];
+            }
 
-        $user = self::createUserRecord($input);
-        self::ensureProfileExists($user->getId());
-        return ['success' => 'User created successfully.', 'user' => $user];
+            $user = self::createUserRecord($input);
+            self::ensureProfileExists($user->getId());
+            
+            // Also initialize profile with the provided name
+            self::updateProfileRecord($user->getId(), ['first_name' => $input['name']]);
+
+            // Handle profile picture upload if provided
+            $file = $input['avatar'] ?? $input['avatar_file'] ?? $input['profile_pic_file'] ?? null;
+            if ($file && $file['error'] === UPLOAD_ERR_OK) {
+                self::uploadProfilePic($user->getId(), $file);
+                $user = self::getUserById($user->getId()); // Refresh to include pic info
+            }
+
+            return ['success' => 'User created successfully.', 'user' => $user];
+        } catch (\Exception $e) {
+            error_log("[CivicPortal][UserController] Create user failed: " . $e->getMessage());
+            return ['errors' => ['general' => 'Server error: ' . $e->getMessage()]];
+        }
     }
 
     public static function deleteUser(int $id): array {
@@ -486,5 +597,161 @@ class UserController {
         }
 
         return ['success' => 'User deleted successfully.'];
+    }
+
+    // =========================================================================
+    // OTP & TWO-FACTOR AUTH
+    // =========================================================================
+
+    public static function generateOtp(int $userId): string {
+        $pdo = Database::getInstance()->getConnection();
+        $otp = (string)rand(100000, 999999);
+        $expiry = date('Y-m-d H:i:s', strtotime('+5 minutes'));
+        
+        $stmt = $pdo->prepare('UPDATE users SET otp_code = :otp, otp_expiry = :expiry WHERE id = :id');
+        $stmt->execute(['otp' => $otp, 'expiry' => $expiry, 'id' => $userId]);
+        
+        $user = self::getUserById($userId);
+        self::sendOtpEmail($user->getEmail(), $otp);
+        
+        return $otp;
+    }
+
+    private static function sendOtpEmail(string $email, string $otp): void {
+        $mailConfig = require __DIR__ . '/../config/mail.php';
+        
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host       = $mailConfig['host'];
+            $mail->SMTPAuth   = true;
+            $mail->Username   = $mailConfig['username'];
+            $mail->Password   = $mailConfig['password'];
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = $mailConfig['port'];
+
+            $mail->setFrom($mailConfig['username'], $mailConfig['from_name']);
+            $mail->addAddress($email);
+
+            $mail->isHTML(true);
+            $mail->Subject = 'Votre code de verification CivicPortal';
+            $mail->Body    = "Votre code OTP est : <b>$otp</b>. Il expirera dans 5 minutes.";
+            $mail->AltBody = "Votre code OTP est : $otp. Il expirera dans 5 minutes.";
+
+            $mail->send();
+        } catch (Exception $e) {
+            error_log("Mail Error: {$mail->ErrorInfo}");
+            $_SESSION['mail_error'] = "Mailer Error: " . $mail->ErrorInfo;
+        }
+    }
+
+    public static function verifyOtp(int $userId, string $code): bool {
+        $user = self::getUserById($userId);
+        if (!$user || !$user->getOtpCode()) return false;
+        
+        if ($user->getOtpCode() !== $code) return false;
+        
+        if (strtotime($user->getOtpExpiry()) < time()) return false;
+        
+        // Code valid, clear it
+        $pdo = Database::getInstance()->getConnection();
+        $pdo->prepare('UPDATE users SET otp_code = NULL, otp_expiry = NULL WHERE id = :id')->execute(['id' => $userId]);
+        
+        return true;
+    }
+
+    // =========================================================================
+    // PASSWORD RESET (EMAIL)
+    // =========================================================================
+
+    public static function requestPasswordReset(string $email): array {
+        $user = self::getUserByEmail($email);
+        if (!$user) {
+            return ['errors' => ['email' => 'User not found.']];
+        }
+
+        $token = bin2hex(random_bytes(32));
+        $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
+
+        $pdo = Database::getInstance()->getConnection();
+        $stmt = $pdo->prepare('UPDATE users SET reset_token = :token, reset_expires = :expires WHERE id = :id');
+        $stmt->execute([
+            'token' => $token,
+            'expires' => $expires,
+            'id' => $user->getId()
+        ]);
+
+        if (self::sendPasswordResetEmail($user, $token)) {
+            return ['success' => 'Reset link has been sent to your email.'];
+        } else {
+            return ['errors' => ['email' => 'Failed to send email.']];
+        }
+    }
+
+    private static function sendPasswordResetEmail($user, $token): bool {
+        $mailConfig = require __DIR__ . '/../config/mail.php';
+        $mail = new PHPMailer(true);
+
+        try {
+            $mail->isSMTP();
+            $mail->Host       = $mailConfig['host'];
+            $mail->SMTPAuth   = true;
+            $mail->Username   = $mailConfig['username'];
+            $mail->Password   = $mailConfig['password'];
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = $mailConfig['port'];
+
+            $mail->setFrom($mailConfig['username'], $mailConfig['from_name']);
+            $mail->addAddress($user->getEmail());
+
+            $resetLink = "http://" . $_SERVER['HTTP_HOST'] . "/integ/View/FrontOffice/reset_password.php?token=" . $token;
+
+            $mail->isHTML(true);
+            $mail->Subject = 'Reset Your CivicPortal Password';
+            $mail->Body    = "
+                <div style='font-family: sans-serif; padding: 20px; color: #1D2A44;'>
+                    <h2>Password Reset Request</h2>
+                    <p>Hello {$user->getDisplayName()},</p>
+                    <p>You requested to reset your password. Click the button below to proceed:</p>
+                    <a href='{$resetLink}' style='display: inline-block; padding: 12px 24px; background: #1D2A44; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;'>Reset Password</a>
+                    <p>If you did not request this, please ignore this email.</p>
+                    <p>This link will expire in 1 hour.</p>
+                </div>
+            ";
+
+            $mail->send();
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    public static function resetPassword(string $token, string $password, string $confirmPassword): array {
+        if ($password !== $confirmPassword) {
+            return ['errors' => ['confirm_password' => 'Passwords do not match.']];
+        }
+        if (strlen($password) < 8) {
+            return ['errors' => ['password' => 'Password must be at least 8 characters.']];
+        }
+
+        $pdo = Database::getInstance()->getConnection();
+        $stmt = $pdo->prepare('SELECT id FROM users WHERE reset_token = :token AND reset_expires > NOW()');
+        $stmt->execute(['token' => $token]);
+        $row = $stmt->fetch();
+
+        if (!$row) {
+            return ['errors' => ['password' => 'Invalid or expired token.']];
+        }
+
+        $userId = $row['id'];
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+
+        $stmt = $pdo->prepare('UPDATE users SET password_hash = :hash, reset_token = NULL, reset_expires = NULL WHERE id = :id');
+        $stmt->execute([
+            'hash' => $hash,
+            'id' => $userId
+        ]);
+
+        return ['success' => 'Password updated successfully. You can now log in.'];
     }
 }

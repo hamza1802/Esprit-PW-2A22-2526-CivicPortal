@@ -25,8 +25,11 @@ class MainController {
     private static function authorize(string $action): void {
         static $map = [
             // Public — no session needed
-            'login'    => 'public',
-            'register' => 'public',
+            'login'           => 'public',
+            'register'        => 'public',
+            'request_reset'   => 'public',
+            'reset_password'  => 'public',
+            'verify_otp'      => 'public',
 
             // Any authenticated user
             'logout'                => 'any',
@@ -90,7 +93,8 @@ class MainController {
             'add_category'         => 'admin',
             'update_category'      => 'admin',
             'delete_category'      => 'admin',
-            'get_users'            => 'admin',
+            'get_users'            => 'staff',
+            'get_user'             => 'staff',
             'create_user'          => 'admin',
             'update_user'          => 'admin',
             'delete_user'          => 'admin',
@@ -151,6 +155,28 @@ class MainController {
                 return UserController::login($data);
             case 'register':
                 return UserController::register($data);
+            case 'request_reset':
+                return UserController::requestPasswordReset($data['email'] ?? '');
+            case 'reset_password':
+                return UserController::resetPassword(
+                    $data['token'] ?? '',
+                    $data['password'] ?? '',
+                    $data['confirm_password'] ?? ''
+                );
+            case 'verify_otp':
+                $userId = $_SESSION['pending_2fa_user_id'] ?? null;
+                if (!$userId) throw new Exception("No pending verification.");
+                if (UserController::verifyOtp((int)$userId, $data['otp_code'] ?? '')) {
+                    $user = UserController::getUserById((int)$userId);
+                    session_regenerate_id(true);
+                    $_SESSION['user_id']    = $user->getId();
+                    $_SESSION['user_name']  = $user->getDisplayName();
+                    $_SESSION['user_email'] = $user->getEmail();
+                    $_SESSION['user_role']  = $user->getRole();
+                    unset($_SESSION['pending_2fa_user_id']);
+                    return ['success' => 'Verified.', 'user' => $user];
+                }
+                return ['errors' => ['otp_code' => 'Invalid or expired code.']];
             case 'logout':
                 UserController::logout();
                 return ['success' => 'Logged out successfully'];
@@ -422,13 +448,24 @@ class MainController {
 
             // --- User Management (Admin) ---
             case 'get_users':
-                return UserController::getAllUsers();
+                return UserController::getAllUsers(
+                    trim((string)($data['search'] ?? '')),
+                    (string)($data['sort'] ?? 'u.id DESC')
+                );
+            case 'get_user':
+                $userId = (int)($data['id'] ?? $data['user_id'] ?? 0);
+                $user = UserController::getUserById($userId);
+                if (!$user) throw new Exception("User not found.");
+                return $user;
             case 'create_user':
                 return UserController::createUser($data);
             case 'update_user':
-                return UserController::updateProfile((int)$data['id'], $data);
+                $userId = (int)($data['id'] ?? $data['user_id'] ?? 0);
+                if ($userId <= 0) throw new Exception("Target User ID is missing or invalid.");
+                return UserController::updateProfile($userId, $data);
             case 'delete_user':
-                return UserController::deleteUser((int)$data['id']);
+                $userId = (int)($data['id'] ?? $data['user_id'] ?? 0);
+                return UserController::deleteUser($userId);
             case 'toggle_user_active':
                 return UserController::toggleUserActive((int)$data['id'], (bool)$data['active']);
             case 'get_agents':

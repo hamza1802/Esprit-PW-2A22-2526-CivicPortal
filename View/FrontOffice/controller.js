@@ -70,6 +70,14 @@ const controller = {
             const action = target.dataset.action;
             const id     = target.dataset.id;
 
+            if (action === 'edit-profile') {
+                view.renderProfile(model.getCurrentUser(), true);
+                return;
+            }
+            if (action === 'view-profile') {
+                view.renderProfile(model.getCurrentUser(), false);
+                return;
+            }
             if (action === 'enroll') {
                 const user = model.getCurrentUser();
                 this.handleEnrollment(user.id, parseInt(id));
@@ -500,12 +508,15 @@ const controller = {
 
     async handleProfileUpdate(formData) {
         const data = {
-            name:        formData.get('name'),
-            email:       formData.get('email'),
-            bio:         formData.get('bio'),
-            phoneNumber: formData.get('phoneNumber'),
-            dateOfBirth: formData.get('dateOfBirth'),
-            role:        model.getCurrentUser().role
+            name:           formData.get('name'),
+            first_name:     formData.get('first_name'),
+            last_name:      formData.get('last_name'),
+            email:          formData.get('email'),
+            bio:            formData.get('bio'),
+            phone_number:   formData.get('phone_number') || formData.get('phoneNumber'),
+            date_of_birth:  formData.get('date_of_birth') || formData.get('dateOfBirth'),
+            two_fa_enabled: formData.get('two_fa_enabled') ? 1 : 0,
+            role:           model.getCurrentUser().role
         };
 
         try {
@@ -520,7 +531,7 @@ const controller = {
                 model.updateUser(data);
                 view.renderToast('Profile updated successfully!');
                 view.renderNavBar(model.getCurrentUser());
-                window.location.hash = '#home';
+                view.renderProfile(model.getCurrentUser());
             } else {
                 const msg = result.data?.errors
                     ? Object.values(result.data.errors).join(', ')

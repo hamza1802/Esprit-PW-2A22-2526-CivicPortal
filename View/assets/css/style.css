@@ -263,6 +263,34 @@ nav {
     letter-spacing: 1px;
     border: var(--border-main);
     border-radius: var(--radius-xl);
+    transition: var(--transition-fast);
+    display: inline-block;
+}
+
+a.user-role-badge:hover {
+    background: var(--accent-blue);
+    color: var(--primary-navy);
+}
+
+.bo-frontoffice-btn {
+    background: var(--white);
+    color: var(--primary-navy);
+    padding: 0.4rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    border: 2px solid var(--primary-navy);
+    border-radius: var(--radius-xl);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition-fast);
+}
+
+.bo-frontoffice-btn:hover {
+    background: var(--primary-navy);
+    color: var(--white);
 }
 
 .logout-link {
@@ -270,6 +298,52 @@ nav {
     font-weight: 700;
     font-size: 0.85rem;
     text-decoration: none;
+}
+
+/* Toggle Switch */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+    border: 2px solid var(--primary-navy);
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+    border: 2px solid var(--primary-navy);
+}
+
+input:checked + .slider {
+    background-color: #cfd8dc;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
     display: flex;
     align-items: center;
     gap: 4px;
@@ -2834,6 +2908,118 @@ body {
     border-radius: var(--radius-sm);
     margin-top: 0.5rem;
     border-left: 3px solid var(--color-accent-blue);
+}
+
+/* Authentication Shared Layout */
+.auth-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--bg-neutral);
+    margin: 0;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 450px;
+}
+
+.auth-card {
+    background: var(--white);
+    border: var(--border-main);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 3rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.auth-header h1 {
+    font-size: 2.5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: var(--primary-navy);
+    margin: 1rem 0 0.5rem;
+    letter-spacing: -2px;
+}
+
+.auth-header p {
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    opacity: 0.6;
+    letter-spacing: 1px;
+}
+
+.auth-form .form-group {
+    margin-bottom: 2rem;
+}
+
+.auth-form label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+    color: var(--primary-navy);
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 1.2rem;
+    border: 2px solid var(--primary-navy);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    font-family: inherit;
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--primary-navy);
+    transition: var(--transition-base);
+    box-sizing: border-box;
+    text-align: center;
+    letter-spacing: 0.5rem;
+}
+
+.auth-form input:focus {
+    outline: none;
+    background: #f8f6f0;
+    box-shadow: 0 0 0 4px rgba(58, 134, 255, 0.15);
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #eee;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.auth-footer a {
+    color: var(--primary-navy);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+}
+
+.auth-errors {
+    background: rgba(231, 76, 60, 0.1);
+    border: 2px solid var(--danger);
+    color: var(--danger);
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
 }
 
 /* Smart Q&A Chat Box (Citizen) */

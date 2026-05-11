@@ -27,11 +27,15 @@ const model = {
 
             const response = await fetch('../../Verification.php', options);
             const result   = await response.json();
-            if (!result.success) throw new Error(result.error);
+            if (!result.success) {
+                const err = new Error(result.error);
+                if (result.errors) err.errors = result.errors;
+                throw err;
+            }
             return result.data;
         } catch (error) {
             console.error('API Error:', error);
-            return null;
+            return error.errors ? { errors: error.errors } : null;
         }
     },
 
@@ -162,16 +166,32 @@ const model = {
     // -------------------------------------------------------------------------
     // User Management (admin only)
     // -------------------------------------------------------------------------
-    async getUsers() {
-        const data = await this.apiCall('get_users');
+    async getUsers({ search = '', sort = 'u.id DESC' } = {}) {
+        const data = await this.apiCall('get_users', { search, sort });
         if (data) this.state.users = data;
         return data;
     },
 
     getStoredUsers() { return this.state.users; },
+    
+    async getUser(id) {
+        return await this.apiCall('get_user', { id });
+    },
 
     async toggleUserActive(userId, active) {
         return await this.apiCall('toggle_user_active', { id: userId, active });
+    },
+
+    async createUser(formData) {
+        return await this.apiCall('create_user', formData);
+    },
+
+    async deleteUser(id) {
+        return await this.apiCall('delete_user', { id });
+    },
+
+    async updateUserRole(id, role, name, email) {
+        return await this.apiCall('update_user', { id, role, name, email });
     },
 
     // -------------------------------------------------------------------------
@@ -251,15 +271,6 @@ const model = {
 
     async addTransportType(formData) { return await this.apiCall('add_transport_type',    formData); },
     async deleteTransportType(id)    { return await this.apiCall('delete_transport_type', { id }); },
-
-    // -------------------------------------------------------------------------
-    // Extended user admin actions
-    // -------------------------------------------------------------------------
-    async createUser(data)                   { return await this.apiCall('create_user', data); },
-    async deleteUser(id)                     { return await this.apiCall('delete_user', { id }); },
-    async updateUserRole(id, role, name, email) {
-        return await this.apiCall('update_user', { id, name, email, role });
-    },
 
     // -------------------------------------------------------------------------
     // Profile / auth helpers

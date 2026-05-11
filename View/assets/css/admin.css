@@ -118,11 +118,43 @@ nav {
 }
 
 .user-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
     margin-top: auto;
     width: 100%;
     padding-top: 2rem;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
+    gap: 8px;
+}
+
+.bo-frontoffice-btn {
+    display: flex;
+    align-items: center;
     justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 8px;
+    border-radius: var(--radius-xl);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    color: white !important;
+    font-family: var(--font-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    text-decoration: none !important;
+}
+
+.bo-frontoffice-btn:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    transform: none !important;
+    box-shadow: none !important;
+    padding-left: 8px !important;
 }
 
 .user-role-badge {

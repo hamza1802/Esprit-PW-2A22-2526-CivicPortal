@@ -30,8 +30,8 @@ const view = {
     renderNavBar(user) {
         const nav = document.querySelector('nav');
 
-        const roleBadge = user?.role === 'admin'
-            ? `<a href="../BackOffice/index.php" class="user-role-badge" style="text-decoration:none;">Admin Panel</a>`
+        const roleBadge = (user?.role === 'admin' || user?.role === 'agent')
+            ? `<a href="../BackOffice/index.php" class="user-role-badge" style="text-decoration:none;">Access BackOffice</a>`
             : `<div class="user-role-badge">Citizen</div>`;
 
         nav.innerHTML = `
@@ -890,113 +890,160 @@ const view = {
     },
 
     // -------------------------------------------------------------------------
-    // Profile â€” with profile pic + password change
+    // Profile View with profile pic + password change + full a1 fields
     // -------------------------------------------------------------------------
-    renderProfile(user) {
+    renderProfile(user, isEdit = false) {
+        if (!user || !user.name) {
+            console.error('renderProfile: User data is invalid', user);
+            return;
+        }
+        const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
         const picSrc = user.has_profile_pic
             ? `../../get_image.php?type=profile&id=${user.id}`
             : null;
 
-        const avatarHtml = picSrc
-            ? `<img loading="lazy" src="${picSrc}" alt="Profile" id="profile-pic-preview"
-                    style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--primary-navy);"
-                    onerror="this.parentElement.innerHTML='<i class=\\'bi bi-person\\' style=\\'font-size:2.5rem;\\'></i>';">`
-            : `<i class="bi bi-person" style="font-size:2.5rem;"></i>`;
-
-        this.app.innerHTML = `
-            <section class="page-container">
-                <h2 class="reveal">Account Profile</h2>
-                <div class="form-card reveal" style="background:var(--glass-bg-light);border:var(--glass-border);padding:3rem;border-radius:24px;">
-
-                    <!-- Profile Picture -->
-                    <div class="flex gap-32 mb-32 flex-center">
-                        <div id="profile-pic-container"
-                             class="flex-center"
-                             style="width:80px;height:80px;border-radius:50%;background:var(--primary-navy);
-                                    color:white;overflow:hidden;flex-shrink:0;">
-                            ${avatarHtml}
-                        </div>
-                        <div>
-                            <h3 class="mb-0" style="font-family:var(--font-primary);font-size:1.6rem;">
-                                ${user.name}
-                            </h3>
-                            <p class="mb-0" style="opacity:0.6;">${user.email}</p>
-                            <span class="text-bold text-small" style="display:inline-block;margin-top:0.4rem;
-                                         padding:2px 10px;background:rgba(29,42,68,0.1);border-radius:20px;">
-                                ${(user.role || 'citizen').toUpperCase()}
-                            </span>
-                        </div>
+        if (isEdit) {
+            this.app.innerHTML = `
+                <div class="profile-edit-container" style="max-width: 800px; margin: 4rem auto; padding: 0 5%;">
+                    <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;">
+                        <h2 style="font-size: 2.5rem; font-weight: 900; margin: 0; border: none; text-transform: uppercase; letter-spacing: -1px;">EDIT PROFILE</h2>
+                        <button class="btn" data-action="view-profile" style="border-radius: 20px; font-size: 0.8rem; padding: 0.6rem 1.5rem;">CANCEL</button>
                     </div>
 
-                    <!-- Profile Pic Upload -->
-                    <div class="form-group reveal mb-24"
-                         style="border-bottom:1px solid var(--border-main);padding-bottom:1.5rem;">
-                        <label><i class="bi bi-image"></i> Change Profile Picture</label>
-                        <form id="profile-pic-form" enctype="multipart/form-data"
-                              class="flex gap-16 flex-center flex-wrap">
-                            <input type="file" id="profile-pic-input" name="profile_pic"
-                                   accept="image/jpeg,image/png,image/webp"
-                                   class="no-border"
-                                   style="flex:1;padding:0.5rem 0;">
-                            <button type="submit" class="btn btn-primary" style="padding:0.8rem 2rem;">
-                                <i class="bi bi-upload"></i> Upload
-                            </button>
-                        </form>
-                        <p class="text-small opacity-5" style="margin-top:0.5rem;">
-                            JPEG, PNG or WebP Â· max 2MB
-                        </p>
-                    </div>
+                    <form id="profile-form" class="edit-form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; background: var(--white); padding: 3rem; border-radius: 24px; border: 1px solid #d5d9e0;">
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label style="display: block; font-weight: 900; text-transform: uppercase; font-size: 0.8rem; margin-bottom: 0.8rem;">Username / Display Name</label>
+                            <input type="text" name="name" value="${this._escapeHtml(user.name)}" required style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 12px;">
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; font-weight: 900; text-transform: uppercase; font-size: 0.8rem; margin-bottom: 0.8rem;">First Name</label>
+                            <input type="text" name="first_name" value="${this._escapeHtml(user.first_name || '')}" placeholder="John" style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 12px;">
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; font-weight: 900; text-transform: uppercase; font-size: 0.8rem; margin-bottom: 0.8rem;">Last Name</label>
+                            <input type="text" name="last_name" value="${this._escapeHtml(user.last_name || '')}" placeholder="Doe" style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 12px;">
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; font-weight: 900; text-transform: uppercase; font-size: 0.8rem; margin-bottom: 0.8rem;">Email Address</label>
+                            <input type="email" name="email" value="${this._escapeHtml(user.email)}" required style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 12px;">
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; font-weight: 900; text-transform: uppercase; font-size: 0.8rem; margin-bottom: 0.8rem;">Phone Number</label>
+                            <input type="text" name="phone_number" value="${this._escapeHtml(user.phone_number || '')}" placeholder="+1 234 567 890" style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 12px;">
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; font-weight: 900; text-transform: uppercase; font-size: 0.8rem; margin-bottom: 0.8rem;">Date of Birth</label>
+                            <input type="text" name="date_of_birth" value="${this._escapeHtml(user.date_of_birth || '')}" placeholder="YYYY-MM-DD" style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 12px;">
+                        </div>
+                        
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label style="display: block; font-weight: 900; text-transform: uppercase; font-size: 0.8rem; margin-bottom: 0.8rem;">Biography</label>
+                            <textarea name="bio" rows="4" placeholder="Write something about yourself..." style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 12px;">${this._escapeHtml(user.bio || '')}</textarea>
+                        </div>
 
-                    <!-- Profile Details -->
-                    <form id="profile-form">
-                        <div class="form-group reveal">
-                            <label for="profile-name"><i class="bi bi-person-badge"></i> Display Name</label>
-                            <input type="text" id="profile-name" name="name" value="${user.name}" required
-                                   class="w-full"
-                                   style="padding:1rem;border:var(--glass-border);border-radius:12px;
-                                          background:rgba(255,255,255,0.6);font-family:var(--font-primary);">
+                        <div class="two-fa-card" style="grid-column: span 2; background: #f8f9fa; padding: 1.5rem; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee;">
+                            <div>
+                                <h4 style="margin: 0; font-size: 0.9rem; text-transform: uppercase; font-weight: 900; color: var(--primary-navy);">DOUBLE VERIFICATION (2FA)</h4>
+                                <p style="margin: 0; font-size: 0.8rem; opacity: 0.6;">Protect your account with an email code</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" name="two_fa_enabled" value="1" ${user.two_fa_enabled ? 'checked' : ''}>
+                                <span class="slider"></span>
+                            </label>
                         </div>
-                        <div class="form-group reveal">
-                            <label for="profile-email"><i class="bi bi-envelope"></i> Email Address</label>
-                            <input type="email" id="profile-email" name="email" value="${user.email}" required
-                                   class="w-full"
-                                   style="padding:1rem;border:var(--glass-border);border-radius:12px;
-                                          background:rgba(255,255,255,0.6);font-family:var(--font-primary);">
-                        </div>
-                        <button type="submit" class="btn btn-primary reveal w-full" style="margin-top:1rem;">
-                            UPDATE DETAILS
-                        </button>
+
+                        <button type="submit" class="btn btn-primary" style="grid-column: span 2; padding: 1.5rem; border-radius: 16px; font-size: 1.2rem; font-weight: 900;">SAVE CHANGES</button>
                     </form>
 
-                    <!-- Password Change -->
-                    <div style="margin-top:2rem;padding-top:2rem;border-top:1px solid var(--border-main);">
-                        <h3 class="reveal mb-16" style="font-size:1.1rem;">Change Password</h3>
-                        <form id="password-form">
-                            <div class="form-group reveal">
-                                <label for="new-password">New Password</label>
-                                <input type="password" id="new-password" name="password" minlength="8"
-                                       placeholder="Min. 8 characters"
-                                       class="w-full"
-                                       style="padding:1rem;border:var(--glass-border);border-radius:12px;
-                                              background:rgba(255,255,255,0.6);font-family:var(--font-primary);">
-                            </div>
-                            <div class="form-group reveal">
-                                <label for="confirm-password">Confirm Password</label>
-                                <input type="password" id="confirm-password" name="confirm_password"
-                                       placeholder="Repeat new password"
-                                       class="w-full"
-                                       style="padding:1rem;border:var(--glass-border);border-radius:12px;
-                                              background:rgba(255,255,255,0.6);font-family:var(--font-primary);">
-                            </div>
-                            <button type="submit" class="btn reveal w-full" style="border:2px solid var(--primary-navy);">
-                                UPDATE PASSWORD
-                            </button>
-                        </form>
+                    <form id="profile-pic-form" style="margin-top:2rem; padding: 2rem; background: var(--white); border-radius: 20px; border: 1px solid #eee;">
+                        <label style="display: block; font-weight: 900; text-transform: uppercase; font-size: 0.8rem; margin-bottom: 0.8rem;">Profile Photo</label>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <input type="file" name="profile_pic" style="flex:1;">
+                            <button type="submit" class="btn btn-small">Upload Photo</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+        } else {
+            this.app.innerHTML = `
+                <div class="profile-hero" style="background: url('https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=2144&auto=format&fit=crop') no-repeat center center; background-size: cover; height: 250px; position: relative; border-bottom: 4px solid var(--primary-navy);">
+                    <div class="profile-avatar-container" style="position: absolute; bottom: -50px; left: 50%; transform: translateX(-50%); width: 120px; height: 120px; background: var(--primary-navy); border: 4px solid var(--white); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-lg); z-index: 10; overflow: hidden;">
+                        ${picSrc ? `<img src="${picSrc}" style="width:100%; height:100%; object-fit:cover;">` : `<div class="profile-avatar-initials" style="font-size: 3rem; font-weight: 900; color: var(--white); letter-spacing: -2px;">${initials}</div>`}
                     </div>
                 </div>
-            </section>
-        `;
-        this.triggerObserver();
+
+                <div class="profile-info-header" style="text-align: center; margin-top: 60px; padding-bottom: 2rem; border-bottom: 2px solid #ebebeb;">
+                    <h1 class="profile-name" style="font-size: 2.5rem; font-weight: 900; text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: -1px;">
+                        ${this._escapeHtml(user.first_name ? `${user.first_name} ${user.last_name || ''}` : user.name)}
+                    </h1>
+                    <div class="profile-role-badge" style="display: inline-block; background: var(--primary-navy); color: var(--white); padding: 0.4rem 1.5rem; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; border-radius: 20px; letter-spacing: 1px; margin-bottom: 1.5rem;">${this._escapeHtml(user.role)}</div>
+                    ${user.bio ? `<p class="profile-bio" style="max-width: 600px; margin: 0 auto; color: #555; font-style: italic; line-height: 1.6;">"${this._escapeHtml(user.bio)}"</p>` : ''}
+                </div>
+
+                <div class="profile-content" style="background: #f4f1e9; padding: 3rem 5%; min-height: 400px;">
+                    <div class="info-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; max-width: 1000px; margin: 0 auto;">
+                        <div class="info-card" style="background: var(--white); padding: 1.5rem; border-radius: 12px; border: 1px solid #d5d9e0; display: flex; align-items: center; gap: 1.5rem;">
+                            <div class="info-icon" style="width: 50px; height: 50px; background: #f0f4f8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--primary-navy);"><i class="bi bi-envelope"></i></div>
+                            <div class="info-details">
+                                <label style="display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #888; margin-bottom: 0.2rem;">Email</label>
+                                <span style="font-weight: 700; font-size: 1.1rem; color: var(--primary-navy);">${this._escapeHtml(user.email)}</span>
+                            </div>
+                        </div>
+                        <div class="info-card" style="background: var(--white); padding: 1.5rem; border-radius: 12px; border: 1px solid #d5d9e0; display: flex; align-items: center; gap: 1.5rem;">
+                            <div class="info-icon" style="width: 50px; height: 50px; background: #f0f4f8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--primary-navy);"><i class="bi bi-telephone"></i></div>
+                            <div class="info-details">
+                                <label style="display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #888; margin-bottom: 0.2rem;">Phone</label>
+                                <span style="font-weight: 700; font-size: 1.1rem; color: var(--primary-navy);">${this._escapeHtml(user.phone_number || '—')}</span>
+                            </div>
+                        </div>
+                        <div class="info-card" style="background: var(--white); padding: 1.5rem; border-radius: 12px; border: 1px solid #d5d9e0; display: flex; align-items: center; gap: 1.5rem;">
+                            <div class="info-icon" style="width: 50px; height: 50px; background: #f0f4f8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--primary-navy);"><i class="bi bi-calendar-event"></i></div>
+                            <div class="info-details">
+                                <label style="display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #888; margin-bottom: 0.2rem;">Date of Birth</label>
+                                <span style="font-weight: 700; font-size: 1.1rem; color: var(--primary-navy);">${this._escapeHtml(user.date_of_birth || '—')}</span>
+                            </div>
+                        </div>
+                        <div class="info-card" style="background: var(--white); padding: 1.5rem; border-radius: 12px; border: 1px solid #d5d9e0; display: flex; align-items: center; gap: 1.5rem;">
+                            <div class="info-icon" style="width: 50px; height: 50px; background: #f0f4f8; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--primary-navy);"><i class="bi bi-shield-check"></i></div>
+                            <div class="info-details">
+                                <label style="display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: #888; margin-bottom: 0.2rem;">Double Verification</label>
+                                <span style="font-weight: 700; font-size: 1.1rem; color: ${user.two_fa_enabled ? 'var(--success)' : '#888'}">${user.two_fa_enabled ? 'ENABLED' : 'DISABLED'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="edit-profile-btn-container" style="text-align: center; margin-top: 3rem;">
+                        <button class="btn btn-primary" data-action="edit-profile" style="padding: 1rem 3rem; border-radius: 30px;">EDIT PROFILE</button>
+                    </div>
+                </div>
+
+                <!-- Face ID Enrollment Section -->
+                <div class="face-enroll-section" style="max-width: 1000px; margin: 4rem auto; padding: 0 5%;">
+                    <div class="editorial-card reveal" style="background: white; border: 1px solid #d5d9e0; padding: 3rem; border-radius: 24px;">
+                        <h2 style="font-size: 1.8rem; margin-bottom: 1rem; border:none;">SECURITY: FACE ID ENROLLMENT</h2>
+                        <p style="opacity: 0.7; margin-bottom: 2rem;">Register your face to enable quick login. Please ensure you are in a well-lit area.</p>
+                        
+                        <div id="enroll-status" class="face-id-status status-scanning" style="padding:1rem; background:#f1f5f9; text-align:center; margin-bottom:1.5rem; border-radius:12px; font-weight:bold; color: var(--primary-navy);">Loading Face ID...</div>
+                        
+                        <div class="webcam-container" style="max-width: 600px; margin: 0 auto 2rem; border: 4px solid var(--primary-navy); border-radius: 20px; overflow: hidden; background: #000; position: relative; aspect-ratio: 4/3;">
+                            <video id="enroll-video" width="100%" height="100%" autoplay muted style="object-fit: cover;"></video>
+                            <canvas id="enroll-canvas" style="position: absolute; top:0; left:0; width:100%; height:100%;"></canvas>
+                        </div>
+
+                        <div id="enroll-feedback" class="face-id-feedback" style="text-align:center; margin-bottom:1.5rem; font-weight:600;"></div>
+                        
+                        <button id="enroll-save" class="btn btn-primary" disabled style="width: 100%; padding: 1.5rem; font-size: 1.1rem;">
+                            <i class="bi bi-person-bounding-box" style="margin-right: 10px;"></i>
+                            SAVE MY FACE DATA
+                        </button>
+                    </div>
+                </div>
+            `;
+            this.triggerObserver();
+            if (window.initFaceEnrollment) {
+                setTimeout(() => window.initFaceEnrollment(), 100);
+            }
+        }
     },
 
     // -------------------------------------------------------------------------
@@ -1438,6 +1485,13 @@ const view = {
                 })
                 .catch(() => map.fitBounds([origin, destination], { padding: [20, 20] }));
         });
+    },
+
+    _escapeHtml(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
     }
 };
 

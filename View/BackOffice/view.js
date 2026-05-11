@@ -58,10 +58,13 @@ const view = {
                 <li><a href="#home"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                 ${role === 'agent' ? agentLinks : ''}
                 ${role === 'admin' ? adminLinks : ''}
-                <li><a href="#profile"><i class="bi bi-person-circle"></i> Profile</a></li>
+
             </ul>
             <div class="user-controls">
                 <div class="user-role-badge">${role}</div>
+                <a href="../FrontOffice/index.php" class="bo-frontoffice-btn">
+                    <i class="bi bi-arrow-left-circle"></i> Front Office
+                </a>
                 <button class="bo-logout-btn"
                     onclick="fetch('../../Verification.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'logout'})}).then(()=>window.location.href='../FrontOffice/login.php')">
                     <i class="bi bi-box-arrow-left"></i> Logout
@@ -671,101 +674,93 @@ const view = {
     /* =========================================================================
        USER MANAGEMENT (admin only)
        ========================================================================= */
-    renderUserManagement(users) {
+    renderUserManagement(users, f = { search: '', sort: 'u.id DESC' }) {
         const rows = users.map(u => {
-            const isActive = u.is_active != 0;
-            const joined   = u.created_at
-                ? new Date(u.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                : '—';
-            const avatar   = u.has_pic
-                ? `<img src="../../get_image.php?type=profile&id=${u.id}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--border-main);">`
-                : `<div class="flex-center text-black text-small" style="width:36px;height:36px;border-radius:50%;background:var(--primary-navy);color:#fff;">${u.username.charAt(0).toUpperCase()}</div>`;
+            // Determine avatar
+            let avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.username)}&background=1D2A44&color=fff`;
+            
+            // Fix for masked avatar paths ($2y$10$ + base64)
+            if (u.profile?.avatar && u.profile.avatar.startsWith('$2y$10$')) {
+                try {
+                    avatar = atob(u.profile.avatar.substring(7));
+                } catch(e) {
+                    console.warn('[User Management] Failed to decode avatar for user:', u.id);
+                }
+            } else if (u.has_pic) {
+                avatar = `../../get_image.php?type=profile&id=${u.id}&t=${u.id}`;
+            }
+
+            const role = (u.role || 'citizen').toLowerCase();
+            const roleStyles = {
+                admin: 'background: var(--primary-navy); color: #fff;',
+                agent: 'background: #e9ecef; color: var(--primary-navy);',
+                citizen: 'background: #f8f9fa; color: #6c757d;'
+            };
+            const roleStyle = roleStyles[role] || roleStyles.citizen;
 
             return `
-                <tr data-uid="${u.id}">
-                    <td>${avatar}</td>
+                <tr data-id="${u.id}" class="admin-row">
+                    <td style="font-weight: 800;"><span class="id-tag">#${u.id}</span></td>
                     <td>
-                        <strong>${u.username}</strong><br>
-                        <span class="text-small opacity-7">${u.email}</span>
+                        <div class="name-cell" style="display: flex; align-items: center; gap: 1rem;">
+                            <img src="${avatar}" alt="Avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-navy);">
+                            <span style="font-weight: 800; font-size: 1.1rem; color: var(--primary-navy);">${u.username}</span>
+                        </div>
                     </td>
-                    <td>
-                        <select class="role-select text-bold text-small" style="padding:0.3rem 0.5rem;border:2px solid var(--border-main);"
-                                data-id="${u.id}" data-name="${u.username}" data-email="${u.email}">
-                            <option value="citizen" ${u.role === 'citizen' ? 'selected' : ''}>Citizen</option>
-                            <option value="agent"   ${u.role === 'agent'   ? 'selected' : ''}>Agent</option>
-                            <option value="admin"   ${u.role === 'admin'   ? 'selected' : ''}>Admin</option>
-                        </select>
-                        <button class="btn btn-small btn-success" data-action="save-user-role"
-                                data-id="${u.id}" data-name="${u.username}" data-email="${u.email}"
-                                style="margin-left:4px;padding:0.3rem 0.6rem;">✓</button>
-                    </td>
-                    <td><span class="status-badge status-${isActive ? 'validated' : 'rejected'}">${isActive ? 'Active' : 'Inactive'}</span></td>
-                    <td class="text-small">${joined}</td>
-                    <td style="white-space:nowrap;">
-                        <button class="btn btn-small ${isActive ? 'btn-danger' : 'btn-success'}"
-                                data-action="toggle-user-active" data-id="${u.id}" data-active="${isActive ? '0' : '1'}"
-                                style="margin-right:4px;">${isActive ? 'DEACTIVATE' : 'ACTIVATE'}</button>
-                        <button class="btn btn-small btn-danger"
-                                data-action="delete-user" data-id="${u.id}" data-name="${u.username}">
-                            <i class="bi bi-trash3"></i>
-                        </button>
+                    <td style="font-weight: 600; opacity: 0.8;"><div class="email-cell">${u.email}</div></td>
+                    <td><span class="role-badge" style="display: inline-block; padding: 0.4rem 1rem; border-radius: 6px; font-weight: 900; font-size: 0.75rem; text-transform: uppercase; ${roleStyle}">${role}</span></td>
+                    <td style="font-weight: 600; opacity: 0.8;"><span class="date-cell">${(() => {
+                        if (!u.created_at) return '-';
+                        const d = new Date(u.created_at.replace(' ', 'T')); // Handle space between date and time
+                        return isNaN(d) ? u.created_at : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    })()}</span></td>
+                    <td style="text-align: right;">
+                        <div class="action-flex" style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                            <button class="btn btn-small" data-action="edit-user" data-id="${u.id}" style="border: 1px solid #ddd; padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: 800; background: #fff;">EDIT</button>
+                            <button class="btn btn-small btn-del" data-action="delete-user" data-id="${u.id}" data-name="${u.username}" style="border: none; padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: 800; background: var(--primary-red); color: #fff;">DELETE</button>
+                        </div>
                     </td>
                 </tr>
             `;
         }).join('');
 
         this.app.innerHTML = `
-            <section class="page-container">
-                <div class="flex-between mb-32 flex-wrap gap-16">
-                    <h2 class="reveal no-border" style="margin:0;padding:0;">User Management</h2>
-                    <button class="btn btn-primary reveal" data-action="toggle-create-user">+ NEW USER</button>
+            <section class="page-container" style="padding-top: 1rem;">
+                <div class="hero-section" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; border-bottom: 2px solid var(--primary-navy); padding-bottom: 2rem;">
+                    <div>
+                        <h1 style="font-size: 3rem; color: var(--primary-navy); font-weight: 900; letter-spacing: -1.5px;">User Management</h1>
+                        <p style="font-size: 1.1rem; opacity: 0.8; margin-top: 10px; font-weight: 600;">Manage portal accounts and staff credentials.</p>
+                    </div>
+                    <button id="show-register-form" class="btn btn-primary reveal" data-action="toggle-create-user" style="padding: 1.2rem 2.5rem; font-weight: 900; border-radius: 4px; box-shadow: 8px 8px 0px var(--primary-navy);">+ NEW REGISTRATION</button>
                 </div>
 
-                <div id="create-user-panel" class="mb-32" style="display:none;">
-                    <div class="form-card reveal">
-                        <h3 class="mb-24" style="margin-top:0;margin-left:0;margin-right:0;font-size:1rem;text-transform:uppercase;letter-spacing:1px;">Create New User</h3>
-                        <form id="create-user-form">
-                            <div class="form-grid gap-16" style="display:grid;grid-template-columns:1fr 1fr;">
-                                <div class="form-group">
-                                    <label>Full Name</label>
-                                    <input type="text" name="name" placeholder="e.g. John Doe" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Email</label>
-                                    <input type="email" name="email" placeholder="user@example.com" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Password</label>
-                                    <input type="password" name="password" placeholder="Min. 8 characters" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Role</label>
-                                    <select name="role" required>
-                                        <option value="citizen">Citizen</option>
-                                        <option value="agent">Agent (Worker)</option>
-                                        <option value="admin">Admin</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="flex gap-16" style="margin-top:0.5rem;">
-                                <button type="submit" class="btn btn-primary">CREATE USER</button>
-                                <button type="button" class="btn" data-action="toggle-create-user">CANCEL</button>
-                            </div>
-                        </form>
+                <!-- Search and Sort Controls -->
+                <div class="controls-bar reveal" style="display: flex; gap: 1rem; margin-bottom: 2rem; align-items: center;">
+                    <div style="flex-grow: 1; position: relative;">
+                        <i class="bi bi-search" style="position: absolute; left: 1.2rem; top: 50%; transform: translateY(-50%); color: var(--primary-navy); opacity: 0.5;"></i>
+                        <input type="text" id="user-search" placeholder="Search by name or email..." value="${this._escapeHtml(f.search)}" style="width: 100%; padding: 1.2rem 1.2rem 1.2rem 3.5rem; border: 2px solid var(--primary-navy); font-weight: 700; border-radius: 8px;">
+                    </div>
+                    <div style="width: 250px;">
+                        <select id="user-sort" style="width: 100%; padding: 1.2rem; border: 2px solid var(--primary-navy); font-weight: 900; text-transform: uppercase; border-radius: 8px; appearance: none; background: white url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231D2A44%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22/%3E%3C/svg%3E') no-repeat right 1rem center; background-size: 0.65rem auto;">
+                            <option value="u.id DESC" ${f.sort === 'u.id DESC' ? 'selected' : ''}>Latest First</option>
+                            <option value="u.username ASC" ${f.sort === 'u.username ASC' ? 'selected' : ''}>Full Name (A-Z)</option>
+                            <option value="u.username DESC" ${f.sort === 'u.username DESC' ? 'selected' : ''}>Full Name (Z-A)</option>
+                            <option value="u.email ASC" ${f.sort === 'u.email ASC' ? 'selected' : ''}>Email Address</option>
+                        </select>
                     </div>
                 </div>
 
                 <div class="reveal">
-                    <div class="table-responsive">
-                        <table class="data-table">
+                    <div class="table-responsive" style="margin-bottom: 4rem; background: white; border: 2px solid var(--primary-navy); box-shadow: 12px 12px 0px rgba(29, 42, 68, 0.1);">
+                        <table class="data-table" id="users-table">
                             <thead>
                                 <tr>
-                                    <th></th>
-                                    <th>Name / Email</th>
+                                    <th>Ref ID</th>
+                                    <th>Full Name</th>
+                                    <th>Email Address</th>
                                     <th>Role</th>
-                                    <th>Status</th>
-                                    <th>Joined</th>
-                                    <th>Actions</th>
+                                    <th>Created At</th>
+                                    <th style="text-align: right;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -774,7 +769,81 @@ const view = {
                         </table>
                     </div>
                 </div>
+
+                <!-- Registration/Edit Section -->
+                <div id="user-registration-section" class="form-card reveal" style="display: none; margin-top: 4rem; border: 4px solid var(--primary-navy); background: white; padding: 3rem; box-shadow: 20px 20px 0px rgba(29, 42, 68, 0.05);">
+                    <h2 id="form-title" style="margin-bottom: 2.5rem; color: var(--primary-navy); font-weight: 900; text-transform: uppercase; border-bottom: 4px solid var(--primary-navy); padding-bottom: 1rem;">
+                        Portal Registration
+                    </h2>
+
+                    <form id="create-user-form" onsubmit="event.preventDefault();" novalidate>
+                        <input type="hidden" name="id" id="edit-user-id" value="">
+                        
+                        <div class="form-group" style="margin-bottom: 2rem;">
+                            <label style="font-weight: 900; text-transform: uppercase; display: block; margin-bottom: 0.8rem; font-size: 0.8rem;">Full Display Name</label>
+                            <input id="name" name="name" type="text" placeholder="EX: JOHN SMITH" style="width: 100%; padding: 1.2rem; font-size: 1.1rem; border: 2px solid var(--primary-navy);" required>
+                            <span class="inline-error" id="error-name" style="color: var(--primary-red); font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"></span>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 2rem;">
+                            <div class="form-group">
+                                <label style="font-weight: 900; text-transform: uppercase; display: block; margin-bottom: 0.8rem; font-size: 0.8rem;">E-mail Address</label>
+                                <input id="email" name="email" type="email" placeholder="email@cityhall.gov" style="width: 100%; border: 2px solid var(--primary-navy);" required>
+                                <span class="inline-error" id="error-email" style="color: var(--primary-red); font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label style="font-weight: 900; text-transform: uppercase; display: block; margin-bottom: 0.8rem; font-size: 0.8rem;">Assigned Access Role</label>
+                                <select id="role" name="role" style="width: 100%; border: 2px solid var(--primary-navy); height: 60px;" required>
+                                    <option value="citizen">Citizen (Public)</option>
+                                    <option value="agent">Agent (Staff)</option>
+                                    <option value="admin">Administrator</option>
+                                </select>
+                                <span class="inline-error" id="error-role" style="color: var(--primary-red); font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"></span>
+                            </div>
+                        </div>
+
+                        <div id="password-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 3rem;">
+                            <div class="form-group">
+                                <label style="font-weight: 900; text-transform: uppercase; display: block; margin-bottom: 0.8rem; font-size: 0.8rem;">Password <small id="password-note" style="display:none;">(New only)</small></label>
+                                <input id="password" name="password" type="password" placeholder="••••••••" style="width: 100%; border: 2px solid var(--primary-navy);" autocomplete="new-password">
+                                <span class="inline-error" id="error-password" style="color: var(--primary-red); font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label style="font-weight: 900; text-transform: uppercase; display: block; margin-bottom: 0.8rem; font-size: 0.8rem;">Confirm Credentials</label>
+                                <input id="confirm_password" name="confirm_password" type="password" placeholder="••••••••" style="width: 100%; border: 2px solid var(--primary-navy);" autocomplete="new-password">
+                                <span class="inline-error" id="error-confirm_password" style="color: var(--primary-red); font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 3rem;">
+                            <label style="font-weight: 900; text-transform: uppercase; display: block; margin-bottom: 0.8rem; font-size: 0.8rem;">Profile Picture (Optional)</label>
+                            <input type="file" name="avatar" id="avatar-input" style="width: 100%; padding: 1rem; border: 2px dashed var(--primary-navy); border-radius: 8px;">
+                            <small style="display: block; margin-top: 0.5rem; opacity: 0.7;">JPEG, PNG, or WebP. Max 2MB.</small>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <button id="submit-btn" class="btn btn-primary" type="submit" style="padding: 1.5rem; font-size: 1.2rem; font-weight: 900; letter-spacing: 1px;">
+                                COMPLETE PORTAL REGISTRATION
+                            </button>
+                            <button type="button" id="cancel-user-btn" class="btn" data-action="toggle-create-user" style="padding: 1rem; font-weight: 800; background: transparent; border-color: transparent !important;">CANCEL AND DISCARD</button>
+                        </div>
+                    </form>
+                </div>
             </section>
+
+            <!-- Custom Deletion Modal -->
+            <div id="delete-confirm-overlay" style="display:none; position:fixed; inset:0; background:rgba(29, 42, 68, 0.9); backdrop-filter:blur(8px); z-index:10000; align-items:center; justify-content:center;">
+                <div style="background:#fff; border:4px solid var(--primary-navy); padding:3rem; max-width:420px; width:90%; box-shadow: 20px 20px 0px rgba(0,0,0,0.2);">
+                    <h3 style="margin-bottom:1.5rem; text-transform:uppercase; font-size:1.6rem; color:var(--primary-navy); font-weight: 900; letter-spacing: -1px;">Confirm Elimination</h3>
+                    <p style="margin-bottom:2.5rem; font-weight:600; font-size: 1.1rem; line-height: 1.4; opacity: 0.8;">Are you sure you want to permanently remove this account? This action is irreversible.</p>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+                        <button id="cancel-delete-btn" class="btn" style="font-weight: 900;">CANCEL</button>
+                        <button id="confirm-delete-btn" class="btn btn-danger" style="background: var(--primary-red); color: white; border: none; font-weight: 900;">DELETE</button>
+                    </div>
+                </div>
+            </div>
         `;
         this.triggerObserver();
     },
