@@ -18,7 +18,7 @@ class ForumPost {
         int     $user_id    = 0,
         string  $title      = '',
         string  $content    = '',
-        string  $category   = 'Infrastructure',
+        string  $category   = 'General',
         string  $status     = 'open',
         ?string $created_at = null
     ) {

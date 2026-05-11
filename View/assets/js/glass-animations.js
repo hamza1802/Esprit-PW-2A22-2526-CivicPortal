@@ -16,7 +16,7 @@ class InteractiveUI {
      * Entry Animations using IntersectionObserver
      */
     initReveal() {
-        const animateQuery = '.editorial-card, .program-card, .program-mgmt-card, .hero-section, .form-card';
+        const animateQuery = '.editorial-card, .program-card, .program-mgmt-card, .hero-section, .form-card, .pf-detail-card, .pf-edit-form-wrap';
         document.querySelectorAll(animateQuery).forEach(el => {
             if (!el.classList.contains('reveal')) {
                 el.classList.add('reveal');
@@ -48,7 +48,7 @@ class InteractiveUI {
      * Cursor Tracking: Dynamic radial gradient via custom properties
      */
     initCursorTracking() {
-        const glowElements = '.editorial-card, .program-card, .program-mgmt-card, .form-card, .hero-section';
+        const glowElements = '.editorial-card, .program-card, .program-mgmt-card, .form-card, .hero-section, .pf-detail-card, .pf-edit-form-wrap';
         document.querySelectorAll(glowElements).forEach(el => {
             if (!el.classList.contains('glow-effect')) {
                 el.classList.add('glow-effect');
@@ -102,3 +102,12 @@ if (document.readyState === 'loading') {
 } else {
     new InteractiveUI();
 }
+
+/**
+ * Prevent session restoration via browser back button
+ */
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+        window.location.reload();
+    }
+});

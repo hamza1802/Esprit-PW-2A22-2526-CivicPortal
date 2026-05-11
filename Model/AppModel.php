@@ -9,6 +9,7 @@
 require_once __DIR__ . '/Database.php';
 require_once __DIR__ . '/User.php';
 require_once __DIR__ . '/ServiceRequest.php';
+require_once __DIR__ . '/Document.php';
 require_once __DIR__ . '/Program.php';
 require_once __DIR__ . '/Appointment.php';
 require_once __DIR__ . '/AppointmentSlot.php';
@@ -49,23 +50,183 @@ class AppModel {
     }
 
     // =========================================================================
+    // REQUEST HISTORY (audit log)
+    // =========================================================================
+
+    /**
+     * Lazily create the request_history table on first use. We don't migrate
+     * this elsewhere so the integration branch stays self-bootstrapping.
+     */
+    private static function ensureRequestHistorySchema(): void {
+        static $checked = false;
+        if ($checked) return;
+        self::getDb()->exec("
+            CREATE TABLE IF NOT EXISTS request_history (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                request_id INT NOT NULL,
+                actor_id INT NULL,
+                actor_role VARCHAR(50) NULL,
+                action VARCHAR(64) NOT NULL,
+                from_status VARCHAR(32) NULL,
+                to_status VARCHAR(32) NULL,
+                note TEXT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_request_history_request (request_id),
+                INDEX idx_request_history_created (created_at)
+            )
+        ");
+        $checked = true;
+    }
+
+    /**
+     * Append a single audit/history event for a service request.
+     * All call sites should use this so the timeline is consistent.
+     */
+    public static function logRequestEvent(
+        int $requestId,
+        string $action,
+        ?string $fromStatus = null,
+        ?string $toStatus   = null,
+        ?string $note       = null,
+        ?int    $actorId    = null,
+        ?string $actorRole  = null
+    ): void {
+        try {
+            self::ensureRequestHistorySchema();
+            if ($actorId === null && isset($_SESSION['user_id'])) {
+                $actorId = (int)$_SESSION['user_id'];
+            }
+            if ($actorRole === null && isset($_SESSION['user_role'])) {
+                $actorRole = (string)$_SESSION['user_role'];
+            }
+            $stmt = self::getDb()->prepare("
+                INSERT INTO request_history
+                    (request_id, actor_id, actor_role, action, from_status, to_status, note)
+                VALUES
+                    (:rid, :aid, :arole, :action, :from, :to, :note)
+            ");
+            $stmt->execute([
+                ':rid'    => $requestId,
+                ':aid'    => $actorId,
+                ':arole'  => $actorRole,
+                ':action' => $action,
+                ':from'   => $fromStatus,
+                ':to'     => $toStatus,
+                ':note'   => $note,
+            ]);
+        } catch (Throwable $e) {
+            // Never break a write because the audit log failed.
+            error_log('[CivicPortal][RequestHistory] ' . $e->getMessage());
+        }
+    }
+
+    /** Full chronological history of a single request (oldest first). */
+    public static function getRequestHistory(int $requestId): array {
+        self::ensureRequestHistorySchema();
+        $stmt = self::getDb()->prepare("
+            SELECT h.id, h.request_id, h.actor_id, h.actor_role, h.action,
+                   h.from_status, h.to_status, h.note, h.created_at,
+                   u.username AS actor_name
+            FROM request_history h
+            LEFT JOIN users u ON h.actor_id = u.id
+            WHERE h.request_id = :rid
+            ORDER BY h.created_at ASC, h.id ASC
+        ");
+        $stmt->execute([':rid' => $requestId]);
+        return $stmt->fetchAll();
+    }
+
+    /** Most recent N events across ALL requests (admin stats panel). */
+    public static function getRecentRequestHistory(int $limit = 12): array {
+        self::ensureRequestHistorySchema();
+        $limit = max(1, min(100, $limit));
+        $stmt  = self::getDb()->prepare("
+            SELECT h.id, h.request_id, h.actor_id, h.actor_role, h.action,
+                   h.from_status, h.to_status, h.note, h.created_at,
+                   u.username AS actor_name,
+                   r.title    AS request_title
+            FROM request_history h
+            LEFT JOIN users u    ON h.actor_id  = u.id
+            LEFT JOIN requests r ON h.request_id = r.id
+            ORDER BY h.created_at DESC, h.id DESC
+            LIMIT {$limit}
+        ");
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    // =========================================================================
     // SERVICE REQUESTS (Module 2)
     // =========================================================================
 
     /**
-     * Get all requests (admin view).
+     * Get all requests (admin / agent view) with optional search, status filter,
+     * and sort. Adds a documents_count column for UI badges.
+     *
+     * @param array $opts {
+     *     @type string $search   Free-text match across title/description/category/user_name
+     *     @type string $status   Exact status filter (e.g. "pending")
+     *     @type string $sort     One of id|title|status|created_at|user_name|category
+     *     @type string $order    ASC|DESC (default DESC)
+     * }
      */
-    public static function getRequests() {
+    public static function getRequests(array $opts = []) {
         $db = self::getDb();
-        $stmt = $db->query("
-            SELECT r.*, u.username as user_name, 
-                   a.username as agent_name
+        $allowedSorts = ['id', 'title', 'status', 'created_at', 'user_name', 'category'];
+        $sort  = in_array($opts['sort'] ?? '', $allowedSorts, true) ? $opts['sort'] : 'created_at';
+        $order = strtoupper($opts['order'] ?? 'DESC') === 'ASC' ? 'ASC' : 'DESC';
+
+        $where  = [];
+        $params = [];
+        if (!empty($opts['status'])) {
+            $where[]            = 'r.status = :status';
+            $params[':status']  = $opts['status'];
+        }
+        if (!empty($opts['search'])) {
+            $where[]           = '(r.title LIKE :q OR r.description LIKE :q OR r.category LIKE :q OR u.username LIKE :q)';
+            $params[':q']      = '%' . $opts['search'] . '%';
+        }
+        $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        $sql = "
+            SELECT r.id, r.user_id, r.title, r.description, r.category, r.status,
+                   r.attachment_mime, r.assigned_to, r.created_at, r.updated_at, r.status_updated_at,
+                   u.username as user_name,
+                   a.username as agent_name,
+                   (r.attachment IS NOT NULL) AS has_attachment,
+                   (SELECT COUNT(*) FROM documents d WHERE d.request_id = r.id) AS documents_count
             FROM requests r
             LEFT JOIN users u ON r.user_id = u.id
             LEFT JOIN users a ON r.assigned_to = a.id
-            ORDER BY r.created_at DESC
-        ");
+            $whereSql
+            ORDER BY {$sort} {$order}
+        ";
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
         return $stmt->fetchAll();
+    }
+
+    /**
+     * Get a single request by id (with user + agent names + counts).
+     */
+    public static function getRequestById(int $requestId): ?array {
+        $db = self::getDb();
+        $stmt = $db->prepare("
+            SELECT r.id, r.user_id, r.title, r.description, r.category, r.status,
+                   r.attachment_mime, r.assigned_to, r.created_at, r.updated_at, r.status_updated_at,
+                   u.username as user_name,
+                   a.username as agent_name,
+                   (r.attachment IS NOT NULL) AS has_attachment,
+                   (SELECT COUNT(*) FROM documents d WHERE d.request_id = r.id) AS documents_count
+            FROM requests r
+            LEFT JOIN users u ON r.user_id = u.id
+            LEFT JOIN users a ON r.assigned_to = a.id
+            WHERE r.id = :id
+            LIMIT 1
+        ");
+        $stmt->execute([':id' => $requestId]);
+        $row = $stmt->fetch();
+        return $row ?: null;
     }
 
     /**
@@ -74,7 +235,11 @@ class AppModel {
     public static function getRequestsByUser(int $userId) {
         $db = self::getDb();
         $stmt = $db->prepare("
-            SELECT r.*, a.username as agent_name
+            SELECT r.id, r.user_id, r.title, r.description, r.category, r.status,
+                   r.attachment_mime, r.assigned_to, r.created_at, r.updated_at, r.status_updated_at,
+                   a.username as agent_name,
+                   (r.attachment IS NOT NULL) AS has_attachment,
+                   (SELECT COUNT(*) FROM documents d WHERE d.request_id = r.id) AS documents_count
             FROM requests r
             LEFT JOIN users a ON r.assigned_to = a.id
             WHERE r.user_id = ?
@@ -90,7 +255,11 @@ class AppModel {
     public static function getRequestsByAssignee(int $agentId) {
         $db = self::getDb();
         $stmt = $db->prepare("
-            SELECT r.*, u.username as user_name
+            SELECT r.id, r.user_id, r.title, r.description, r.category, r.status,
+                   r.attachment_mime, r.assigned_to, r.created_at, r.updated_at, r.status_updated_at,
+                   u.username as user_name,
+                   (r.attachment IS NOT NULL) AS has_attachment,
+                   (SELECT COUNT(*) FROM documents d WHERE d.request_id = r.id) AS documents_count
             FROM requests r
             LEFT JOIN users u ON r.user_id = u.id
             WHERE r.assigned_to = ?
@@ -127,8 +296,17 @@ class AppModel {
         $stmt->bindValue(6, $mime);
         $stmt->execute();
 
+        $newId = (int)$db->lastInsertId();
+        self::logRequestEvent(
+            $newId,
+            'created',
+            null,
+            'pending',
+            'Request created' . ($title ? " — “{$title}”" : '')
+        );
+
         return [
-            'id' => $db->lastInsertId(),
+            'id' => $newId,
             'title' => $title,
             'description' => $desc,
             'category' => $cat,
@@ -139,12 +317,79 @@ class AppModel {
     }
 
     /**
+     * Update a citizen's own request (currently only the description; the
+     * service type is intentionally locked after submission).
+     * Returns the updated row or null if nothing changed / not found.
+     */
+    public static function updateRequest(int $requestId, string $newDescription): ?array {
+        $current = self::getRequestById($requestId);
+        if (!$current) return null;
+        $before = trim((string)($current['description'] ?? ''));
+        $after  = trim($newDescription);
+        if ($before === $after) return $current;
+
+        $db = self::getDb();
+        $stmt = $db->prepare("UPDATE requests SET description = ?, updated_at = NOW() WHERE id = ?");
+        $stmt->execute([$after, $requestId]);
+
+        self::logRequestEvent(
+            $requestId,
+            'description_edited',
+            $current['status'] ?? null,
+            $current['status'] ?? null,
+            'Description updated.'
+        );
+
+        return self::getRequestById($requestId);
+    }
+
+    /**
+     * Delete a service request along with its physical attachments.
+     */
+    public static function deleteRequest(int $requestId): bool {
+        $current = self::getRequestById($requestId);
+        if (!$current) return false;
+
+        // Remove physical files first (best effort).
+        try {
+            $docs = self::getDocumentsByRequest($requestId);
+            foreach ($docs as $d) {
+                $fp = __DIR__ . '/../uploads/' . ($d['file_path'] ?? '');
+                if (is_file($fp)) @unlink($fp);
+            }
+        } catch (Throwable $e) {
+            error_log('[CivicPortal][deleteRequest] cleanup failed: ' . $e->getMessage());
+        }
+
+        $db = self::getDb();
+        // Children rows
+        $db->prepare("DELETE FROM documents WHERE request_id = ?")->execute([$requestId]);
+        $db->prepare("DELETE FROM request_history WHERE request_id = ?")->execute([$requestId]);
+        $db->prepare("DELETE FROM requests WHERE id = ?")->execute([$requestId]);
+
+        // Note: we don't log to history here since the row is gone.
+        return true;
+    }
+
+    /**
      * Update request status and log timestamp.
      */
     public static function updateRequestStatus($requestId, $status) {
         $db = self::getDb();
+        $current = self::getRequestById((int)$requestId);
+        $from    = $current['status'] ?? null;
         $stmt = $db->prepare("UPDATE requests SET status = ?, status_updated_at = NOW() WHERE id = ?");
-        return $stmt->execute([$status, $requestId]);
+        $ok   = $stmt->execute([$status, $requestId]);
+        if ($ok) {
+            self::logRequestEvent(
+                (int)$requestId,
+                'status_changed',
+                $from,
+                (string)$status,
+                $from === $status ? 'Status confirmed.' : "Status changed from “{$from}” to “{$status}”."
+            );
+        }
+        return $ok;
     }
 
     /**
@@ -154,6 +399,129 @@ class AppModel {
         $db = self::getDb();
         $stmt = $db->prepare("UPDATE requests SET assigned_to = ? WHERE id = ?");
         return $stmt->execute([$agentId, $requestId]);
+    }
+
+    // =========================================================================
+    // DOCUMENTS  (one or many supporting files per request, stored on disk)
+    // =========================================================================
+
+    /** SELECT all documents for a specific request. */
+    public static function getDocumentsByRequest(int $requestId): array {
+        $db = self::getDb();
+        $stmt = $db->prepare("
+            SELECT id,
+                   request_id   AS requestId,
+                   file_path    AS filePath,
+                   type,
+                   uploaded_at  AS uploadedAt
+            FROM documents
+            WHERE request_id = :requestId
+            ORDER BY uploaded_at ASC
+        ");
+        $stmt->execute([':requestId' => $requestId]);
+        return $stmt->fetchAll();
+    }
+
+    /** SELECT a single document by ID. */
+    public static function getDocumentById(int $documentId): ?array {
+        $db = self::getDb();
+        $stmt = $db->prepare("
+            SELECT id,
+                   request_id   AS requestId,
+                   file_path    AS filePath,
+                   type,
+                   uploaded_at  AS uploadedAt
+            FROM documents
+            WHERE id = :id
+            LIMIT 1
+        ");
+        $stmt->execute([':id' => $documentId]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
+    /** INSERT a new document attached to an existing request. */
+    public static function addDocument(int $requestId, string $filePath, string $type = 'other'): array {
+        if (!self::getRequestById($requestId)) {
+            throw new Exception("Request not found.");
+        }
+
+        $allowedTypes = ['identity', 'proof', 'photo', 'certificate', 'other'];
+        if (!in_array($type, $allowedTypes, true)) $type = 'other';
+
+        $docObj = new Document(null, $requestId, $filePath, $type);
+
+        $db = self::getDb();
+        $stmt = $db->prepare("
+            INSERT INTO documents (request_id, file_path, type)
+            VALUES (:requestId, :filePath, :type)
+        ");
+        $stmt->execute([
+            ':requestId' => $docObj->getRequestId(),
+            ':filePath'  => $docObj->getFilePath(),
+            ':type'      => $docObj->getType(),
+        ]);
+
+        $docId = (int)$db->lastInsertId();
+        self::logRequestEvent(
+            $requestId,
+            'document_added',
+            null,
+            null,
+            "Document added (“{$filePath}”, type: {$docObj->getType()})."
+        );
+        return self::getDocumentById($docId);
+    }
+
+    /**
+     * UPDATE a document (replace file). Caller is responsible for persisting
+     * the new file under /uploads/ before calling this.
+     */
+    public static function updateDocument(int $documentId, string $filePath, string $type = 'other'): array {
+        $current = self::getDocumentById($documentId);
+        if (!$current) throw new Exception("Document not found.");
+
+        // Best-effort cleanup of the old physical file.
+        $oldPath = __DIR__ . '/../uploads/' . $current['filePath'];
+        if (is_file($oldPath)) @unlink($oldPath);
+
+        $docObj = new Document($current['id'], (int)$current['requestId'], $current['filePath'], $current['type'], $current['uploadedAt']);
+        $docObj->setFilePath($filePath);
+        $docObj->setType(in_array($type, ['identity','proof','photo','certificate','other'], true) ? $type : 'other');
+
+        $db = self::getDb();
+        $stmt = $db->prepare("UPDATE documents SET file_path = :filePath, type = :type WHERE id = :id");
+        $stmt->execute([
+            ':filePath' => $docObj->getFilePath(),
+            ':type'     => $docObj->getType(),
+            ':id'       => $documentId,
+        ]);
+
+        return self::getDocumentById($documentId);
+    }
+
+    /** DELETE a document by ID (also removes the physical file). */
+    public static function deleteDocument(int $documentId): bool {
+        $doc = self::getDocumentById($documentId);
+        if (!$doc) throw new Exception("Document not found.");
+
+        $fullPath = __DIR__ . '/../uploads/' . $doc['filePath'];
+        if (is_file($fullPath)) @unlink($fullPath);
+
+        $db = self::getDb();
+        $stmt = $db->prepare("DELETE FROM documents WHERE id = :id");
+        $stmt->execute([':id' => $documentId]);
+
+        if ($stmt->rowCount() > 0) {
+            self::logRequestEvent(
+                (int)$doc['requestId'],
+                'document_deleted',
+                null,
+                null,
+                "Document removed (“{$doc['filePath']}”)."
+            );
+        }
+        return $stmt->rowCount() > 0;
     }
 
     // =========================================================================
@@ -350,6 +718,14 @@ class AppModel {
                             WHERE e.status = 'pending' ORDER BY e.enrolled_at ASC")->fetchAll();
     }
 
+    public static function getAllEnrollments() {
+        $db = self::getDb();
+        return $db->query("SELECT e.*, u.username, p.title as program_title 
+                            FROM enrollment e JOIN users u ON e.user_id = u.id 
+                            JOIN program p ON e.program_id = p.id 
+                            ORDER BY e.enrolled_at DESC")->fetchAll();
+    }
+
     public static function getAllEnrollmentsCounts() {
         $db = self::getDb();
         $total = (int)$db->query("SELECT COUNT(*) FROM enrollment WHERE status != 'cancelled'")->fetchColumn();
@@ -369,12 +745,23 @@ class AppModel {
 
     public static function getStats() {
         $db = self::getDb();
+        $statusBreakdown = [];
+        try {
+            $rows = $db->query("SELECT status, COUNT(*) AS total FROM requests GROUP BY status")->fetchAll();
+            foreach ($rows as $r) $statusBreakdown[$r['status']] = (int)$r['total'];
+        } catch (Throwable $e) {
+            error_log('[CivicPortal][getStats] status breakdown failed: ' . $e->getMessage());
+        }
+
         return [
             'usersCount'       => (int)$db->query("SELECT COUNT(*) FROM users")->fetchColumn(),
             'programsCount'    => (int)$db->query("SELECT COUNT(*) FROM program WHERE status = 'active'")->fetchColumn(),
             'requestsCount'    => (int)$db->query("SELECT COUNT(*) FROM requests")->fetchColumn(),
             'enrollmentsCount' => (int)$db->query("SELECT COUNT(*) FROM enrollment")->fetchColumn(),
             'appointmentsCount'=> (int)$db->query("SELECT COUNT(*) FROM appointments")->fetchColumn(),
+            'documentsCount'   => (int)$db->query("SELECT COUNT(*) FROM documents")->fetchColumn(),
+            'statusBreakdown'  => $statusBreakdown,
+            'recentHistory'    => self::getRecentRequestHistory(12),
         ];
     }
 
@@ -631,15 +1018,111 @@ class AppModel {
     // =========================================================================
     // SERVICE TYPES (for appointment booking dropdown)
     // =========================================================================
+    /**
+     * Service types for the appointment booking dropdown AND the service-request
+     * form. Each entry exposes a `requiredDocs` array so the FrontOffice form
+     * can render dynamic file inputs and the AI helper knows what to expect.
+     */
     public static function getServiceTypes(): array {
+        $idImg = '.pdf,.jpg,.jpeg,.png,.webp';
+        $pdf   = '.pdf';
+        $img   = '.jpg,.jpeg,.png,.webp';
         return [
-            ['value' => 'Birth Certificate', 'label' => 'Birth Certificate'],
-            ['value' => 'ID Card Renewal', 'label' => 'ID Card Renewal'],
-            ['value' => 'Residence Certificate', 'label' => 'Residence Certificate'],
-            ['value' => 'Building Permit', 'label' => 'Building Permit'],
-            ['value' => 'General Inquiry', 'label' => 'General Inquiry'],
-            ['value' => 'Document Verification', 'label' => 'Document Verification'],
+            [
+                'value' => 'Birth Certificate',
+                'label' => 'Birth Certificate',
+                'requiredDocs' => [
+                    ['label' => "Copy of Parents' IDs", 'accept' => $idImg, 'docType' => 'identity'],
+                ],
+            ],
+            [
+                'value' => 'ID Card Renewal',
+                'label' => 'ID Card Renewal',
+                'requiredDocs' => [
+                    ['label' => 'Old ID Card (scan / photo)',  'accept' => $idImg, 'docType' => 'identity'],
+                    ['label' => 'Recent passport-style photo', 'accept' => $img,   'docType' => 'photo'],
+                ],
+            ],
+            [
+                'value' => 'Residence Certificate',
+                'label' => 'Residence Certificate',
+                'requiredDocs' => [
+                    ['label' => 'Proof of address (utility bill / lease)', 'accept' => $idImg, 'docType' => 'proof'],
+                ],
+            ],
+            [
+                'value' => 'Building Permit',
+                'label' => 'Building Permit',
+                'requiredDocs' => [
+                    ['label' => 'Property deed',   'accept' => $pdf,   'docType' => 'proof'],
+                    ['label' => 'Building plans',  'accept' => $idImg, 'docType' => 'other'],
+                ],
+            ],
+            [
+                'value' => 'Death Certificate',
+                'label' => 'Death Certificate',
+                'requiredDocs' => [
+                    ['label' => "Applicant's valid ID (national ID or passport)", 'accept' => $idImg, 'docType' => 'identity'],
+                    ['label' => 'Proof of relationship to the deceased',          'accept' => $idImg, 'docType' => 'certificate'],
+                    ['label' => 'Medical certificate of death (if applicable)',   'accept' => $idImg, 'docType' => 'other'],
+                ],
+            ],
+            [
+                'value' => 'Marriage Certificate',
+                'label' => 'Marriage Certificate',
+                'requiredDocs' => [
+                    ['label' => "Both spouses' valid IDs", 'accept' => $idImg, 'docType' => 'identity'],
+                ],
+            ],
+            [
+                'value' => 'Passport',
+                'label' => 'Passport',
+                'requiredDocs' => [
+                    ['label' => 'Valid national ID or previous passport', 'accept' => $idImg, 'docType' => 'identity'],
+                    ['label' => 'Recent biometric photo (white background)', 'accept' => $img, 'docType' => 'photo'],
+                    ['label' => 'Proof of address (≤ 3 months)', 'accept' => $idImg, 'docType' => 'proof'],
+                ],
+            ],
+            [
+                'value' => 'Income Certificate',
+                'label' => 'Income Certificate',
+                'requiredDocs' => [
+                    ['label' => 'Last 3 pay slips or employer certificate', 'accept' => $idImg, 'docType' => 'other'],
+                    ['label' => 'Tax notice or tax return (last year)',     'accept' => $pdf,   'docType' => 'other'],
+                    ['label' => 'Valid ID',                                  'accept' => $idImg, 'docType' => 'identity'],
+                ],
+            ],
+            [
+                'value' => 'Vehicle Registration',
+                'label' => 'Vehicle Registration',
+                'requiredDocs' => [
+                    ['label' => 'Valid ID of owner',                                  'accept' => $idImg, 'docType' => 'identity'],
+                    ['label' => 'Certificate of conformity (COC) or purchase invoice','accept' => $idImg, 'docType' => 'other'],
+                    ['label' => 'Proof of address',                                   'accept' => $idImg, 'docType' => 'proof'],
+                    ['label' => 'Insurance certificate',                              'accept' => $idImg, 'docType' => 'other'],
+                ],
+            ],
+            [
+                'value' => 'General Inquiry',
+                'label' => 'General Inquiry',
+                'requiredDocs' => [],
+            ],
+            [
+                'value' => 'Document Verification',
+                'label' => 'Document Verification',
+                'requiredDocs' => [
+                    ['label' => 'Document to verify', 'accept' => $idImg, 'docType' => 'other'],
+                ],
+            ],
         ];
+    }
+
+    /** Look up the required-documents list for a single service type. */
+    public static function getRequiredDocsFor(string $serviceType): array {
+        foreach (self::getServiceTypes() as $t) {
+            if (strcasecmp($t['value'], $serviceType) === 0) return $t['requiredDocs'] ?? [];
+        }
+        return [];
     }
     // ============================================
     // TRANSPORT TYPE MANAGEMENT

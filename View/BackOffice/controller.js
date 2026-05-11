@@ -3,17 +3,33 @@
  * BackOffice Event Handler — CivicPortal Staff Portal
  */
 
-import model from './model.js';
-import view  from './view.js';
-import { initRouteMap } from './map.js';
+import model from './model.js?v=2';
+import view  from './view.js?v=2';
+import { initRouteMap } from './map.js?v=2';
 
 const controller = {
 
+    /** Filters used by the service request queue toolbar. Persisted across re-renders. */
+    requestFilters: { search: '', status: '', sort: 'created_at', order: 'DESC' },
+
+    /** Filters used by the user management toolbar. */
+    userFilters: { search: '', sort: 'u.id DESC' },
+
+    /** Pending debounce id for the search input. */
+    _reqSearchDebounce: null,
+    _userSearchDebounce: null,
+
     async init() {
-        await model.sync();
         this.setupEventListeners();
-        const user = model.getCurrentUser();
-        await this.handleRoleChange(user.role, false);
+        try {
+            await model.sync();
+            const user = model.getCurrentUser();
+            if (user) {
+                await this.handleRoleChange(user.role, false);
+            }
+        } catch (err) {
+            console.error('[CivicPortal] Initialization failed:', err);
+        }
     },
 
     setupEventListeners() {
@@ -46,11 +62,27 @@ const controller = {
                 this.handleAIAnalyzeEnrollment(targetBtn.dataset.id, targetBtn);
                 return;
             }
+            const aiAnalyzeReqBtn = e.target.closest('#btn-ai-analyze-req');
+            if (aiAnalyzeReqBtn) {
+                e.preventDefault();
+                this.handleAIAnalyzeRequest(aiAnalyzeReqBtn.dataset.id, aiAnalyzeReqBtn);
+                return;
+            }
+            if (e.target.id === 'req-reset') {
+                e.preventDefault();
+                this.requestFilters = { search: '', status: '', sort: 'created_at', order: 'DESC' };
+                this._refreshRequestQueue();
+                return;
+            }
             
+
+
             const actionEl = e.target.closest('[data-action]');
             if (!actionEl) {
                 if (e.target.id === 'btn-generate-image') {
                     this.handleImageGeneration(e.target);
+                } else if (e.target.id === 'btn-cancel-image-gen') {
+                    this._imgGenCancelled = true;
                 }
                 return;
             }
@@ -65,6 +97,9 @@ const controller = {
                     break;
                 case 'reject':
                     this.handleStatusUpdate(id, 'rejected');
+                    break;
+                case 'view-request':
+                    window.location.hash = `#request/${id}`;
                     break;
 
                 // Program actions
@@ -81,6 +116,10 @@ const controller = {
                     break;
                 case 'view-program':
                     window.location.hash = `#program/${id}`;
+                    break;
+
+                case 'view-all-enrollments':
+                    window.location.hash = '#all-enrollments';
                     break;
 
                 case 'save-program': {
@@ -167,10 +206,122 @@ const controller = {
                     if (confirm('Delete this route? All booked tickets will be affected.')) this.handleTrajetDelete(parseInt(id));
                     break;
 
+                // Forum moderation actions (admin)
+                case 'forum-save-status': {
+                    const select = document.querySelector(`.forum-status-select[data-post-id="${id}"]`);
+                    if (select) this.handleForumStatusUpdate(parseInt(id), select.value);
+                    break;
+                }
+                case 'forum-delete-post':
+                    if (confirm('Delete this forum post permanently?')) {
+                        this.handleForumDeletePost(parseInt(id));
+                    }
+                    break;
+                case 'forum-delete-comment':
+                    if (confirm('Delete this comment permanently?')) {
+                        this.handleForumDeleteComment(parseInt(id));
+                    }
+                    break;
+
                 // User management actions
                 case 'toggle-create-user': {
-                    const panel = document.getElementById('create-user-panel');
-                    if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                    const panel = document.getElementById('user-registration-section');
+                    if (panel) {
+                        const isOpening = panel.style.display === 'none';
+                        if (isOpening) {
+                            // Reset form
+                            const form = document.getElementById('create-user-form');
+                            if (form) form.reset();
+                            
+                            const idInput = document.getElementById('edit-user-id');
+                            if (idInput) idInput.value = '';
+                            
+                            const fTitle = document.getElementById('form-title');
+                            if (fTitle) fTitle.innerText = 'Portal Registration';
+                            
+                            const sBtn = document.getElementById('submit-btn');
+                            if (sBtn) sBtn.innerText = 'COMPLETE PORTAL REGISTRATION';
+                            
+                            const pNote = document.getElementById('password-note');
+                            if (pNote) pNote.style.display = 'none';
+
+                            const passInput = document.getElementById('password');
+                            if (passInput) passInput.required = true;
+
+                            document.querySelectorAll('.inline-error').forEach(el => el.textContent = '');
+
+                            panel.style.display = 'block';
+                            panel.style.opacity = '0';
+                            panel.style.transform = 'translateY(-20px)';
+                            
+                            setTimeout(() => {
+                                panel.style.opacity = '1';
+                                panel.style.transform = 'translateY(0)';
+                                panel.style.transition = 'all 0.3s ease-out';
+                                panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }, 10);
+                        } else {
+                            panel.style.display = 'none';
+                        }
+                    }
+                    break;
+                }
+                case 'edit-user': {
+                    const panel = document.getElementById('user-registration-section');
+                    if (panel) {
+                        panel.style.display = 'block';
+                        panel.style.opacity = '0.5';
+                        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        
+                        document.getElementById('form-title').innerText = 'Filing Profile Data...';
+                        document.querySelectorAll('.inline-error').forEach(el => el.textContent = '');
+
+                        model.getUser(parseInt(id)).then(user => {
+                            console.log('[User Management] Record fetched:', user);
+                            if (!user) {
+                                view.renderToast('Error: Unable to retrieve user record.', 'error');
+                                return;
+                            }
+                            
+                            document.getElementById('edit-user-id').value = user.id;
+                            const nameField = document.getElementById('name');
+                            if (nameField) nameField.value = user.username || user.name || '';
+                            
+                            const emailField = document.getElementById('email');
+                            if (emailField) emailField.value = user.email || '';
+                            
+                            const roleField = document.getElementById('role');
+                            if (roleField) {
+                                const role = (user.role || 'citizen').toLowerCase();
+                                roleField.value = role;
+                            }
+                            
+                            const pwdField = document.getElementById('password');
+                            if (pwdField) pwdField.value = '';
+                            
+                            const confField = document.getElementById('confirm_password');
+                            if (confField) confField.value = '';
+                            
+                            const title = document.getElementById('form-title');
+                            if (title) title.textContent = 'UPDATE STAFF IDENTITY';
+                            
+                            const submitBtn = document.getElementById('submit-btn');
+                            if (submitBtn) submitBtn.textContent = 'SAVE IDENTITY CHANGES';
+  
+                            const passInput = document.getElementById('password');
+                            if (passInput) {
+                                passInput.required = false;
+                                passInput.placeholder = "Leave blank to keep current password";
+                                passInput.value = '';
+                            }
+                            
+                            panel.style.opacity = '1';
+                            panel.style.transform = 'translateY(0)';
+                        }).catch(err => {
+                            console.error("Edit fetch failed:", err);
+                            view.renderToast('Network Failure: Could not reach the server.', 'error');
+                        });
+                    }
                     break;
                 }
                 case 'save-user-role': {
@@ -186,11 +337,31 @@ const controller = {
                     }
                     break;
                 }
-                case 'delete-user':
-                    if (confirm(`Delete user "${actionEl.dataset.name}"? This cannot be undone.`)) {
-                        this.handleUserDelete(parseInt(id));
+                case 'delete-user': {
+                    const overlay = document.getElementById('delete-confirm-overlay');
+                    if (overlay) {
+                        overlay.style.display = 'flex';
+                        const confirmBtn = document.getElementById('confirm-delete-btn');
+                        const cancelBtn  = document.getElementById('cancel-delete-btn');
+                        
+                        const cleanup = () => {
+                            overlay.style.display = 'none';
+                            confirmBtn.onclick = null;
+                            cancelBtn.onclick = null;
+                        };
+
+                        cancelBtn.onclick = cleanup;
+                        confirmBtn.onclick = async () => {
+                            cleanup();
+                            await this.handleUserDelete(parseInt(id));
+                        };
+                    } else {
+                        if (confirm(`Delete user "${actionEl.dataset.name}"? This cannot be undone.`)) {
+                            this.handleUserDelete(parseInt(id));
+                        }
                     }
                     break;
+                }
 
                 // Slot management actions (admin)
                 case 'delete-slot':
@@ -218,29 +389,83 @@ const controller = {
                 case 'complete-appointment':
                     this.handleAppointmentStatus(parseInt(id), 'completed');
                     break;
+                case 'submit-user-form': {
+                    const form = document.getElementById('create-user-form') || document.getElementById('user-form');
+                    if (form) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.handleUserCreate(new FormData(form));
+                    }
+                    break;
+                }
             }
         });
 
         window.addEventListener('hashchange', () => this.handleRouting());
 
+        // Service-request queue toolbar (search debounced; selects fire immediately).
+        document.addEventListener('input', (e) => {
+            if (e.target.id === 'req-search') {
+                clearTimeout(this._reqSearchDebounce);
+                const value = e.target.value;
+                this._reqSearchDebounce = setTimeout(() => {
+                    this.requestFilters.search = value;
+                    this._refreshRequestQueue({ keepFocus: 'req-search' });
+                }, 300);
+            } else if (e.target.id === 'user-search') {
+                clearTimeout(this._userSearchDebounce);
+                const value = e.target.value;
+                this._userSearchDebounce = setTimeout(() => {
+                    this.userFilters.search = value;
+                    this._refreshUsers({ keepFocus: 'user-search' });
+                }, 300);
+            }
+        });
+
+        document.addEventListener('change', (e) => {
+            if (e.target.id === 'req-filter-status') {
+                this.requestFilters.status = e.target.value;
+                this._refreshRequestQueue();
+            } else if (e.target.id === 'req-sort') {
+                this.requestFilters.sort = e.target.value;
+                this._refreshRequestQueue();
+            } else if (e.target.id === 'req-order') {
+                this.requestFilters.order = e.target.value;
+                this._refreshRequestQueue();
+            } else if (e.target.id === 'user-sort') {
+                this.userFilters.sort = e.target.value;
+                this._refreshUsers();
+            }
+        });
+
         document.addEventListener('submit', (e) => {
-            e.preventDefault();
-            if (e.target.id === 'profile-form') {
-                this.handleProfileUpdate(new FormData(e.target));
-            } else if (e.target.id === 'program-form') {
-                this.handleProgramSave(new FormData(e.target));
-            } else if (e.target.id === 'category-form') {
-                this.handleCategoryAdd(new FormData(e.target));
-            } else if (e.target.id === 'slot-form') {
-                this.handleSlotCreate(new FormData(e.target));
-            } else if (e.target.id === 'create-user-form') {
-                this.handleUserCreate(new FormData(e.target));
-            } else if (e.target.id === 'add-type-form') {
-                this.handleTransportTypeAdd(new FormData(e.target));
-            } else if (e.target.id === 'add-vehicle-form') {
-                this.handleVehicleAdd(new FormData(e.target));
-            } else if (e.target.id === 'add-trajet-form') {
-                this.handleTrajetAdd(new FormData(e.target));
+            const form = e.target;
+            if (form.id === 'profile-form') {
+                e.preventDefault();
+                this.handleProfileUpdate(new FormData(form));
+            } else if (form.id === 'program-form') {
+                e.preventDefault();
+                this.handleProgramSave(new FormData(form));
+            } else if (form.id === 'category-form') {
+                e.preventDefault();
+                this.handleCategoryAdd(new FormData(form));
+            } else if (form.id === 'slot-form') {
+                e.preventDefault();
+                this.handleSlotCreate(new FormData(form));
+            } else if (form.id === 'create-user-form' || form.id === 'user-form') {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('[CivicPortal] User form submit caught via event listener.');
+                this.handleUserCreate(new FormData(form));
+            } else if (form.id === 'add-type-form') {
+                e.preventDefault();
+                this.handleTransportTypeAdd(new FormData(form));
+            } else if (form.id === 'add-vehicle-form') {
+                e.preventDefault();
+                this.handleVehicleAdd(new FormData(form));
+            } else if (form.id === 'add-trajet-form') {
+                e.preventDefault();
+                this.handleTrajetAdd(new FormData(form));
             }
         });
     },
@@ -260,6 +485,15 @@ const controller = {
             return;
         }
 
+        if (hash.startsWith('#request/')) {
+            if (user.role !== 'agent' && user.role !== 'admin') {
+                window.location.hash = '#home';
+                return;
+            }
+            await this.showRequestDetail(parseInt(hash.split('/')[1], 10));
+            return;
+        }
+
         switch (hash) {
             case '#home':
                 view.renderHome(user);
@@ -267,7 +501,7 @@ const controller = {
 
             case '#worker-dashboard':
                 if (user.role === 'agent' || user.role === 'admin') {
-                    view.renderWorkerDashboard(model.getServiceRequests());
+                    await this._refreshRequestQueue();
                 } else {
                     window.location.hash = '#home';
                 }
@@ -281,10 +515,29 @@ const controller = {
                 break;
             }
 
+            case '#forum-moderation':
+                if (user.role === 'admin') {
+                    const [forumPosts, forumComments, forumStats] = await Promise.all([
+                        model.getForumPosts(),
+                        model.getForumComments(),
+                        model.getForumStats()
+                    ]);
+                    view.renderForumModeration(forumPosts || [], forumComments || [], forumStats || {});
+                    // Notify if flagged content exists
+                    const flaggedCount = (forumStats?.flagged_posts?.length || 0) + (forumStats?.flagged_comments?.length || 0);
+                    if (flaggedCount > 0) {
+                        view.renderToast(`⚠️ ${flaggedCount} flagged content item${flaggedCount !== 1 ? 's' : ''} require attention.`, 'error');
+                    }
+                } else {
+                    window.location.hash = '#home';
+                }
+                break;
+
             case '#user-management':
                 if (user.role === 'admin') {
-                    const users = await model.getUsers();
-                    view.renderUserManagement(users || []);
+                    const filters = this.userFilters;
+                    const users = await model.getUsers(filters);
+                    view.renderUserManagement(users || [], filters);
                 } else {
                     window.location.hash = '#home';
                 }
@@ -307,6 +560,15 @@ const controller = {
                 if (user.role === 'admin' || user.role === 'agent') {
                     await model.sync();
                     view.renderProgramsManager(model.getPrograms(), user.role);
+                } else {
+                    window.location.hash = '#home';
+                }
+                break;
+
+            case '#all-enrollments':
+                if (user.role === 'admin' || user.role === 'agent') {
+                    const enrollments = await model.getAllEnrollments();
+                    view.renderAllEnrollments(enrollments || []);
                 } else {
                     window.location.hash = '#home';
                 }
@@ -382,7 +644,67 @@ const controller = {
     async handleStatusUpdate(requestId, status) {
         await model.updateRequestStatus(parseInt(requestId), status);
         view.renderToast(`Request ${status} successfully.`);
-        view.renderWorkerDashboard(model.getServiceRequests());
+
+        // If the user is on the detail view, refresh it; otherwise refresh the queue.
+        if ((window.location.hash || '').startsWith('#request/')) {
+            await this.showRequestDetail(parseInt(requestId, 10));
+        } else {
+            await this._refreshRequestQueue();
+        }
+    },
+
+    /**
+     * Re-fetch the request queue using the current toolbar filters and re-render.
+     * Restores focus to the search input after re-render so live typing works.
+     */
+    async _refreshRequestQueue({ keepFocus = null } = {}) {
+        const filters = this.requestFilters;
+        await model.fetchRequests(filters);
+        view.renderWorkerDashboard(model.getServiceRequests(), filters);
+
+        if (keepFocus) {
+            const el = document.getElementById(keepFocus);
+            if (el) {
+                el.focus();
+                if (typeof el.setSelectionRange === 'function') {
+                    el.setSelectionRange(el.value.length, el.value.length);
+                }
+            }
+        }
+    },
+
+    /** Load a single request (with documents) and render the detail page. */
+    async showRequestDetail(requestId) {
+        const request = await model.getRequestDetail(requestId);
+        if (!request) {
+            view.renderToast('Request not found or unauthorized.', 'error');
+            window.location.hash = '#worker-dashboard';
+            return;
+        }
+        view.renderRequestDetail(request);
+    },
+
+    /** Trigger AI analysis on the currently displayed request. */
+    async handleAIAnalyzeRequest(requestId, btn) {
+        const id = parseInt(requestId, 10);
+        if (!id) return;
+        const original = btn.innerHTML;
+        btn.disabled  = true;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Analyzing...';
+        try {
+            const result = await model.aiAnalyzeRequest(id);
+            view.renderAIAnalyzeResult(result, id);
+            if (result && result.status !== 'ok') {
+                view.renderToast(result.message || 'AI fallback used.', 'error');
+            }
+        } catch (e) {
+            console.error('[AI analyze] error:', e);
+            view.renderToast('AI request failed.', 'error');
+            view.renderAIAnalyzeResult(null, id);
+        } finally {
+            btn.disabled  = false;
+            btn.innerHTML = original;
+        }
     },
 
     handleProfileUpdate(formData) {
@@ -430,15 +752,130 @@ const controller = {
             return;
         }
 
+        const provider     = (document.getElementById('img-gen-provider')?.value) || 'auto';
+        this._imgGenCancelled = false;
+
         const originalText = btnElement.innerHTML;
-        btnElement.innerHTML = '⏳ GENERATING...';
+        const cancelBtn    = document.getElementById('btn-cancel-image-gen');
+        const providerSel  = document.getElementById('img-gen-provider');
+        const previewEl    = document.getElementById('prog-image-preview');
+
+        btnElement.innerHTML = '<i class="bi bi-stars"></i> GENERATING...';
         btnElement.disabled  = true;
+        if (cancelBtn)   cancelBtn.style.display = 'inline-block';
+        if (providerSel) providerSel.disabled     = true;
+
+        const stages = [
+            { pct: 15, label: 'Composing prompt...' },
+            { pct: 40, label: 'Contacting AI...' },
+            { pct: 65, label: 'Rendering image...' },
+            { pct: 85, label: 'Finalizing details...' },
+            { pct: 95, label: 'Almost done...' },
+        ];
+
+        const providerLabel = {
+            'gemini': 'Gemini (AI Image)',
+            'puter': 'Puter.ai',
+            'pollinations': 'Pollinations.ai',
+            'auto': 'Auto (Smart Select)'
+        }[provider] || 'Auto';
+
+        previewEl.innerHTML = `
+            <div id="img-gen-progress" style="border:var(--border-main);border-radius:var(--radius-md);padding:1.2rem 1.4rem;background:var(--white);max-width:400px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem;">
+                    <span id="img-gen-label" style="font-size:0.82rem;font-weight:600;color:var(--primary-navy);letter-spacing:0.5px;">Initializing...</span>
+                    <span id="img-gen-pct" style="font-size:0.82rem;font-weight:700;color:var(--accent-blue);">0%</span>
+                </div>
+                <div style="font-size:0.75rem;color:#888;margin-bottom:0.6rem;">Provider: ${providerLabel}</div>
+                <div style="width:100%;height:6px;background:var(--secondary-grey,#eee);border-radius:99px;overflow:hidden;">
+                    <div id="img-gen-bar" style="height:100%;width:0%;background:var(--accent-blue);border-radius:99px;transition:width 0.5s ease;"></div>
+                </div>
+            </div>
+        `;
+
+        const bar     = document.getElementById('img-gen-bar');
+        const labelEl = document.getElementById('img-gen-label');
+        const pctEl   = document.getElementById('img-gen-pct');
+
+        let stageIdx = 0;
+        const advanceStage = () => {
+            if (stageIdx >= stages.length) return;
+            const { pct, label } = stages[stageIdx++];
+            bar.style.width     = pct + '%';
+            labelEl.textContent = label;
+            pctEl.textContent   = pct + '%';
+        };
+
+        advanceStage();
+        const stageTimer = setInterval(advanceStage, 3000);
+
+        const cleanup = () => {
+            clearInterval(stageTimer);
+            btnElement.innerHTML = originalText;
+            btnElement.disabled  = false;
+            if (cancelBtn)   cancelBtn.style.display = 'none';
+            if (providerSel) providerSel.disabled     = false;
+        };
 
         try {
-            const prompt     = `A professional, high-quality photograph for a community program. Theme: ${category}. Title: ${title}. ${desc}. Bright, inviting lighting. No text in the image.`;
-            const imgElement = await puter.ai.txt2img(prompt);
+            const prompt = `A professional, high-quality photograph for a community program. Theme: ${category}. Title: ${title}. ${desc}. Bright, inviting lighting. No text in the image.`;
+            let imgSrc = null;
 
-            const response = await fetch(imgElement.src);
+            if (provider === 'gemini' || provider === 'auto') {
+                labelEl.textContent = 'Generating with Gemini...';
+                try {
+                    const resp = await fetch('../../gemini-image-proxy.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ prompt })
+                    });
+                    const data = await resp.json();
+                    if (data.error) throw new Error(data.error);
+                    imgSrc = `data:${data.mimeType};base64,${data.imageData}`;
+                } catch (err) {
+                    if (provider === 'gemini') throw err;
+                    console.warn('Gemini failed, falling back to other providers...', err);
+                }
+            }
+
+            if (!imgSrc && (provider === 'puter' || provider === 'auto')) {
+                labelEl.textContent = 'Trying Puter.ai...';
+                try {
+                    const imgElement = await puter.ai.txt2img(prompt);
+                    imgSrc = imgElement.src;
+                } catch (err) {
+                    if (provider === 'puter') throw err;
+                    console.warn('Puter.ai failed...', err);
+                }
+            }
+
+            if (!imgSrc && (provider === 'pollinations' || provider === 'auto')) {
+                labelEl.textContent = 'Trying Pollinations.ai...';
+                const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=768&nologo=true`;
+                // Use the image element approach to "warm up" the cache and check if it exists
+                await new Promise((resolve, reject) => {
+                    const i = new Image();
+                    i.onload = resolve;
+                    i.onerror = () => reject(new Error('Pollinations failed to load image.'));
+                    i.src = url;
+                });
+                imgSrc = url;
+            }
+
+            if (!imgSrc) throw new Error('All image generation providers failed.');
+
+            if (this._imgGenCancelled) throw new Error('cancelled');
+
+            clearInterval(stageTimer);
+            bar.style.width      = '100%';
+            labelEl.textContent  = 'Image ready!';
+            pctEl.textContent    = '100%';
+            bar.style.background = 'var(--success)';
+
+            await new Promise(r => setTimeout(r, 400));
+            if (this._imgGenCancelled) throw new Error('cancelled');
+
+            const response = await fetch(imgSrc);
             const blob     = await response.blob();
             const file     = new File([blob], 'generated_cover.jpg', { type: 'image/jpeg' });
 
@@ -446,17 +883,22 @@ const controller = {
             dataTransfer.items.add(file);
             document.getElementById('prog-image').files = dataTransfer.files;
 
-            document.getElementById('prog-image-preview').innerHTML = `
-                <img src="${imgElement.src}" style="width:100%;max-width:400px;height:200px;object-fit:cover;border:var(--border-main);">
+            previewEl.innerHTML = `
+                <img src="${imgSrc}" style="width:100%;max-width:400px;height:200px;object-fit:cover;border:var(--border-main);border-radius:var(--radius-md);">
                 <p style="font-size:0.8rem;color:var(--success);margin-top:0.5rem;font-weight:bold;">AI image generated and attached!</p>
             `;
             view.renderToast('AI Image generated successfully!');
         } catch (error) {
-            console.error('AI Generation Error:', error);
-            view.renderToast('Failed to generate image. Try again.', 'error');
+            clearInterval(stageTimer);
+            previewEl.innerHTML = '';
+            if (error.message === 'cancelled') {
+                view.renderToast('Image generation cancelled.', 'error');
+            } else {
+                console.error('AI Generation Error:', error);
+                view.renderToast('Failed to generate image: ' + (error.message || 'Unknown error'), 'error');
+            }
         } finally {
-            btnElement.innerHTML = originalText;
-            btnElement.disabled  = false;
+            cleanup();
         }
     },
 
@@ -517,7 +959,20 @@ const controller = {
         const success = await model.updateEnrollmentStatus(enrollmentId, status);
         if (success) {
             view.renderToast(`Enrollment ${status}.`);
-            await this.showProgramDetail(programId);
+            
+            const currentHash = window.location.hash || '#home';
+            if (currentHash === '#all-enrollments') {
+                const enrollments = await model.getAllEnrollments();
+                view.renderAllEnrollments(enrollments || []);
+            } else if (currentHash.startsWith('#program/')) {
+                await this.showProgramDetail(programId);
+            } else {
+                // Fallback for cases like dashboard widgets
+                await model.sync();
+                const user = model.getCurrentUser();
+                if (currentHash === '#home') view.renderHome(user);
+            }
+
             const counts = await model.getEnrollmentCounts();
             view.renderNavBar(model.getCurrentUser().role, counts);
         } else {
@@ -1140,38 +1595,146 @@ const controller = {
     /* =========================================================================
        EXTENDED USER MANAGEMENT
        ========================================================================= */
-    async _refreshUsers() {
-        const users = await model.getUsers();
-        view.renderUserManagement(users || []);
+    async _refreshUsers({ keepFocus = null, highlightId = null } = {}) {
+        const filters = this.userFilters;
+        const users = await model.getUsers(filters);
+        view.renderUserManagement(users || [], filters);
+
+        if (keepFocus) {
+            const el = document.getElementById(keepFocus);
+            if (el) {
+                el.focus();
+                if (typeof el.setSelectionRange === 'function') {
+                    el.setSelectionRange(el.value.length, el.value.length);
+                }
+            }
+        }
+
+        if (highlightId) {
+            setTimeout(() => {
+                const row = document.querySelector(`tr[data-id="${highlightId}"]`);
+                if (row) {
+                    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    row.style.transition = 'background-color 1.2s cubic-bezier(0.4, 0, 0.2, 1)';
+                    row.style.backgroundColor = 'rgba(46, 213, 115, 0.15)';
+                    setTimeout(() => { row.style.backgroundColor = ''; }, 3000);
+                }
+            }, 600);
+        }
     },
 
     async handleUserCreate(formData) {
+        const btn = document.getElementById('submit-btn');
+        const originalText = btn ? btn.innerText : 'COMPLETE PORTAL REGISTRATION';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = 'PROCESSING...';
+        } else {
+            console.warn('[User Management] Submit button not found in DOM.');
+        }
+
+        // Clear previous inline errors
+        document.querySelectorAll('.inline-error').forEach(el => el.textContent = '');
+
+        const id       = formData.get('id');
         const name     = formData.get('name')?.trim();
         const email    = formData.get('email')?.trim();
         const password = formData.get('password');
+        const confirm  = formData.get('confirm_password');
         const role     = formData.get('role');
 
-        if (!name || !email || !password || !role) {
-            view.renderToast('Please fill in all fields.', 'error');
-            return;
-        }
-        if (password.length < 8) {
-            view.renderToast('Password must be at least 8 characters.', 'error');
-            return;
-        }
+        console.log('[User Management] Submitting form...', { id, name, email, role });
 
-        const result = await model.createUser({ name, email, password, role });
-        if (result) {
-            view.renderToast(`User "${name}" created.`);
-            await this._refreshUsers();
-        } else {
-            view.renderToast('Failed to create user. Email may already be taken.', 'error');
+        try {
+            // --- Client-side validation ---
+            if (!name || !email || !role) {
+                if (!name)  document.getElementById('error-name').textContent  = 'NAME IS REQUIRED.';
+                if (!email) document.getElementById('error-email').textContent = 'VALID EMAIL IS REQUIRED.';
+                if (!role)  document.getElementById('error-role').textContent  = 'ASSIGNED ROLE IS REQUIRED.';
+                return;
+            }
+            if (/\d/.test(name)) {
+                document.getElementById('error-name').textContent = 'NAME CANNOT CONTAIN NUMBERS.';
+                return;
+            }
+            if (!id && (!password || password.length < 8)) {
+                const pErr = document.getElementById('error-password');
+                if (pErr) pErr.textContent = 'SECURE PASSWORD IS REQUIRED (8+ CHARS).';
+                view.renderToast('Registration Rejected: Password too weak.', 'error');
+                return;
+            }
+            if ((password || confirm) && password !== confirm) {
+                const errSpan = document.getElementById('error-confirm_password');
+                if (errSpan) errSpan.textContent = 'PASSWORDS DO NOT MATCH.';
+                return;
+            }
+            if (id && password && password.length < 8) {
+                const errSpan = document.getElementById('error-password');
+                if (errSpan) errSpan.textContent = 'PASSWORD MUST BE AT LEAST 8 CHARACTERS.';
+                return;
+            }
+
+            // --- API call (throws on any failure) ---
+            if (id) {
+                const result = await model.apiCall('update_user', formData);
+                console.log('[User Management] Update API Response:', result);
+
+                view.renderToast('PROFILE UPDATED SUCCESSFULLY.');
+                const panel = document.getElementById('user-registration-section');
+                if (panel) {
+                    panel.style.opacity    = '0';
+                    panel.style.transform  = 'translateX(50px)';
+                    panel.style.transition = 'all 0.3s ease';
+                    setTimeout(() => {
+                        panel.style.display = 'none';
+                        this._refreshUsers({ highlightId: id });
+                    }, 350);
+                }
+            } else {
+                const result = await model.createUser(formData);
+                console.log('[User Management] Create API Response:', result);
+
+                view.renderToast(`New Access Created: "${name}" is now registered.`);
+                const searchInput = document.getElementById('user-search');
+                if (searchInput) searchInput.value = '';
+
+                const panel = document.getElementById('user-registration-section');
+                if (panel) {
+                    panel.style.opacity    = '0';
+                    panel.style.transform  = 'scale(0.95)';
+                    panel.style.transition = 'all 0.3s ease';
+
+                    const newId = result?.user?.id || result?.user_id;
+                    setTimeout(() => {
+                        panel.style.display = 'none';
+                        const form = document.getElementById('create-user-form');
+                        if (form) form.reset();
+                        this._refreshUsers({ highlightId: newId });
+                    }, 350);
+                }
+            }
+
+        } catch (err) {
+            console.error('[User Management] Error:', err);
+            if (err.errors) {
+                // Field-level validation errors from server
+                this._displayValidationErrors(err.errors);
+            } else if (err.message) {
+                view.renderToast(err.message, 'error');
+            } else {
+                view.renderToast('System Interruption: A connection error occurred.', 'error');
+            }
+        } finally {
+            if (btn) {
+                btn.disabled  = false;
+                btn.innerText = id ? 'SAVE IDENTITY CHANGES' : 'COMPLETE PORTAL REGISTRATION';
+            }
         }
     },
 
     async handleUserDelete(id) {
         const result = await model.deleteUser(id);
-        if (result !== null) {
+        if (result && !result.errors) {
             view.renderToast('User deleted.');
             await this._refreshUsers();
         } else {
@@ -1181,11 +1744,22 @@ const controller = {
 
     async handleUserRoleChange(id, role, name, email) {
         const result = await model.updateUserRole(id, role, name, email);
-        if (result !== null) {
+        if (result && !result.errors) {
             view.renderToast(`Role updated to "${role}".`);
             await this._refreshUsers();
         } else {
-            view.renderToast('Failed to update role.', 'error');
+            view.renderToast('Access Update Failed.', 'error');
+        }
+    },
+
+    _displayValidationErrors(errors, defaultMsg = 'Operation failed.') {
+        if (errors) {
+            for (const [field, msg] of Object.entries(errors)) {
+                const errSpan = document.getElementById(`error-${field}`);
+                if (errSpan) errSpan.textContent = msg.toUpperCase();
+            }
+        } else {
+            view.renderToast(defaultMsg, 'error');
         }
     },
 
@@ -1406,6 +1980,48 @@ const controller = {
             target.innerHTML = 'Audit failed or rate limit exceeded.';
         } finally {
             btn.disabled = false;
+        }
+    },
+
+    /* =========================================================================
+       FORUM MODERATION
+       ========================================================================= */
+    async _refreshForum() {
+        const [posts, comments, stats] = await Promise.all([
+            model.getForumPosts(),
+            model.getForumComments(),
+            model.getForumStats()
+        ]);
+        view.renderForumModeration(posts || [], comments || [], stats || {});
+    },
+
+    async handleForumStatusUpdate(postId, status) {
+        const result = await model.forumUpdateStatus(postId, status);
+        if (result) {
+            view.renderToast(`Post status changed to "${status}".`);
+            await this._refreshForum();
+        } else {
+            view.renderToast('Failed to update post status.', 'error');
+        }
+    },
+
+    async handleForumDeletePost(postId) {
+        const result = await model.forumDeletePost(postId);
+        if (result) {
+            view.renderToast('Post deleted.');
+            await this._refreshForum();
+        } else {
+            view.renderToast('Failed to delete post.', 'error');
+        }
+    },
+
+    async handleForumDeleteComment(commentId) {
+        const result = await model.forumDeleteComment(commentId);
+        if (result) {
+            view.renderToast('Comment removed.');
+            await this._refreshForum();
+        } else {
+            view.renderToast('Failed to remove comment.', 'error');
         }
     }
 };

@@ -2,8 +2,7 @@
  * app.js
  * Entry point for CivicPortal BackOffice
  */
-
-import controller from './controller.js';
+import controller from './controller.js?v=3';
 
 // Setup Intersection Observer for Scroll Animations
 const setupScrollAnimations = () => {

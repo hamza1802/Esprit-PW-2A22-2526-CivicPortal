@@ -14,25 +14,43 @@ const model = {
     },
 
     async apiCall(action, data = {}) {
-        try {
-            let options = { method: 'POST', body: null };
+        let options = { method: 'POST', body: null };
 
-            if (data instanceof FormData) {
-                data.append('action', action);
-                options.body = data;
-            } else {
-                options.headers = { 'Content-Type': 'application/json' };
-                options.body = JSON.stringify({ action, data });
-            }
-
-            const response = await fetch('../../Verification.php', options);
-            const result   = await response.json();
-            if (!result.success) throw new Error(result.error);
-            return result.data;
-        } catch (error) {
-            console.error('API Error:', error);
-            return null;
+        if (data instanceof FormData) {
+            // Don't mutate caller's FormData — clone it
+            const fd = new FormData();
+            for (const [k, v] of data.entries()) fd.append(k, v);
+            fd.append('action', action);
+            options.body = fd;
+        } else {
+            options.headers = { 'Content-Type': 'application/json' };
+            options.body = JSON.stringify({ action, data });
         }
+
+        const response = await fetch('../../Verification.php', options);
+        if (!response.ok && response.status !== 400) {
+            throw new Error(`HTTP ${response.status}: Server returned an error.`);
+        }
+
+        const result = await response.json();
+
+        // Verification.php returns { success: true, data: {...} } or { success: false, error: "..." }
+        if (!result.success) {
+            const err = new Error(result.error || 'Request failed.');
+            if (result.errors) err.errors = result.errors;
+            throw err;
+        }
+
+        // result.data is what UserController returned.
+        // If it contains { errors: {...} } that means the controller returned validation errors.
+        // We surface this as a thrown error with err.errors so callers can handle field errors.
+        if (result.data && result.data.errors) {
+            const err = new Error('Validation failed.');
+            err.errors = result.data.errors;
+            throw err;
+        }
+
+        return result.data;
     },
 
     // -------------------------------------------------------------------------
@@ -101,6 +119,10 @@ const model = {
         return await this.apiCall('get_pending_enrollments');
     },
 
+    async getAllEnrollments() {
+        return await this.apiCall('get_all_enrollments');
+    },
+
     async getEnrollmentsByProgram(programId) {
         return await this.apiCall('get_enrollments_by_program', { programId });
     },
@@ -123,6 +145,26 @@ const model = {
     // -------------------------------------------------------------------------
     getServiceRequests() { return this.state.serviceRequests; },
 
+    /**
+     * Re-fetch the request queue with optional search/status/sort/order filters.
+     * The backend (AppModel::getRequests) whitelists the sort column itself.
+     */
+    async fetchRequests({ search = '', status = '', sort = 'created_at', order = 'DESC' } = {}) {
+        const data = await this.apiCall('get_requests', { search, status, sort, order });
+        if (data) this.state.serviceRequests = data;
+        return data || [];
+    },
+
+    /** Detailed view of a single request (includes documents[]). */
+    async getRequestDetail(id) {
+        return await this.apiCall('get_request', { id });
+    },
+
+    /** Trigger the Gemini-backed analysis on the given request. */
+    async aiAnalyzeRequest(requestId) {
+        return await this.apiCall('ai_analyze_request', { requestId });
+    },
+
     async updateRequestStatus(requestId, status) {
         const response = await this.apiCall('update_status', { id: requestId, status });
         if (response !== null) {
@@ -142,16 +184,32 @@ const model = {
     // -------------------------------------------------------------------------
     // User Management (admin only)
     // -------------------------------------------------------------------------
-    async getUsers() {
-        const data = await this.apiCall('get_users');
+    async getUsers({ search = '', sort = 'u.id DESC' } = {}) {
+        const data = await this.apiCall('get_users', { search, sort });
         if (data) this.state.users = data;
         return data;
     },
 
     getStoredUsers() { return this.state.users; },
+    
+    async getUser(id) {
+        return await this.apiCall('get_user', { id });
+    },
 
     async toggleUserActive(userId, active) {
         return await this.apiCall('toggle_user_active', { id: userId, active });
+    },
+
+    async createUser(formData) {
+        return await this.apiCall('create_user', formData);
+    },
+
+    async deleteUser(id) {
+        return await this.apiCall('delete_user', { id });
+    },
+
+    async updateUserRole(id, role, name, email) {
+        return await this.apiCall('update_user', { id, role, name, email });
     },
 
     // -------------------------------------------------------------------------
@@ -233,15 +291,6 @@ const model = {
     async deleteTransportType(id)    { return await this.apiCall('delete_transport_type', { id }); },
 
     // -------------------------------------------------------------------------
-    // Extended user admin actions
-    // -------------------------------------------------------------------------
-    async createUser(data)                   { return await this.apiCall('create_user', data); },
-    async deleteUser(id)                     { return await this.apiCall('delete_user', { id }); },
-    async updateUserRole(id, role, name, email) {
-        return await this.apiCall('update_user', { id, name, email, role });
-    },
-
-    // -------------------------------------------------------------------------
     // Profile / auth helpers
     // -------------------------------------------------------------------------
     setCurrentUser(role) {
@@ -310,7 +359,37 @@ const model = {
     async deleteTrajet(idTrajet) { return await this.apiCall('delete_trajet', { idTrajet }); },
 
     async getTickets() { return await this.apiCall('list_tickets_enriched'); },
-    async cancelTicket(idTicket) { return await this.apiCall('cancel_ticket', { idTicket }); }
+    async cancelTicket(idTicket) { return await this.apiCall('cancel_ticket', { idTicket }); },
+
+    // -------------------------------------------------------------------------
+    // Forum Moderation (admin)
+    // -------------------------------------------------------------------------
+    async getForumPosts(category = null, status = null) {
+        const data = {};
+        if (category) data.category = category;
+        if (status) data.status = status;
+        return await this.apiCall('get_forum_posts', data);
+    },
+
+    async getForumComments(postId = null) {
+        return await this.apiCall('get_forum_comments', postId ? { post_id: postId } : {});
+    },
+
+    async forumUpdateStatus(postId, status) {
+        return await this.apiCall('forum_update_status', { post_id: postId, status });
+    },
+
+    async forumDeletePost(postId) {
+        return await this.apiCall('forum_delete_post', { post_id: postId });
+    },
+
+    async forumDeleteComment(commentId) {
+        return await this.apiCall('forum_delete_comment', { comment_id: commentId });
+    },
+
+    async getForumStats() {
+        return await this.apiCall('get_forum_stats');
+    }
 };
 
 export default model;

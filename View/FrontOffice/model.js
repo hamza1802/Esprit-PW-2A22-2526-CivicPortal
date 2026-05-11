@@ -180,6 +180,60 @@ const model = {
         return data;
     },
 
+    async getRequestDetail(id) {
+        return await this.apiCall('get_request', { id });
+    },
+
+    async updateRequest(id, description) {
+        return await this.apiCall('update_request', { id, description });
+    },
+
+    async deleteRequest(id) {
+        return await this.apiCall('delete_request', { id });
+    },
+
+    async deleteDocument(id) {
+        return await this.apiCall('delete_document', { id });
+    },
+
+    /** Look up the requiredDocs array for a service type from the loaded list. */
+    getRequiredDocsFor(serviceType) {
+        const t = (this.state.serviceTypes || []).find(s => s.value === serviceType);
+        return t?.requiredDocs || [];
+    },
+
+    /** Ask the AI to improve a description and review (optional) document files. */
+    async aiImproveRequest(serviceType, description, requiredDocuments = []) {
+        return await this.apiCall('ai_improve_description', {
+            serviceType,
+            description,
+            requiredDocuments
+        });
+    },
+
+    /**
+     * Upload one or more supporting documents (PDF / image) for an existing request.
+     * Uses the multipart "upload_files" handler in Verification.php.
+     */
+    async uploadRequestDocuments(requestId, files, docType = 'other') {
+        if (!files || files.length === 0) return [];
+        const fd = new FormData();
+        fd.append('action', 'upload_files');
+        fd.append('requestId', String(requestId));
+        fd.append('docType', docType);
+        for (const f of files) fd.append('files[]', f);
+
+        try {
+            const response = await fetch('../../Verification.php', { method: 'POST', body: fd });
+            const result = await response.json();
+            if (!result.success) throw new Error(result.error);
+            return result.data || [];
+        } catch (e) {
+            console.error('Document upload error:', e);
+            return null;
+        }
+    },
+
     // -------------------------------------------------------------------------
     // Profile
     // -------------------------------------------------------------------------

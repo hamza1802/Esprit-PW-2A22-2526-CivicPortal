@@ -7,6 +7,7 @@
  */
 
 require_once __DIR__ . '/../Model/AppModel.php';
+require_once __DIR__ . '/../Model/AIService.php';
 require_once __DIR__ . '/../Model/Database.php';
 require_once __DIR__ . '/../Model/Transport.php';
 require_once __DIR__ . '/../Model/TransportType.php';
@@ -14,6 +15,7 @@ require_once __DIR__ . '/../Model/Trajet.php';
 require_once __DIR__ . '/../Model/Ticket.php';
 require_once __DIR__ . '/UserController.php';
 require_once __DIR__ . '/ForumPostController.php';
+require_once __DIR__ . '/ForumCommentController.php';
 
 class MainController {
 
@@ -23,13 +25,26 @@ class MainController {
     private static function authorize(string $action): void {
         static $map = [
             // Public — no session needed
-            'login'    => 'public',
-            'register' => 'public',
+            'login'           => 'public',
+            'register'        => 'public',
+            'request_reset'   => 'public',
+            'reset_password'  => 'public',
+            'verify_otp'      => 'public',
 
             // Any authenticated user
             'logout'                => 'any',
             'get_my_requests'       => 'any',
             'add_request'           => 'any',
+            'get_request'           => 'any',  // ownership re-checked below
+            'update_request'        => 'any',  // citizen edits their own pending request
+            'delete_request'        => 'any',  // citizen deletes their own pending request
+            'get_request_history'   => 'any',  // ownership re-checked below
+            'get_documents'         => 'any',  // ownership re-checked below
+            'add_document'          => 'any',  // citizens may attach to their own request
+            'upload_files'          => 'any',  // multipart upload alias
+            'replace_file'          => 'any',
+            'delete_document'       => 'any',  // ownership re-checked below
+            'ai_improve_description'=> 'any',  // citizen-side AI helper
             'get_programs'          => 'any',
             'get_program_detail'    => 'any',
             'get_enrollments'       => 'any',
@@ -69,6 +84,7 @@ class MainController {
             'get_assigned_requests'      => 'staff',
             'get_agent_appointments'     => 'staff',
             'update_appointment_status'  => 'staff',
+            'ai_analyze_request'         => 'staff',
 
             // Admin only
             'add_program'          => 'admin',
@@ -77,7 +93,8 @@ class MainController {
             'add_category'         => 'admin',
             'update_category'      => 'admin',
             'delete_category'      => 'admin',
-            'get_users'            => 'admin',
+            'get_users'            => 'staff',
+            'get_user'             => 'staff',
             'create_user'          => 'admin',
             'update_user'          => 'admin',
             'delete_user'          => 'admin',
@@ -98,6 +115,14 @@ class MainController {
             'add_trajet'           => 'admin',
             'update_trajet'        => 'admin',
             'delete_trajet'        => 'admin',
+
+            // Forum moderation (admin)
+            'get_forum_posts'      => 'admin',
+            'get_forum_comments'   => 'admin',
+            'forum_update_status'  => 'admin',
+            'forum_delete_post'    => 'admin',
+            'forum_delete_comment' => 'admin',
+            'get_forum_stats'      => 'admin',
         ];
 
         $required = $map[$action] ?? 'admin';
@@ -130,6 +155,28 @@ class MainController {
                 return UserController::login($data);
             case 'register':
                 return UserController::register($data);
+            case 'request_reset':
+                return UserController::requestPasswordReset($data['email'] ?? '');
+            case 'reset_password':
+                return UserController::resetPassword(
+                    $data['token'] ?? '',
+                    $data['password'] ?? '',
+                    $data['confirm_password'] ?? ''
+                );
+            case 'verify_otp':
+                $userId = $_SESSION['pending_2fa_user_id'] ?? null;
+                if (!$userId) throw new Exception("No pending verification.");
+                if (UserController::verifyOtp((int)$userId, $data['otp_code'] ?? '')) {
+                    $user = UserController::getUserById((int)$userId);
+                    session_regenerate_id(true);
+                    $_SESSION['user_id']    = $user->getId();
+                    $_SESSION['user_name']  = $user->getDisplayName();
+                    $_SESSION['user_email'] = $user->getEmail();
+                    $_SESSION['user_role']  = $user->getRole();
+                    unset($_SESSION['pending_2fa_user_id']);
+                    return ['success' => 'Verified.', 'user' => $user];
+                }
+                return ['errors' => ['otp_code' => 'Invalid or expired code.']];
             case 'logout':
                 UserController::logout();
                 return ['success' => 'Logged out successfully'];
@@ -146,10 +193,69 @@ class MainController {
 
             // --- Service Requests ---
             case 'get_requests':
-                return AppModel::getRequests();
+                return AppModel::getRequests([
+                    'search' => trim((string)($data['search'] ?? '')),
+                    'status' => trim((string)($data['status'] ?? '')),
+                    'sort'   => (string)($data['sort']  ?? 'created_at'),
+                    'order'  => (string)($data['order'] ?? 'DESC'),
+                ]);
             case 'get_my_requests':
                 $userId = $_SESSION['user_id'];
                 return AppModel::getRequestsByUser((int)$userId);
+            case 'get_request': {
+                $reqId   = (int)($data['id'] ?? 0);
+                $request = AppModel::getRequestById($reqId);
+                if (!$request) throw new Exception("Request not found.");
+                $role    = $_SESSION['user_role'] ?? '';
+                $userId  = (int)($_SESSION['user_id'] ?? 0);
+                $owner   = (int)($request['user_id'] ?? 0);
+                if ($role === 'citizen' && $owner !== $userId) {
+                    throw new Exception('Forbidden: not your request.');
+                }
+                $request['documents'] = AppModel::getDocumentsByRequest($reqId);
+                $request['history']   = AppModel::getRequestHistory($reqId);
+                return $request;
+            }
+            case 'get_request_history': {
+                $reqId   = (int)($data['id'] ?? $data['requestId'] ?? 0);
+                $request = AppModel::getRequestById($reqId);
+                if (!$request) throw new Exception("Request not found.");
+                $role    = $_SESSION['user_role'] ?? '';
+                $userId  = (int)($_SESSION['user_id'] ?? 0);
+                if ($role === 'citizen' && (int)$request['user_id'] !== $userId) {
+                    throw new Exception('Forbidden: not your request.');
+                }
+                return AppModel::getRequestHistory($reqId);
+            }
+            case 'update_request': {
+                $reqId   = (int)($data['id'] ?? 0);
+                $request = AppModel::getRequestById($reqId);
+                if (!$request) throw new Exception("Request not found.");
+                $role    = $_SESSION['user_role'] ?? '';
+                $userId  = (int)($_SESSION['user_id'] ?? 0);
+                if ($role === 'citizen' && (int)$request['user_id'] !== $userId) {
+                    throw new Exception('Forbidden: not your request.');
+                }
+                if ($role === 'citizen' && ($request['status'] ?? 'pending') !== 'pending') {
+                    throw new Exception('Only pending requests can be edited.');
+                }
+                return AppModel::updateRequest($reqId, (string)($data['description'] ?? ''));
+            }
+            case 'delete_request': {
+                $reqId   = (int)($data['id'] ?? 0);
+                $request = AppModel::getRequestById($reqId);
+                if (!$request) throw new Exception("Request not found.");
+                $role    = $_SESSION['user_role'] ?? '';
+                $userId  = (int)($_SESSION['user_id'] ?? 0);
+                if ($role === 'citizen' && (int)$request['user_id'] !== $userId) {
+                    throw new Exception('Forbidden: not your request.');
+                }
+                if ($role === 'citizen' && ($request['status'] ?? 'pending') !== 'pending') {
+                    throw new Exception('Only pending requests can be deleted.');
+                }
+                AppModel::deleteRequest($reqId);
+                return ['success' => 'Request deleted.'];
+            }
             case 'get_my_posts':
                 $userId = $_SESSION['user_id'];
                 return ForumPostController::getPostsByUserId((int)$userId);
@@ -164,6 +270,71 @@ class MainController {
                 return AppModel::getRequestsByAssignee((int)$agentId);
             case 'assign_request':
                 return AppModel::assignRequest((int)$data['request_id'], (int)$data['agent_id']);
+
+            // --- Documents ---
+            case 'get_documents': {
+                $reqId   = (int)($data['requestId'] ?? $data['request_id'] ?? 0);
+                $request = AppModel::getRequestById($reqId);
+                if (!$request) throw new Exception("Request not found.");
+                $role    = $_SESSION['user_role'] ?? '';
+                $userId  = (int)($_SESSION['user_id'] ?? 0);
+                if ($role === 'citizen' && (int)$request['user_id'] !== $userId) {
+                    throw new Exception('Forbidden: not your request.');
+                }
+                return AppModel::getDocumentsByRequest($reqId);
+            }
+            case 'add_document': {
+                $reqId   = (int)($data['requestId'] ?? $data['request_id'] ?? 0);
+                $request = AppModel::getRequestById($reqId);
+                if (!$request) throw new Exception("Request not found.");
+                $role    = $_SESSION['user_role'] ?? '';
+                $userId  = (int)($_SESSION['user_id'] ?? 0);
+                if ($role === 'citizen' && (int)$request['user_id'] !== $userId) {
+                    throw new Exception('Forbidden: not your request.');
+                }
+                return AppModel::addDocument(
+                    $reqId,
+                    (string)($data['filePath'] ?? ''),
+                    (string)($data['type']     ?? 'other')
+                );
+            }
+            case 'delete_document': {
+                $docId = (int)($data['id'] ?? 0);
+                $doc   = AppModel::getDocumentById($docId);
+                if (!$doc) throw new Exception("Document not found.");
+                $request = AppModel::getRequestById((int)$doc['requestId']);
+                $role    = $_SESSION['user_role'] ?? '';
+                $userId  = (int)($_SESSION['user_id'] ?? 0);
+                if ($role === 'citizen' && $request && (int)$request['user_id'] !== $userId) {
+                    throw new Exception('Forbidden: not your document.');
+                }
+                AppModel::deleteDocument($docId);
+                return ['success' => 'Document deleted.'];
+            }
+
+            // --- AI assistant (Service Requests) ---
+            case 'ai_improve_description':
+                return AIService::improveDescription(
+                    (string)($data['serviceType'] ?? ''),
+                    (string)($data['description'] ?? ''),
+                    is_array($data['requiredDocuments'] ?? null) ? $data['requiredDocuments'] : []
+                );
+            case 'ai_analyze_request': {
+                $reqId   = (int)($data['requestId'] ?? $data['id'] ?? 0);
+                $request = AppModel::getRequestById($reqId);
+                if (!$request) throw new Exception("Request $reqId not found.");
+                $documents = AppModel::getDocumentsByRequest($reqId);
+                $result    = AIService::analyzeRequest($request, $documents);
+                $rec       = strtoupper((string)($result['recommendation'] ?? 'review'));
+                AppModel::logRequestEvent(
+                    $reqId,
+                    'ai_analyzed',
+                    null,
+                    null,
+                    "AI analysis run — recommendation: {$rec}."
+                );
+                return $result;
+            }
 
             // --- Programs ---
             case 'get_programs':
@@ -189,6 +360,8 @@ class MainController {
                 return AppModel::getEnrollments($data['userId']);
             case 'get_pending_enrollments':
                 return AppModel::getPendingEnrollments();
+            case 'get_all_enrollments':
+                return AppModel::getAllEnrollments();
             case 'get_enrollments_by_program':
                 return AppModel::getEnrollmentsByProgram($data['programId']);
             case 'get_enrollment_counts':
@@ -277,13 +450,24 @@ class MainController {
 
             // --- User Management (Admin) ---
             case 'get_users':
-                return UserController::getAllUsers();
+                return UserController::getAllUsers(
+                    trim((string)($data['search'] ?? '')),
+                    (string)($data['sort'] ?? 'u.id DESC')
+                );
+            case 'get_user':
+                $userId = (int)($data['id'] ?? $data['user_id'] ?? 0);
+                $user = UserController::getUserById($userId);
+                if (!$user) throw new Exception("User not found.");
+                return $user;
             case 'create_user':
                 return UserController::createUser($data);
             case 'update_user':
-                return UserController::updateProfile((int)$data['id'], $data);
+                $userId = (int)($data['id'] ?? $data['user_id'] ?? 0);
+                if ($userId <= 0) throw new Exception("Target User ID is missing or invalid.");
+                return UserController::updateProfile($userId, $data);
             case 'delete_user':
-                return UserController::deleteUser((int)$data['id']);
+                $userId = (int)($data['id'] ?? $data['user_id'] ?? 0);
+                return UserController::deleteUser($userId);
             case 'toggle_user_active':
                 return UserController::toggleUserActive((int)$data['id'], (bool)$data['active']);
             case 'get_agents':
@@ -318,6 +502,33 @@ class MainController {
                 return ['success' => 'Slot deleted.'];
             case 'get_all_slots':
                 return AppModel::getAllSlots();
+
+            // --- Forum Moderation (Admin) ---
+            case 'get_forum_posts':
+                return ForumPostController::getAllPosts(
+                    $data['category'] ?? null,
+                    $data['status']   ?? null
+                );
+            case 'get_forum_comments':
+                if (!empty($data['post_id'])) {
+                    return ForumCommentController::getCommentsByPost((int)$data['post_id']);
+                }
+                return ForumCommentController::getAllComments();
+            case 'forum_update_status':
+                $result = ForumPostController::updateStatus((int)$data['post_id'], $data['status']);
+                if (!$result) throw new Exception('Failed to update post status.');
+                return ['success' => 'Post status updated.'];
+            case 'forum_delete_post':
+                $result = ForumPostController::deletePost((int)$data['post_id'], 0, true);
+                if (!$result) throw new Exception('Failed to delete post.');
+                return ['success' => 'Post deleted.'];
+            case 'forum_delete_comment':
+                $result = ForumCommentController::deleteComment((int)$data['comment_id'], 0, true);
+                if (!$result) throw new Exception('Failed to delete comment.');
+                return ['success' => 'Comment deleted.'];
+            case 'get_forum_stats':
+                require_once __DIR__ . '/AIModerator.php';
+                return AIModerator::getStats();
 
             // --- Notifications ---
             case 'get_notifications':

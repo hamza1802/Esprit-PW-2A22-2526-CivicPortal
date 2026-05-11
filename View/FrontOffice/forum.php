@@ -20,6 +20,8 @@ $filterStatus   = isset($_GET['status']) && $_GET['status'] !== ''   ? $_GET['st
 // Fetch posts
 $posts = ForumPostController::getAllPosts($filterCategory, $filterStatus);
 
+
+
 // Success message from redirects
 $successMsg = isset($_GET['success']) ? htmlspecialchars($_GET['success']) : '';
 ?>
@@ -35,8 +37,13 @@ $successMsg = isset($_GET['success']) ? htmlspecialchars($_GET['success']) : '';
     <link rel="stylesheet" href="../assets/css/forum.css">
 </head>
 <body>
+    <div class="aurora-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
 
-    <!-- Navigation — matches Parks & Recreation integration nav -->
+    <!-- Navigation — matches main platform nav -->
     <nav>
         <div class="nav-brand">
             <i class="bi bi-building"></i> CivicPortal
@@ -47,11 +54,21 @@ $successMsg = isset($_GET['success']) ? htmlspecialchars($_GET['success']) : '';
         </button>
         <ul class="nav-links">
             <li><a href="index.php">home</a></li>
+            <li><a href="index.php#programs">programs</a></li>
             <li><a href="forum.php" class="active">forum</a></li>
+            <li><a href="index.php#request-service">requests</a></li>
+            <li><a href="index.php#appointments">appointments</a></li>
+            <li><a href="index.php#transport">transport</a></li>
+            <li><a href="index.php#dashboard">dashboard</a></li>
+            <li><a href="index.php#profile">profile</a></li>
         </ul>
         <div class="user-controls">
             <?php if ($isLoggedIn): ?>
-                <div class="user-role-badge"><?= htmlspecialchars($_SESSION['user_role'] ?? 'citizen') ?></div>
+                <?php if (in_array($_SESSION['user_role'] ?? '', ['admin', 'agent'])): ?>
+                    <a href="../BackOffice/index.php" class="user-role-badge" style="text-decoration:none;">Staff Portal</a>
+                <?php else: ?>
+                    <div class="user-role-badge">Citizen</div>
+                <?php endif; ?>
                 <a href="#" onclick="event.preventDefault(); fetch('../../Verification.php', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({action: 'logout'}) }).then(() => window.location.href='login.php')" class="logout-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
             <?php else: ?>
                 <a href="login.php" class="btn btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.9rem;">Login</a>
@@ -82,9 +99,11 @@ $successMsg = isset($_GET['success']) ? htmlspecialchars($_GET['success']) : '';
                     <label for="filter-category">Category</label>
                     <select name="category" id="filter-category" onchange="this.form.submit()">
                         <option value="">All Categories</option>
-                        <option value="Infrastructure" <?= $filterCategory === 'Infrastructure' ? 'selected' : '' ?>>Infrastructure</option>
-                        <option value="Health" <?= $filterCategory === 'Health' ? 'selected' : '' ?>>Health</option>
-                        <option value="Education" <?= $filterCategory === 'Education' ? 'selected' : '' ?>>Education</option>
+                        <option value="General" <?= $filterCategory === 'General' ? 'selected' : '' ?>>General</option>
+                        <option value="Transport" <?= $filterCategory === 'Transport' ? 'selected' : '' ?>>Transport</option>
+                        <option value="Events" <?= $filterCategory === 'Events' ? 'selected' : '' ?>>Events</option>
+                        <option value="Announcements" <?= $filterCategory === 'Announcements' ? 'selected' : '' ?>>Announcements</option>
+                        <option value="Suggestions" <?= $filterCategory === 'Suggestions' ? 'selected' : '' ?>>Suggestions</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -124,6 +143,16 @@ $successMsg = isset($_GET['success']) ? htmlspecialchars($_GET['success']) : '';
                                 <div class="post-badges">
                                     <span class="status-badge"><?= htmlspecialchars($post['category']) ?></span>
                                     <span class="status-badge status-<?= $post['status'] === 'open' ? 'pending' : ($post['status'] === 'pinned' ? 'validated' : 'rejected') ?>"><?= strtoupper($post['status']) ?></span>
+                                    <?php if (!empty($post['ai_flag']) && $post['ai_flag'] !== 'clean'): ?>
+                                        <span class="ai-badge ai-badge-<?= $post['ai_flag'] ?>" title="<?= htmlspecialchars($post['ai_reason'] ?? '') ?>">
+                                            <i class="bi bi-robot"></i> <?= strtoupper($post['ai_flag']) ?>
+                                        </span>
+                                    <?php endif; ?>
+                                    <?php if (!empty($post['ai_urgency']) && $post['ai_urgency'] !== 'low'): ?>
+                                        <span class="ai-badge ai-urgency-<?= $post['ai_urgency'] ?>">
+                                            <i class="bi bi-exclamation-diamond"></i> <?= strtoupper($post['ai_urgency']) ?>
+                                        </span>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                             <p class="post-excerpt"><?= htmlspecialchars(substr($post['content'], 0, 200)) ?></p>

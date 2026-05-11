@@ -28,7 +28,7 @@ class ForumPostController {
      *   Category and status are validated against strict allowlists before interpolation.
      *   PDO prepared statements bind all user-controlled values as parameters.
      */
-    private static array $allowedCategories = ['Infrastructure', 'Health', 'Education'];
+    private static array $allowedCategories = ['General', 'Transport', 'Events', 'Announcements', 'Suggestions'];
     private static array $allowedStatuses   = ['open', 'closed', 'pinned'];
 
     public static function getAllPosts(?string $category = null, ?string $status = null): array {

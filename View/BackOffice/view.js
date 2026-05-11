@@ -43,6 +43,7 @@ const view = {
             <li><a href="#transport-management"><i class="bi bi-bus-front"></i> Transport</a></li>
             <li><a href="#slot-management"><i class="bi bi-clock-history"></i> Slots</a></li>
             <li><a href="#user-management"><i class="bi bi-people"></i> Users</a></li>
+            <li><a href="#forum-moderation"><i class="bi bi-chat-square-text"></i> Forum</a></li>
         `;
 
         nav.innerHTML = `
@@ -57,10 +58,13 @@ const view = {
                 <li><a href="#home"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                 ${role === 'agent' ? agentLinks : ''}
                 ${role === 'admin' ? adminLinks : ''}
-                <li><a href="#profile"><i class="bi bi-person-circle"></i> Profile</a></li>
+
             </ul>
             <div class="user-controls">
                 <div class="user-role-badge">${role}</div>
+                <a href="../FrontOffice/index.php" class="bo-frontoffice-btn">
+                    <i class="bi bi-arrow-left-circle"></i> Front Office
+                </a>
                 <button class="bo-logout-btn"
                     onclick="fetch('../../Verification.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'logout'})}).then(()=>window.location.href='../FrontOffice/login.php')">
                     <i class="bi bi-box-arrow-left"></i> Logout
@@ -131,6 +135,11 @@ const view = {
                 <p>Manage citizen and staff accounts. Change roles, activate, deactivate, or create new accounts.</p>
                 <a href="#user-management" class="btn mt-auto" style="align-self:flex-start;">Manage Users</a>
             </div>
+            <div class="editorial-card reveal">
+                <h3>Forum Moderation</h3>
+                <p>Manage citizen forum posts and comments. Pin important discussions, close resolved threads, and remove inappropriate content.</p>
+                <a href="#forum-moderation" class="btn btn-primary mt-auto" style="align-self:flex-start;">Moderate Forum</a>
+            </div>
         `;
 
         this.app.innerHTML = `
@@ -175,24 +184,100 @@ const view = {
         this.triggerObserver();
     },
 
-    renderWorkerDashboard(requests) {
-        const tableRows = requests.map(r => `
-            <tr>
-                <td><strong>#${r.id}</strong></td>
-                <td>${r.title}</td>
-                <td>${r.category || '—'}</td>
-                <td>${r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</td>
-                <td><span class="status-badge status-${r.status}">${r.status}</span></td>
-                <td>
-                    <button class="btn btn-small btn-success" data-action="validate" data-id="${r.id}" style="margin-right:4px;"><i class="bi bi-check-lg"></i> VALIDATE</button>
-                    <button class="btn btn-small btn-danger" data-action="reject" data-id="${r.id}"><i class="bi bi-x-lg"></i> REJECT</button>
-                </td>
-            </tr>
-        `).join('');
+    /**
+     * Service request queue. Accepts an optional `filters` object so the
+     * search/status/sort controls survive re-renders without losing input focus.
+     *
+     * @param {Array}  requests
+     * @param {Object} [filters] { search, status, sort, order }
+     */
+    renderWorkerDashboard(requests, filters = {}) {
+        const f = {
+            search: filters.search ?? '',
+            status: filters.status ?? '',
+            sort:   filters.sort   ?? 'created_at',
+            order:  filters.order  ?? 'DESC'
+        };
+
+        const sortOptions = [
+            { v: 'created_at', l: 'Date created' },
+            { v: 'id',         l: 'Reference #' },
+            { v: 'title',      l: 'Title' },
+            { v: 'status',     l: 'Status' },
+            { v: 'category',   l: 'Category' },
+            { v: 'user_name',  l: 'Citizen' }
+        ].map(o => `<option value="${o.v}" ${o.v === f.sort ? 'selected' : ''}>${o.l}</option>`).join('');
+
+        const statusOptions = ['', 'pending', 'in_progress', 'validated', 'rejected', 'resolved']
+            .map(s => `<option value="${s}" ${s === f.status ? 'selected' : ''}>${s ? s.replace('_', ' ').toUpperCase() : 'All statuses'}</option>`)
+            .join('');
+
+        const tableRows = (requests || []).map(r => {
+            const docCount = parseInt(r.documents_count ?? 0, 10);
+            const hasMain  = parseInt(r.has_attachment  ?? 0, 10) === 1;
+            const fileBadge = (hasMain || docCount > 0)
+                ? `<span class="text-small" style="display:inline-flex;align-items:center;gap:4px;color:var(--accent-blue);">
+                       <i class="bi bi-paperclip"></i>${(hasMain ? 1 : 0) + docCount}
+                   </span>`
+                : '<span class="text-small opacity-7">—</span>';
+            return `
+                <tr>
+                    <td><strong>#${r.id}</strong></td>
+                    <td>
+                        ${r.title || '—'}
+                        ${r.user_name ? `<div class="text-small opacity-7">by ${r.user_name}</div>` : ''}
+                    </td>
+                    <td>${r.category || '—'}</td>
+                    <td>${r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}</td>
+                    <td>${fileBadge}</td>
+                    <td><span class="status-badge status-${r.status}">${r.status}</span></td>
+                    <td style="white-space:nowrap;">
+                        <button class="btn btn-small" data-action="view-request" data-id="${r.id}" style="margin-right:4px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.4);color:var(--primary-navy);">
+                            <i class="bi bi-eye"></i> VIEW
+                        </button>
+                        <button class="btn btn-small btn-success" data-action="validate" data-id="${r.id}" style="margin-right:4px;"><i class="bi bi-check-lg"></i> VALIDATE</button>
+                        <button class="btn btn-small btn-danger"  data-action="reject"   data-id="${r.id}"><i class="bi bi-x-lg"></i> REJECT</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
 
         this.app.innerHTML = `
             <section class="page-container">
                 <h2 class="reveal">Service Request Queue</h2>
+
+                <div class="reveal" id="req-toolbar"
+                     style="display:flex;flex-wrap:wrap;gap:0.6rem;align-items:flex-end;margin-bottom:1.2rem;">
+                    <div style="flex:1 1 280px;min-width:240px;">
+                        <label for="req-search" class="text-small text-bold">Search</label>
+                        <input id="req-search" type="search" placeholder="Title, description, citizen, category..."
+                               value="${this._escapeHtml(f.search)}"
+                               style="width:100%;padding:0.55rem 0.7rem;border:var(--border-main);border-radius:8px;">
+                    </div>
+                    <div style="flex:0 0 180px;">
+                        <label for="req-filter-status" class="text-small text-bold">Status</label>
+                        <select id="req-filter-status" style="width:100%;padding:0.55rem 0.5rem;border:var(--border-main);border-radius:8px;">
+                            ${statusOptions}
+                        </select>
+                    </div>
+                    <div style="flex:0 0 180px;">
+                        <label for="req-sort" class="text-small text-bold">Sort by</label>
+                        <select id="req-sort" style="width:100%;padding:0.55rem 0.5rem;border:var(--border-main);border-radius:8px;">
+                            ${sortOptions}
+                        </select>
+                    </div>
+                    <div style="flex:0 0 110px;">
+                        <label for="req-order" class="text-small text-bold">Order</label>
+                        <select id="req-order" style="width:100%;padding:0.55rem 0.5rem;border:var(--border-main);border-radius:8px;">
+                            <option value="DESC" ${f.order === 'DESC' ? 'selected' : ''}>Desc</option>
+                            <option value="ASC"  ${f.order === 'ASC'  ? 'selected' : ''}>Asc</option>
+                        </select>
+                    </div>
+                    <button id="req-reset" class="btn btn-small" type="button" style="height:42px;">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </button>
+                </div>
+
                 <div class="reveal">
                     <div class="table-responsive">
                         <table class="data-table">
@@ -202,12 +287,13 @@ const view = {
                                     <th>Service Type</th>
                                     <th>Category</th>
                                     <th>Date</th>
+                                    <th>Files</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${tableRows.length > 0 ? tableRows : '<tr><td colspan="6" class="text-center" style="padding:2rem;">No requests found.</td></tr>'}
+                                ${tableRows.length > 0 ? tableRows : '<tr><td colspan="7" class="text-center" style="padding:2rem;">No requests found.</td></tr>'}
                             </tbody>
                         </table>
                     </div>
@@ -217,7 +303,317 @@ const view = {
         this.triggerObserver();
     },
 
+    /**
+     * Detail view of a single service request, with documents list, history
+     * timeline and an "Analyze with AI" panel. Includes inline PDF / image preview.
+     */
+    renderRequestDetail(request) {
+        const documents = request.documents || [];
+        const history   = request.history   || [];
+        const hasMain   = parseInt(request.has_attachment ?? 0, 10) === 1;
+
+        const docList = documents.map(d => {
+            const fileName = d.filePath || `doc-${d.id}`;
+            const url    = `../../get_document.php?id=${d.id}`;
+            const ext    = fileName.split('.').pop().toLowerCase();
+            const isPdf  = ext === 'pdf';
+            const isImg  = ['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext);
+            const preview = isImg
+                ? `<img src="${url}" alt="${this._escapeHtml(fileName)}" style="max-width:100%;max-height:160px;border:var(--border-main);border-radius:8px;display:block;margin-top:0.4rem;">`
+                : isPdf
+                    ? `<embed src="${url}" type="application/pdf" style="width:100%;height:240px;border:var(--border-main);border-radius:8px;display:block;margin-top:0.4rem;">`
+                    : '';
+            return `
+                <li style="padding:0.6rem;border:var(--border-main);border-radius:8px;background:#fff;margin-bottom:0.5rem;">
+                    <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;">
+                        <div>
+                            <i class="bi bi-${isPdf ? 'file-earmark-pdf' : (isImg ? 'image' : 'file-earmark')}"></i>
+                            <strong style="font-size:0.95rem;">${this._escapeHtml(fileName)}</strong>
+                            <span class="text-small opacity-7">— ${this._escapeHtml(d.type || 'other')}</span>
+                        </div>
+                        <a href="${url}" target="_blank" class="btn btn-small">
+                            <i class="bi bi-box-arrow-up-right"></i> Open
+                        </a>
+                    </div>
+                    ${preview}
+                </li>
+            `;
+        }).join('');
+
+        const mainImg = hasMain
+            ? `<div class="form-group">
+                  <label class="text-small text-bold">Primary attached image</label>
+                  <img src="../../get_image.php?type=service&id=${request.id}"
+                       alt="Primary attachment"
+                       style="max-width:100%;max-height:280px;border:var(--border-main);border-radius:8px;display:block;">
+               </div>`
+            : '';
+
+        this.app.innerHTML = `
+            <section class="page-container">
+                <div class="flex-between mb-32 flex-wrap gap-16">
+                    <h2 class="reveal mb-0">Request #${request.id} &mdash; ${this._escapeHtml(request.title || '')}</h2>
+                    <a href="#worker-dashboard" class="btn reveal" style="text-decoration:none;">
+                        <i class="bi bi-arrow-left"></i> Back to queue
+                    </a>
+                </div>
+
+                <div class="editorial-grid" style="grid-template-columns:1fr 1fr;gap:1.5rem;">
+                    <div class="form-card reveal">
+                        <h3 style="font-size:1.1rem;margin-top:0;"><i class="bi bi-info-circle"></i> Request details</h3>
+                        <table class="data-table" style="margin-bottom:1rem;">
+                            <tbody>
+                                <tr><th style="width:140px;">Status</th><td><span class="status-badge status-${request.status}">${request.status}</span></td></tr>
+                                <tr><th>Citizen</th><td>${this._escapeHtml(request.user_name || '—')}</td></tr>
+                                <tr><th>Category</th><td>${this._escapeHtml(request.category || '—')}</td></tr>
+                                <tr><th>Created</th><td>${request.created_at ? new Date(request.created_at).toLocaleString() : '—'}</td></tr>
+                                <tr><th>Assigned to</th><td>${this._escapeHtml(request.agent_name || '— unassigned')}</td></tr>
+                            </tbody>
+                        </table>
+
+                        <div class="form-group">
+                            <label class="text-small text-bold">Description</label>
+                            <div style="padding:0.7rem;border:var(--border-main);border-radius:8px;background:#fff;white-space:pre-wrap;">${this._escapeHtml(request.description || '—')}</div>
+                        </div>
+
+                        ${mainImg}
+
+                        <div class="form-group">
+                            <label class="text-small text-bold">
+                                Additional documents (${documents.length})
+                            </label>
+                            ${documents.length === 0
+                                ? '<div class="text-small opacity-7">No additional documents attached.</div>'
+                                : `<ul style="list-style:none;padding:0;margin:0;">${docList}</ul>`}
+                        </div>
+
+                        <div class="flex gap-8 flex-wrap" style="margin-top:1rem;">
+                            <button class="btn btn-small btn-success" data-action="validate" data-id="${request.id}">
+                                <i class="bi bi-check-lg"></i> VALIDATE
+                            </button>
+                            <button class="btn btn-small btn-danger" data-action="reject" data-id="${request.id}">
+                                <i class="bi bi-x-lg"></i> REJECT
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-card reveal">
+                        <div class="flex-between flex-wrap gap-16">
+                            <h3 style="font-size:1.1rem;margin-top:0;"><i class="bi bi-stars"></i> AI assistant</h3>
+                            <button id="btn-ai-analyze-req" class="btn btn-small btn-primary" data-id="${request.id}">
+                                <i class="bi bi-stars"></i> Analyze with AI
+                            </button>
+                        </div>
+                        <p class="text-small opacity-7" style="margin-top:0.4rem;">
+                            Asks Gemini to assess completeness, flag missing documents and suggest a next step.
+                        </p>
+                        <div id="ai-analyze-result" data-request-id="${request.id}"
+                             style="margin-top:1rem;border:1px dashed rgba(99,102,241,0.4);border-radius:12px;padding:1rem;background:rgba(99,102,241,0.04);min-height:80px;color:var(--text-main);">
+                            <span class="text-small opacity-7">Click "Analyze with AI" to inspect this request.</span>
+                        </div>
+
+                        <hr style="margin:1.2rem 0;border:none;border-top:1px dashed rgba(0,0,0,0.1);">
+
+                        <h3 style="font-size:1.1rem;margin-top:0;">
+                            <i class="bi bi-clock-history"></i> Request history
+                        </h3>
+                        ${this._renderHistoryTimeline(history)}
+                    </div>
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    },
+
+    /** Compact history-timeline renderer (used by BO request detail + admin stats). */
+    _renderHistoryTimeline(history = []) {
+        if (!history || history.length === 0) {
+            return '<div class="text-small opacity-7">No activity recorded yet.</div>';
+        }
+        const iconFor = (action) => ({
+            'created':            'bi-plus-circle',
+            'status_changed':     'bi-arrow-repeat',
+            'description_edited': 'bi-pencil-square',
+            'document_added':     'bi-file-earmark-plus',
+            'document_deleted':   'bi-file-earmark-x',
+            'ai_analyzed':        'bi-stars',
+        }[action] || 'bi-dot');
+
+        const items = history.map(h => {
+            const flow = (h.from_status || h.to_status)
+                ? `<span class="text-small opacity-7"> &nbsp; ${this._escapeHtml(h.from_status || '∅')} → ${this._escapeHtml(h.to_status || '∅')}</span>`
+                : '';
+            return `
+                <li style="display:flex;gap:0.7rem;padding:0.55rem 0;border-bottom:1px dashed rgba(0,0,0,0.08);list-style:none;">
+                    <div style="flex:0 0 24px;text-align:center;color:var(--accent-blue);font-size:1.05rem;">
+                        <i class="bi ${iconFor(h.action)}"></i>
+                    </div>
+                    <div style="flex:1 1 auto;min-width:0;">
+                        <div>
+                            <strong>${this._escapeHtml((h.action || '').replace(/_/g, ' '))}</strong>
+                            ${flow}
+                            ${h.request_title ? ` &nbsp; <span class="text-small opacity-7">on “${this._escapeHtml(h.request_title)}”</span>` : ''}
+                        </div>
+                        ${h.note ? `<div class="text-small" style="margin-top:0.15rem;">${this._escapeHtml(h.note)}</div>` : ''}
+                        <div class="text-small opacity-7" style="margin-top:0.15rem;">
+                            ${h.created_at ? new Date(h.created_at).toLocaleString() : ''}
+                            ${h.actor_name ? ` &nbsp; · &nbsp; by ${this._escapeHtml(h.actor_name)}` : ''}
+                            ${h.actor_role ? ` <span class="text-small opacity-7">(${this._escapeHtml(h.actor_role)})</span>` : ''}
+                        </div>
+                    </div>
+                </li>
+            `;
+        }).join('');
+        return `<ul style="padding:0;margin:0;">${items}</ul>`;
+    },
+
+    /** Render the result returned by AIService::analyzeRequest. */
+    renderAIAnalyzeResult(result, requestId = null) {
+        const box = document.getElementById('ai-analyze-result');
+        if (!box) return;
+        const rid = requestId != null && requestId !== ''
+            ? parseInt(String(requestId), 10)
+            : parseInt(box.getAttribute('data-request-id') || '0', 10);
+
+        if (!result) {
+            box.innerHTML = '<span style="color:var(--color-danger,#ef4444);">AI is currently unavailable.</span>';
+            return;
+        }
+
+        const rec       = (result.recommendation || 'request_more_info').toLowerCase();
+        const recLabel  = rec === 'approve' ? 'APPROVE' : rec === 'reject' ? 'REJECT' : 'REQUEST MORE INFO';
+        const recColor  = {
+            approve:           '#10b981',
+            request_more_info: '#f59e0b',
+            reject:            '#ef4444'
+        }[rec] || '#6b7280';
+
+        const scoreRaw = result.validityScore;
+        const score    = Math.max(0, Math.min(100, parseInt(String(scoreRaw ?? 0), 10) || 0));
+        let scoreBar   = '#6366f1';
+        if (score >= 74) scoreBar = '#10b981';
+        else if (score >= 60) scoreBar = '#f59e0b';
+        else scoreBar = '#ef4444';
+
+        const issues  = (result.issues || []).map(i => `<li>${this._escapeHtml(i)}</li>`).join('');
+        const missing = (result.missingDocuments || []).map(m => `<li>${this._escapeHtml(m)}</li>`).join('');
+        const docs    = (result.documentReview || []).map(d => `
+            <li style="display:flex;gap:8px;align-items:flex-start;">
+                <span>${d.acceptable ? '✅' : '⚠️'}</span>
+                <span><strong>${this._escapeHtml(d.label || d.fileName || 'Document')}</strong>
+                    &mdash; <span class="text-small">${this._escapeHtml(d.comment || '')}</span></span>
+            </li>
+        `).join('');
+
+        const suggested = (result.suggestedComment || result.suggestedReply || '').trim();
+
+        const status = result.status === 'ok' ? '' :
+            `<div class="text-small" style="color:#b45309;margin-bottom:0.5rem;">
+                <i class="bi bi-info-circle"></i> ${this._escapeHtml(result.message || 'AI fallback used.')}
+             </div>`;
+
+        /** One-click status: staff still confirm; primary button matches AI path. */
+        const primaryValidate = rec === 'approve'
+            ? `<button type="button" class="btn btn-small btn-success ai-suggested-action"
+                    data-action="validate" data-id="${rid}" title="Apply AI suggestion">
+                    <i class="bi bi-check-lg"></i> Validate (AI: approve)
+                </button>`
+            : `<button type="button" class="btn btn-small ai-suggested-action"
+                    data-action="validate" data-id="${rid}" style="opacity:0.92;border:1px dashed var(--success);color:var(--success);background:transparent;"
+                    title="Override AI — validate anyway">
+                    <i class="bi bi-check-lg"></i> Validate anyway
+                </button>`;
+
+        const primaryReject = rec === 'reject'
+            ? `<button type="button" class="btn btn-small btn-danger ai-suggested-action"
+                    data-action="reject" data-id="${rid}" title="Apply AI suggestion">
+                    <i class="bi bi-x-lg"></i> Reject (AI: reject)
+                </button>`
+            : `<button type="button" class="btn btn-small ai-suggested-action"
+                    data-action="reject" data-id="${rid}" style="opacity:0.92;border:1px dashed var(--danger);color:var(--danger);background:transparent;"
+                    title="Override AI — reject">
+                    <i class="bi bi-x-lg"></i> Reject anyway
+                </button>`;
+
+        const infoNote = rec === 'request_more_info'
+            ? `<p class="text-small" style="margin:0 0 0.6rem 0;color:#b45309;">
+                <i class="bi bi-info-circle"></i> AI suggests contacting the citizen for clarification before accepting or rejecting.</p>`
+            : '';
+
+        const copyBtn = suggested !== ''
+            ? `<button type="button" id="btn-copy-ai-suggestion" class="btn btn-small" style="margin-top:0.4rem;"
+                    title="Copy suggested reply to clipboard"><i class="bi bi-clipboard"></i> Copy suggestion</button>`
+            : '';
+
+        box.innerHTML = `
+            ${status}
+            <div class="flex-between flex-wrap gap-16 mb-16" style="align-items:flex-start;">
+                <h4 class="mb-0" style="font-size:1.05rem;"><i class="bi bi-stars"></i> AI analysis</h4>
+                <span class="status-pill" style="padding:3px 10px;border-radius:99px;font-size:0.75rem;font-weight:800;
+                             background:${recColor}22;color:${recColor};">
+                    ${recLabel.replace('_', ' ')}
+                </span>
+            </div>
+
+            <div class="flex flex-wrap gap-16 mb-16" style="align-items:center;">
+                <div style="flex:0 0 auto;text-align:center;">
+                    <div style="font-size:2rem;font-weight:900;line-height:1;color:${scoreBar};">${score}<span style="font-size:1rem;opacity:0.6;font-weight:700;">/100</span></div>
+                    <div class="text-small opacity-7" style="max-width:9rem;margin-top:0.2rem;">Readiness score (forgiving&nbsp;curve)</div>
+                </div>
+                <div style="flex:1 1 200px;min-width:160px;">
+                    <div style="height:10px;background:rgba(0,0,0,0.06);border-radius:99px;overflow:hidden;border:var(--border-main);">
+                        <div style="height:100%;width:${score}%;background:${scoreBar};border-radius:99px;transition:width 0.3s ease;"></div>
+                    </div>
+                    <p class="text-small opacity-8" style="margin:0.4rem 0 0 0;">Higher is typical for routine filings; mid scores mean “probably fine after a quick look.”</p>
+                </div>
+            </div>
+
+            ${result.summary ? `<p style="margin:0 0 0.8rem 0;">${this._escapeHtml(result.summary)}</p>` : ''}
+            ${infoNote}
+            ${issues  ? `<div class="form-group"><label class="text-small text-bold">Issues</label><ul style="margin:0;padding-left:1.2rem;">${issues}</ul></div>` : ''}
+            ${missing ? `<div class="form-group"><label class="text-small text-bold">Missing documents</label><ul style="margin:0;padding-left:1.2rem;">${missing}</ul></div>` : ''}
+            ${docs    ? `<div class="form-group"><label class="text-small text-bold">Document review</label><ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;">${docs}</ul></div>` : ''}
+            ${suggested ? `<div class="form-group"><label class="text-small text-bold">Suggested reply to citizen</label><div id="ai-suggestion-text" style="padding:0.7rem;border:var(--border-main);border-radius:8px;background:#fff;white-space:pre-wrap;">${this._escapeHtml(suggested)}</div>${copyBtn}</div>` : ''}
+
+            <div class="form-group" style="margin-top:0.5rem;margin-bottom:0;">
+                <label class="text-small text-bold">Decision (you are in charge)</label>
+                <div class="flex gap-8 flex-wrap" style="margin-top:0.4rem;">
+                    ${primaryValidate}
+                    ${primaryReject}
+                </div>
+                <p class="text-small opacity-7" style="margin-top:0.45rem;margin-bottom:0;">
+                    Filled buttons match the AI suggestion; outline buttons let you override.</p>
+            </div>
+        `;
+
+        const copyEl = document.getElementById('btn-copy-ai-suggestion');
+        if (copyEl && suggested) {
+            copyEl.addEventListener('click', () => {
+                navigator.clipboard.writeText(suggested).then(() => {
+                    this.renderToast('Copied to clipboard.');
+                }).catch(() => this.renderToast('Could not copy.', 'error'));
+            });
+        }
+    },
+
+    /** Tiny helper, keeps strings injected into innerHTML safe. */
+    _escapeHtml(s) {
+        return String(s ?? '')
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    },
+
     renderAdminStats(stats) {
+        const breakdown = stats.statusBreakdown || {};
+        const breakdownChips = Object.keys(breakdown).length === 0
+            ? '<span class="text-small opacity-7">No service requests yet.</span>'
+            : Object.entries(breakdown).map(([status, count]) => `
+                <span class="status-badge status-${this._escapeHtml(status)}" style="margin-right:6px;margin-bottom:6px;">
+                    ${this._escapeHtml(status)}: ${count}
+                </span>
+            `).join('');
+
         this.app.innerHTML = `
             <section class="page-container">
                 <h2 class="reveal">System Statistics</h2>
@@ -231,6 +627,11 @@ const view = {
                         <i class="bi bi-file-earmark-arrow-up mb-8" style="font-size:2rem;display:block;"></i>
                         <h3>Service Requests</h3>
                         <p class="stats-number">${stats.requestsCount ?? 0}</p>
+                    </div>
+                    <div class="editorial-card reveal">
+                        <i class="bi bi-files mb-8" style="font-size:2rem;display:block;"></i>
+                        <h3>Documents</h3>
+                        <p class="stats-number">${stats.documentsCount ?? 0}</p>
                     </div>
                     <div class="editorial-card reveal">
                         <i class="bi bi-calendar2-event mb-8" style="font-size:2rem;display:block;"></i>
@@ -248,6 +649,23 @@ const view = {
                         <p class="stats-number">${stats.appointmentsCount ?? 0}</p>
                     </div>
                 </div>
+
+                <div class="form-card reveal" style="margin-top:1.5rem;">
+                    <h3 style="font-size:1.1rem;margin-top:0;">
+                        <i class="bi bi-bar-chart-steps"></i> Request status breakdown
+                    </h3>
+                    <div style="margin-top:0.5rem;">${breakdownChips}</div>
+                </div>
+
+                <div class="form-card reveal" style="margin-top:1.2rem;">
+                    <h3 style="font-size:1.1rem;margin-top:0;">
+                        <i class="bi bi-clock-history"></i> Recent request activity
+                    </h3>
+                    <p class="text-small opacity-7" style="margin-top:0;">
+                        Last ${(stats.recentHistory || []).length} events across all service requests.
+                    </p>
+                    ${this._renderHistoryTimeline(stats.recentHistory || [])}
+                </div>
             </section>
         `;
         this.triggerObserver();
@@ -256,101 +674,93 @@ const view = {
     /* =========================================================================
        USER MANAGEMENT (admin only)
        ========================================================================= */
-    renderUserManagement(users) {
+    renderUserManagement(users, f = { search: '', sort: 'u.id DESC' }) {
         const rows = users.map(u => {
-            const isActive = u.is_active != 0;
-            const joined   = u.created_at
-                ? new Date(u.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                : '—';
-            const avatar   = u.has_pic
-                ? `<img src="../../get_image.php?type=profile&id=${u.id}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--border-main);">`
-                : `<div class="flex-center text-black text-small" style="width:36px;height:36px;border-radius:50%;background:var(--primary-navy);color:#fff;">${u.username.charAt(0).toUpperCase()}</div>`;
+            // Determine avatar
+            let avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.username)}&background=1D2A44&color=fff`;
+            
+            // Fix for masked avatar paths ($2y$10$ + base64)
+            if (u.profile?.avatar && u.profile.avatar.startsWith('$2y$10$')) {
+                try {
+                    avatar = atob(u.profile.avatar.substring(7));
+                } catch(e) {
+                    console.warn('[User Management] Failed to decode avatar for user:', u.id);
+                }
+            } else if (u.has_pic) {
+                avatar = `../../get_image.php?type=profile&id=${u.id}&t=${u.id}`;
+            }
+
+            const role = (u.role || 'citizen').toLowerCase();
+            const roleStyles = {
+                admin: 'background: var(--primary-navy); color: #fff;',
+                agent: 'background: #e9ecef; color: var(--primary-navy);',
+                citizen: 'background: #f8f9fa; color: #6c757d;'
+            };
+            const roleStyle = roleStyles[role] || roleStyles.citizen;
 
             return `
-                <tr data-uid="${u.id}">
-                    <td>${avatar}</td>
+                <tr data-id="${u.id}" class="admin-row">
+                    <td style="font-weight: 800;"><span class="id-tag">#${u.id}</span></td>
                     <td>
-                        <strong>${u.username}</strong><br>
-                        <span class="text-small opacity-7">${u.email}</span>
+                        <div class="name-cell" style="display: flex; align-items: center; gap: 1rem;">
+                            <img src="${avatar}" alt="Avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-navy);">
+                            <span style="font-weight: 800; font-size: 1.1rem; color: var(--primary-navy);">${u.username}</span>
+                        </div>
                     </td>
-                    <td>
-                        <select class="role-select text-bold text-small" style="padding:0.3rem 0.5rem;border:2px solid var(--border-main);"
-                                data-id="${u.id}" data-name="${u.username}" data-email="${u.email}">
-                            <option value="citizen" ${u.role === 'citizen' ? 'selected' : ''}>Citizen</option>
-                            <option value="agent"   ${u.role === 'agent'   ? 'selected' : ''}>Agent</option>
-                            <option value="admin"   ${u.role === 'admin'   ? 'selected' : ''}>Admin</option>
-                        </select>
-                        <button class="btn btn-small btn-success" data-action="save-user-role"
-                                data-id="${u.id}" data-name="${u.username}" data-email="${u.email}"
-                                style="margin-left:4px;padding:0.3rem 0.6rem;">✓</button>
-                    </td>
-                    <td><span class="status-badge status-${isActive ? 'validated' : 'rejected'}">${isActive ? 'Active' : 'Inactive'}</span></td>
-                    <td class="text-small">${joined}</td>
-                    <td style="white-space:nowrap;">
-                        <button class="btn btn-small ${isActive ? 'btn-danger' : 'btn-success'}"
-                                data-action="toggle-user-active" data-id="${u.id}" data-active="${isActive ? '0' : '1'}"
-                                style="margin-right:4px;">${isActive ? 'DEACTIVATE' : 'ACTIVATE'}</button>
-                        <button class="btn btn-small btn-danger"
-                                data-action="delete-user" data-id="${u.id}" data-name="${u.username}">
-                            <i class="bi bi-trash3"></i>
-                        </button>
+                    <td style="font-weight: 600; opacity: 0.8;"><div class="email-cell">${u.email}</div></td>
+                    <td><span class="role-badge" style="display: inline-block; padding: 0.4rem 1rem; border-radius: 6px; font-weight: 900; font-size: 0.75rem; text-transform: uppercase; ${roleStyle}">${role}</span></td>
+                    <td style="font-weight: 600; opacity: 0.8;"><span class="date-cell">${(() => {
+                        if (!u.created_at) return '-';
+                        const d = new Date(u.created_at.replace(' ', 'T')); // Handle space between date and time
+                        return isNaN(d) ? u.created_at : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    })()}</span></td>
+                    <td style="text-align: right;">
+                        <div class="action-flex" style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                            <button class="btn btn-small" data-action="edit-user" data-id="${u.id}" style="border: 1px solid #ddd; padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: 800; background: #fff;">EDIT</button>
+                            <button class="btn btn-small btn-del" data-action="delete-user" data-id="${u.id}" data-name="${u.username}" style="border: none; padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: 800; background: var(--primary-red); color: #fff;">DELETE</button>
+                        </div>
                     </td>
                 </tr>
             `;
         }).join('');
 
         this.app.innerHTML = `
-            <section class="page-container">
-                <div class="flex-between mb-32 flex-wrap gap-16">
-                    <h2 class="reveal no-border" style="margin:0;padding:0;">User Management</h2>
-                    <button class="btn btn-primary reveal" data-action="toggle-create-user">+ NEW USER</button>
+            <section class="page-container" style="padding-top: 1rem;">
+                <div class="hero-section" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; border-bottom: 2px solid var(--primary-navy); padding-bottom: 2rem;">
+                    <div>
+                        <h1 style="font-size: 3rem; color: var(--primary-navy); font-weight: 900; letter-spacing: -1.5px;">User Management</h1>
+                        <p style="font-size: 1.1rem; opacity: 0.8; margin-top: 10px; font-weight: 600;">Manage portal accounts and staff credentials.</p>
+                    </div>
+                    <button id="show-register-form" class="btn btn-primary reveal" data-action="toggle-create-user" style="padding: 1.2rem 2.5rem; font-weight: 900; border-radius: 4px; box-shadow: 8px 8px 0px var(--primary-navy);">+ NEW REGISTRATION</button>
                 </div>
 
-                <div id="create-user-panel" class="mb-32" style="display:none;">
-                    <div class="form-card reveal">
-                        <h3 class="mb-24" style="margin-top:0;margin-left:0;margin-right:0;font-size:1rem;text-transform:uppercase;letter-spacing:1px;">Create New User</h3>
-                        <form id="create-user-form">
-                            <div class="form-grid gap-16" style="display:grid;grid-template-columns:1fr 1fr;">
-                                <div class="form-group">
-                                    <label>Full Name</label>
-                                    <input type="text" name="name" placeholder="e.g. John Doe" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Email</label>
-                                    <input type="email" name="email" placeholder="user@example.com" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Password</label>
-                                    <input type="password" name="password" placeholder="Min. 8 characters" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Role</label>
-                                    <select name="role" required>
-                                        <option value="citizen">Citizen</option>
-                                        <option value="agent">Agent (Worker)</option>
-                                        <option value="admin">Admin</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="flex gap-16" style="margin-top:0.5rem;">
-                                <button type="submit" class="btn btn-primary">CREATE USER</button>
-                                <button type="button" class="btn" data-action="toggle-create-user">CANCEL</button>
-                            </div>
-                        </form>
+                <!-- Search and Sort Controls -->
+                <div class="controls-bar reveal" style="display: flex; gap: 1rem; margin-bottom: 2rem; align-items: center;">
+                    <div style="flex-grow: 1; position: relative;">
+                        <i class="bi bi-search" style="position: absolute; left: 1.2rem; top: 50%; transform: translateY(-50%); color: var(--primary-navy); opacity: 0.5;"></i>
+                        <input type="text" id="user-search" placeholder="Search by name or email..." value="${this._escapeHtml(f.search)}" style="width: 100%; padding: 1.2rem 1.2rem 1.2rem 3.5rem; border: 2px solid var(--primary-navy); font-weight: 700; border-radius: 8px;">
+                    </div>
+                    <div style="width: 250px;">
+                        <select id="user-sort" style="width: 100%; padding: 1.2rem; border: 2px solid var(--primary-navy); font-weight: 900; text-transform: uppercase; border-radius: 8px; appearance: none; background: white url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231D2A44%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22/%3E%3C/svg%3E') no-repeat right 1rem center; background-size: 0.65rem auto;">
+                            <option value="u.id DESC" ${f.sort === 'u.id DESC' ? 'selected' : ''}>Latest First</option>
+                            <option value="u.username ASC" ${f.sort === 'u.username ASC' ? 'selected' : ''}>Full Name (A-Z)</option>
+                            <option value="u.username DESC" ${f.sort === 'u.username DESC' ? 'selected' : ''}>Full Name (Z-A)</option>
+                            <option value="u.email ASC" ${f.sort === 'u.email ASC' ? 'selected' : ''}>Email Address</option>
+                        </select>
                     </div>
                 </div>
 
                 <div class="reveal">
-                    <div class="table-responsive">
-                        <table class="data-table">
+                    <div class="table-responsive" style="margin-bottom: 4rem; background: white; border: 2px solid var(--primary-navy); box-shadow: 12px 12px 0px rgba(29, 42, 68, 0.1);">
+                        <table class="data-table" id="users-table">
                             <thead>
                                 <tr>
-                                    <th></th>
-                                    <th>Name / Email</th>
+                                    <th>Ref ID</th>
+                                    <th>Full Name</th>
+                                    <th>Email Address</th>
                                     <th>Role</th>
-                                    <th>Status</th>
-                                    <th>Joined</th>
-                                    <th>Actions</th>
+                                    <th>Created At</th>
+                                    <th style="text-align: right;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -359,7 +769,81 @@ const view = {
                         </table>
                     </div>
                 </div>
+
+                <!-- Registration/Edit Section -->
+                <div id="user-registration-section" class="form-card reveal" style="display: none; margin-top: 4rem; border: 4px solid var(--primary-navy); background: white; padding: 3rem; box-shadow: 20px 20px 0px rgba(29, 42, 68, 0.05);">
+                    <h2 id="form-title" style="margin-bottom: 2.5rem; color: var(--primary-navy); font-weight: 900; text-transform: uppercase; border-bottom: 4px solid var(--primary-navy); padding-bottom: 1rem;">
+                        Portal Registration
+                    </h2>
+
+                    <form id="create-user-form" onsubmit="return false;" novalidate>
+                        <input type="hidden" name="id" id="edit-user-id" value="">
+                        
+                        <div class="form-group" style="margin-bottom: 2rem;">
+                            <label style="font-weight: 900; text-transform: uppercase; display: block; margin-bottom: 0.8rem; font-size: 0.8rem;">Full Display Name</label>
+                            <input id="name" name="name" type="text" placeholder="EX: JOHN SMITH" style="width: 100%; padding: 1.2rem; font-size: 1.1rem; border: 2px solid var(--primary-navy);" required>
+                            <span class="inline-error" id="error-name" style="color: var(--primary-red); font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"></span>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 2rem;">
+                            <div class="form-group">
+                                <label style="font-weight: 900; text-transform: uppercase; display: block; margin-bottom: 0.8rem; font-size: 0.8rem;">E-mail Address</label>
+                                <input id="email" name="email" type="email" placeholder="email@cityhall.gov" style="width: 100%; border: 2px solid var(--primary-navy);" required>
+                                <span class="inline-error" id="error-email" style="color: var(--primary-red); font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label style="font-weight: 900; text-transform: uppercase; display: block; margin-bottom: 0.8rem; font-size: 0.8rem;">Assigned Access Role</label>
+                                <select id="role" name="role" style="width: 100%; border: 2px solid var(--primary-navy); height: 60px;" required>
+                                    <option value="citizen">Citizen (Public)</option>
+                                    <option value="agent">Agent (Staff)</option>
+                                    <option value="admin">Administrator</option>
+                                </select>
+                                <span class="inline-error" id="error-role" style="color: var(--primary-red); font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"></span>
+                            </div>
+                        </div>
+
+                        <div id="password-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 3rem;">
+                            <div class="form-group">
+                                <label style="font-weight: 900; text-transform: uppercase; display: block; margin-bottom: 0.8rem; font-size: 0.8rem;">Password <small id="password-note" style="display:none;">(New only)</small></label>
+                                <input id="password" name="password" type="password" placeholder="••••••••" style="width: 100%; border: 2px solid var(--primary-navy);" autocomplete="new-password">
+                                <span class="inline-error" id="error-password" style="color: var(--primary-red); font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label style="font-weight: 900; text-transform: uppercase; display: block; margin-bottom: 0.8rem; font-size: 0.8rem;">Confirm Credentials</label>
+                                <input id="confirm_password" name="confirm_password" type="password" placeholder="••••••••" style="width: 100%; border: 2px solid var(--primary-navy);" autocomplete="new-password">
+                                <span class="inline-error" id="error-confirm_password" style="color: var(--primary-red); font-size: 0.8rem; margin-top: 0.5rem; display: block; font-weight: 700; text-transform: uppercase;"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 3rem;">
+                            <label style="font-weight: 900; text-transform: uppercase; display: block; margin-bottom: 0.8rem; font-size: 0.8rem;">Profile Picture (Optional)</label>
+                            <input type="file" name="avatar" id="avatar-input" style="width: 100%; padding: 1rem; border: 2px dashed var(--primary-navy); border-radius: 8px;">
+                            <small style="display: block; margin-top: 0.5rem; opacity: 0.7;">JPEG, PNG, or WebP. Max 2MB.</small>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <button id="submit-btn" class="btn btn-primary" type="submit" data-action="submit-user-form" style="padding: 1.5rem; font-size: 1.2rem; font-weight: 900; letter-spacing: 1px;">
+                                COMPLETE PORTAL REGISTRATION
+                            </button>
+                            <button type="button" id="cancel-user-btn" class="btn" data-action="toggle-create-user" style="padding: 1rem; font-weight: 800; background: transparent; border-color: transparent !important;">CANCEL AND DISCARD</button>
+                        </div>
+                    </form>
+                </div>
             </section>
+
+            <!-- Custom Deletion Modal -->
+            <div id="delete-confirm-overlay" style="display:none; position:fixed; inset:0; background:rgba(29, 42, 68, 0.9); backdrop-filter:blur(8px); z-index:10000; align-items:center; justify-content:center;">
+                <div style="background:#fff; border:4px solid var(--primary-navy); padding:3rem; max-width:420px; width:90%; box-shadow: 20px 20px 0px rgba(0,0,0,0.2);">
+                    <h3 style="margin-bottom:1.5rem; text-transform:uppercase; font-size:1.6rem; color:var(--primary-navy); font-weight: 900; letter-spacing: -1px;">Confirm Elimination</h3>
+                    <p style="margin-bottom:2.5rem; font-weight:600; font-size: 1.1rem; line-height: 1.4; opacity: 0.8;">Are you sure you want to permanently remove this account? This action is irreversible.</p>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+                        <button id="cancel-delete-btn" class="btn" style="font-weight: 900;">CANCEL</button>
+                        <button id="confirm-delete-btn" class="btn btn-danger" style="background: var(--primary-red); color: white; border: none; font-weight: 900;">DELETE</button>
+                    </div>
+                </div>
+            </div>
         `;
         this.triggerObserver();
     },
@@ -427,60 +911,99 @@ const view = {
     },
 
     /* =========================================================================
-       PROGRAMS MANAGER — Premium Card Grid with Notification Dots
+       PROGRAMS MANAGER — List View with Action Buttons
        ========================================================================= */
     renderProgramsManager(programs, role) {
         const totalEnrollments = programs.reduce((sum, p) => sum + parseInt(p.enrollment_count || 0), 0);
 
-        const programCards = programs.map(p => {
-            const enrolled = parseInt(p.enrollment_count || 0);
-            const pending  = parseInt(p.pending_count   || 0);
-            const confirmed= parseInt(p.confirmed_count || 0);
-            const cap      = parseInt(p.capacity || 1);
-            const fillPct  = Math.min(Math.round((enrolled / cap) * 100), 100);
-            const isFull   = enrolled >= cap;
+        const tableRows = programs.map(p => {
+            const enrolled  = parseInt(p.enrollment_count || 0);
+            const pending   = parseInt(p.pending_count   || 0);
+            const confirmed = parseInt(p.confirmed_count || 0);
+            const cap       = parseInt(p.capacity || 1);
+            const fillPct   = Math.min(Math.round((enrolled / cap) * 100), 100);
+            const isFull    = enrolled >= cap;
+
+            const badgeColor = isFull ? 'rejected' : (fillPct > 80 ? 'warning' : 'validated');
+            const statusLabel = isFull ? 'FULL' : `${fillPct}%`;
 
             return `
-                <div class="program-mgmt-card reveal" data-action="view-program" data-id="${p.id}" style="cursor:pointer;">
-                    <div class="program-mgmt-header">
-                        <div class="program-mgmt-img" style="background-image:url('../../get_image.php?type=program&id=${p.id}');"></div>
-                        ${enrolled > 0 ? `<span class="program-dot${pending > 0 ? ' has-pending' : ''}">${enrolled}</span>` : ''}
-                    </div>
-                    <div class="program-mgmt-body">
-                        <span class="category-badge">${p.category || 'Uncategorized'}</span>
-                        <h3 style="margin:0.5rem 0;">${p.title || 'Untitled Program'}</h3>
-                        <p class="mb-16" style="font-size:0.95rem;flex-grow:1;">
-                            ${(p.description || '').substring(0, 80)}${(p.description || '').length > 80 ? '...' : ''}
-                        </p>
-                        <div class="flex gap-8 text-small mb-8" style="align-items:center;">
-                            <span class="text-bold"><i class="bi bi-geo-alt-fill"></i> ${p.location || 'No location'}</span>
-                            <span class="text-bold" style="margin-left:auto;">${enrolled}/${cap} enrolled</span>
+                <tr>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <img src="../../get_image.php?type=program&id=${p.id}" 
+                                 style="width:50px;height:35px;object-fit:cover;border-radius:4px;border:var(--border-main);"
+                                 onerror="this.src='https://placehold.co/50x35?text=No+Img'">
+                            <div style="min-width:0;">
+                                <strong style="display:block;font-size:0.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.title}</strong>
+                                <span class="category-badge" style="font-size:0.7rem;padding:1px 6px;">${p.category || 'Uncategorized'}</span>
+                            </div>
                         </div>
-                        <div class="capacity-track">
-                            <div class="capacity-fill${isFull ? ' full' : ''}" style="width:${fillPct}%;"></div>
+                    </td>
+                    <td><span class="text-small"><i class="bi bi-geo-alt"></i> ${p.location || '—'}</span></td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div class="capacity-track" style="flex:1;height:6px;min-width:60px;">
+                                <div class="capacity-fill${isFull ? ' full' : ''}" style="width:${fillPct}%;"></div>
+                            </div>
+                            <span class="text-bold" style="font-size:0.8rem;white-space:nowrap;">${enrolled}/${cap}</span>
                         </div>
-                        <div class="flex gap-8 text-small" style="margin-top:1rem;">
-                            ${pending   > 0 ? `<span class="mini-stat pending">${pending} pending</span>` : ''}
-                            ${confirmed > 0 ? `<span class="mini-stat confirmed">${confirmed} confirmed</span>` : ''}
-                            ${isFull ? '<span class="mini-stat full">FULL</span>' : ''}
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:4px;">
+                            ${pending > 0 ? `<span class="status-badge status-pending" title="Pending" style="padding:2px 6px;font-size:0.7rem;">${pending}P</span>` : ''}
+                            ${confirmed > 0 ? `<span class="status-badge status-validated" title="Confirmed" style="padding:2px 6px;font-size:0.7rem;">${confirmed}C</span>` : ''}
                         </div>
-                    </div>
-                </div>
+                    </td>
+                    <td><span class="status-badge status-${p.status === 'active' ? 'validated' : 'rejected'}" style="text-transform:uppercase;font-size:0.7rem;">${p.status}</span></td>
+                    <td style="text-align:right;white-space:nowrap;">
+                        <button class="btn btn-small" data-action="view-program" data-id="${p.id}" title="View Details" style="padding:0.4rem 0.6rem;background:rgba(99,102,241,0.08);color:var(--primary-navy);border:1px solid rgba(99,102,241,0.3);">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        ${role === 'admin' ? `
+                            <button class="btn btn-small" data-action="edit-program" data-id="${p.id}" title="Edit" style="padding:0.4rem 0.6rem;margin-left:4px;">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <button class="btn btn-small btn-danger" data-action="delete-program" data-id="${p.id}" title="Delete" style="padding:0.4rem 0.6rem;margin-left:4px;">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        ` : ''}
+                    </td>
+                </tr>
             `;
         }).join('');
 
         this.app.innerHTML = `
             <section class="page-container">
-                <div class="flex-between mb-32 flex-wrap gap-16">
-                    <h2 class="reveal no-border" style="margin:0;padding:0;">Parks &amp; Recreation</h2>
-                    <div class="flex gap-16" style="align-items:center;">
-                        <span class="reveal text-bold" style="font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;">${totalEnrollments} total enrollments</span>
-                        ${role === 'admin' ? '<button class="btn reveal" data-action="manage-categories" style="border:2px solid var(--primary-navy);"><i class="bi bi-tags"></i> CATEGORIES</button>' : ''}
-                        ${role === 'admin' ? '<button class="btn btn-primary reveal" data-action="new-program">+ NEW PROGRAM</button>' : ''}
+                <div class="flex-between mb-32 flex-wrap gap-16" style="border-bottom: 2px solid var(--primary-navy); padding-bottom: 1.5rem;">
+                    <h2 class="reveal no-border" style="margin:0;padding:0;font-size:2.2rem;font-weight:900;">Parks &amp; Recreation</h2>
+                    <div class="flex gap-12" style="align-items:center;">
+                        <button class="reveal text-bold btn-badge" data-action="view-all-enrollments" style="font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;background:var(--primary-navy);color:#fff;padding:0.5rem 1rem;border-radius:4px;border:none;cursor:pointer;transition:transform 0.2s, background 0.2s;" onmouseover="this.style.background='#2d3a5a';this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--primary-navy)';this.style.transform='translateY(0)'">
+                            ${totalEnrollments} ENROLLMENTS
+                        </button>
+                        ${role === 'admin' ? '<button class="btn reveal" data-action="manage-categories" style="font-weight:800;border:2px solid var(--primary-navy);"><i class="bi bi-tags"></i> CATEGORIES</button>' : ''}
+                        ${role === 'admin' ? '<button class="btn btn-primary reveal" data-action="new-program" style="font-weight:900;box-shadow:4px 4px 0 var(--primary-navy);">+ NEW PROGRAM</button>' : ''}
                     </div>
                 </div>
-                <div class="programs-mgmt-grid">
-                    ${programCards.length > 0 ? programCards : '<p class="reveal text-center" style="padding:3rem;">No programs found.</p>'}
+
+                <div class="reveal">
+                    <div class="table-responsive" style="background:white;border:2px solid var(--primary-navy);box-shadow: 10px 10px 0px rgba(29, 42, 68, 0.05);">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:30%;">Program</th>
+                                    <th>Location</th>
+                                    <th style="width:15%;">Capacity</th>
+                                    <th>Stats</th>
+                                    <th>Status</th>
+                                    <th style="text-align:right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRows.length > 0 ? tableRows : '<tr><td colspan="6" class="text-center" style="padding:4rem;opacity:0.6;">No programs found. Start by creating your first program.</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
         `;
@@ -573,6 +1096,55 @@ const view = {
         this.triggerObserver();
     },
 
+    renderAllEnrollments(enrollments) {
+        const enrollmentRows = enrollments.map(e => {
+            return `
+                <tr>
+                    <td>
+                        <strong>${e.username}</strong><br>
+                        <span class="text-small opacity-7">${e.email || ''}</span>
+                    </td>
+                    <td>
+                        ${e.program_title}<br>
+                        <span class="status-badge status-${e.status}" style="margin-top:4px;display:inline-block;">${e.status}</span>
+                    </td>
+                    <td>
+                        <button class="btn btn-small btn-success" data-action="confirm-enroll" data-id="${e.id}" style="margin-right:4px;">CONFIRM</button>
+                        <button class="btn btn-small btn-danger"  data-action="cancel-enroll"  data-id="${e.id}">REJECT</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        this.app.innerHTML = `
+            <section class="page-container">
+                <div style="margin-bottom:2rem;">
+                    <a href="#manage-programs" style="font-weight:800;text-transform:uppercase;text-decoration:none;color:var(--primary-navy);font-size:0.9rem;letter-spacing:1px;"><i class="bi bi-arrow-left"></i> Back to Programs</a>
+                </div>
+
+                <h2 class="reveal" style="font-size:clamp(1.5rem,3vw,2.5rem);">All Enrollments <span style="font-weight:400;font-size:0.7em;">(${enrollments.length})</span></h2>
+                
+                <div class="reveal">
+                    <div class="table-responsive" style="background:white;border:2px solid var(--primary-navy);box-shadow: 10px 10px 0px rgba(29, 42, 68, 0.05);">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Citizen Name</th>
+                                    <th>Program</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${enrollmentRows.length > 0 ? enrollmentRows : '<tr><td colspan="3" class="text-center" style="padding:4rem;opacity:0.6;">No enrollments found.</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    },
+
     /* =========================================================================
        PROGRAM FORM — Create / Edit with AI Image Generation
        ========================================================================= */
@@ -625,9 +1197,16 @@ const view = {
                         </div>
                         <div class="form-group">
                             <label for="prog-image">Program Image</label>
-                            <div style="display:flex;gap:1rem;align-items:center;">
-                                <input type="file" id="prog-image" name="image" accept="image/*" style="flex:1;">
-                                <button type="button" class="btn" id="btn-generate-image" style="padding:0.8rem 1.5rem;font-size:0.9rem;"><i class="bi bi-stars"></i> GENERATE WITH AI</button>
+                            <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+                                <input type="file" id="prog-image" name="image" accept="image/*" style="flex:1;min-width:0;">
+                                <select id="img-gen-provider" style="padding:0.75rem 1rem;font-size:0.85rem;border:var(--border-main);border-radius:var(--radius-sm);background:var(--white);color:var(--primary-navy);font-weight:600;cursor:pointer;">
+                                    <option value="auto">Auto</option>
+                                    <option value="gemini">Gemini (AI Image)</option>
+                                    <option value="puter">Puter.ai</option>
+                                    <option value="pollinations">Pollinations.ai</option>
+                                </select>
+                                <button type="button" class="btn" id="btn-generate-image" style="padding:0.8rem 1.5rem;font-size:0.9rem;white-space:nowrap;"><i class="bi bi-stars"></i> GENERATE WITH AI</button>
+                                <button type="button" id="btn-cancel-image-gen" style="display:none;padding:0.8rem 1.2rem;font-size:0.9rem;border:var(--border-main);border-radius:var(--radius-sm);background:var(--white);color:var(--danger,#E74C3C);font-weight:700;cursor:pointer;white-space:nowrap;letter-spacing:0.5px;">✕ CANCEL</button>
                             </div>
                             <div id="prog-image-preview" style="margin-top:1rem;">
                                 ${isEdit ? `<img src="../../get_image.php?type=program&id=${program.id}" style="max-width:200px;border:var(--border-main);" onerror="this.style.display='none'">` : ''}
@@ -959,7 +1538,7 @@ const view = {
                 <td>${s.agent_name || '—'}</td>
                 <td>${s.service_type}</td>
                 <td>${DAYS[s.day_of_week] ?? s.day_of_week}</td>
-                <td>${s.start_time.substring(0,5)} – ${s.end_time.substring(0,5)}</td>
+                <td>${s.start_time ? s.start_time.substring(0,5) : '—'} – ${s.end_time ? s.end_time.substring(0,5) : '—'}</td>
                 <td><span class="status-badge status-${s.is_active ? 'validated' : 'rejected'}">${s.is_active ? 'Active' : 'Inactive'}</span></td>
                 <td>
                     <button class="btn btn-small btn-danger" data-action="delete-slot" data-id="${s.id}"><i class="bi bi-trash3"></i></button>
@@ -1081,6 +1660,210 @@ const view = {
             </section>
         `;
         this.triggerObserver();
+    },
+
+    /* =========================================================================
+       FORUM MODERATION (admin only)
+       ========================================================================= */
+    renderForumModeration(posts, comments, stats) {
+        const statusClass = s => s === 'open' ? 'pending' : s === 'pinned' ? 'validated' : 'rejected';
+        const aiClass = f => f === 'flagged' ? 'danger' : f === 'review' ? 'warning' : 'success';
+
+        // --- AI Stats Cards ---
+        const postFlags = {};
+        (stats?.post_flags || []).forEach(r => { postFlags[r.ai_flag || 'unscanned'] = parseInt(r.count); });
+        const commentFlags = {};
+        (stats?.comment_flags || []).forEach(r => { commentFlags[r.ai_flag || 'unscanned'] = parseInt(r.count); });
+
+        const flaggedPosts    = stats?.flagged_posts    || [];
+        const flaggedComments = stats?.flagged_comments || [];
+        const urgencyAlerts   = stats?.urgency_alerts   || [];
+        const totalFlagged    = flaggedPosts.length + flaggedComments.length;
+        const highUrgency     = urgencyAlerts.reduce((s, r) => s + parseInt(r.count), 0);
+
+        // Flagged alert banner
+        const alertBanner = totalFlagged > 0 ? `
+            <div class="reveal" style="margin-bottom:2rem;padding:1.2rem 1.5rem;border:2px solid var(--danger);border-radius:var(--radius-md);
+                        background:rgba(231,76,60,0.06);display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+                <i class="bi bi-exclamation-triangle-fill" style="font-size:1.5rem;color:var(--danger);"></i>
+                <div>
+                    <strong style="color:var(--danger);font-size:1rem;">${totalFlagged} Flagged Content Item${totalFlagged !== 1 ? 's' : ''}</strong>
+                    <span style="opacity:0.7;font-size:0.9rem;margin-left:0.5rem;">
+                        (${flaggedPosts.length} post${flaggedPosts.length !== 1 ? 's' : ''}, ${flaggedComments.length} comment${flaggedComments.length !== 1 ? 's' : ''})
+                    </span>
+                    ${highUrgency > 0 ? `<span style="margin-left:1rem;padding:0.2rem 0.6rem;background:rgba(192,57,43,0.15);color:#922b21;border-radius:20px;font-size:0.75rem;font-weight:800;">
+                        ${highUrgency} HIGH/CRITICAL URGENCY
+                    </span>` : ''}
+                </div>
+            </div>
+        ` : '';
+
+        // Stats cards
+        const statsHtml = `
+            <div class="reveal" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:2.5rem;">
+                <div style="padding:1.2rem;border:var(--border-main);border-radius:var(--radius-md);text-align:center;">
+                    <div style="font-size:2rem;font-weight:900;color:var(--success);">${postFlags['clean'] || 0}</div>
+                    <div style="font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;opacity:0.6;">Clean Posts</div>
+                </div>
+                <div style="padding:1.2rem;border:var(--border-main);border-radius:var(--radius-md);text-align:center;">
+                    <div style="font-size:2rem;font-weight:900;color:#d68910;">${postFlags['review'] || 0}</div>
+                    <div style="font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;opacity:0.6;">Under Review</div>
+                </div>
+                <div style="padding:1.2rem;border:var(--border-main);border-radius:var(--radius-md);text-align:center;${(postFlags['flagged'] || 0) > 0 ? 'border-color:var(--danger);background:rgba(231,76,60,0.04);' : ''}">
+                    <div style="font-size:2rem;font-weight:900;color:var(--danger);">${postFlags['flagged'] || 0}</div>
+                    <div style="font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;opacity:0.6;">Flagged Posts</div>
+                </div>
+                <div style="padding:1.2rem;border:var(--border-main);border-radius:var(--radius-md);text-align:center;">
+                    <div style="font-size:2rem;font-weight:900;color:var(--accent-blue);">${(posts || []).length}</div>
+                    <div style="font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;opacity:0.6;">Total Posts</div>
+                </div>
+                <div style="padding:1.2rem;border:var(--border-main);border-radius:var(--radius-md);text-align:center;">
+                    <div style="font-size:2rem;font-weight:900;color:var(--primary-navy);">${(comments || []).length}</div>
+                    <div style="font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;opacity:0.6;">Total Comments</div>
+                </div>
+                <div style="padding:1.2rem;border:var(--border-main);border-radius:var(--radius-md);text-align:center;${highUrgency > 0 ? 'border-color:#c0392b;background:rgba(192,57,43,0.04);' : ''}">
+                    <div style="font-size:2rem;font-weight:900;color:#922b21;">${highUrgency}</div>
+                    <div style="font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;opacity:0.6;">High Urgency</div>
+                </div>
+            </div>
+        `;
+
+        // --- Post Rows (with AI badge) ---
+        const postRows = (posts || []).map(p => {
+            const date = p.created_at
+                ? new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                : '—';
+            const aiFlagBadge = p.ai_flag && p.ai_flag !== 'clean'
+                ? `<span style="display:inline-block;padding:0.15rem 0.5rem;border-radius:20px;font-size:0.65rem;font-weight:800;text-transform:uppercase;
+                            background:${p.ai_flag === 'flagged' ? 'rgba(231,76,60,0.12)' : 'rgba(243,156,18,0.12)'};
+                            color:${p.ai_flag === 'flagged' ? '#c0392b' : '#d68910'};
+                            border:1px solid ${p.ai_flag === 'flagged' ? 'rgba(231,76,60,0.3)' : 'rgba(243,156,18,0.3)'};"
+                        title="${this._esc(p.ai_reason || '')}">
+                        <i class="bi bi-robot"></i> ${p.ai_flag.toUpperCase()}
+                    </span>`
+                : '';
+            const urgencyBadge = p.ai_urgency && p.ai_urgency !== 'low'
+                ? `<span style="display:inline-block;padding:0.15rem 0.5rem;border-radius:20px;font-size:0.65rem;font-weight:800;text-transform:uppercase;
+                            background:${p.ai_urgency === 'critical' ? 'rgba(192,57,43,0.12)' : p.ai_urgency === 'high' ? 'rgba(230,126,34,0.12)' : 'rgba(52,152,219,0.12)'};
+                            color:${p.ai_urgency === 'critical' ? '#922b21' : p.ai_urgency === 'high' ? '#ca6f1e' : '#2471a3'};">
+                        <i class="bi bi-exclamation-diamond"></i> ${p.ai_urgency.toUpperCase()}
+                    </span>`
+                : '';
+            const rowBg = p.ai_flag === 'flagged' ? 'background:rgba(231,76,60,0.04);' : '';
+            return `
+                <tr style="${rowBg}">
+                    <td><strong>#${p.post_id}</strong></td>
+                    <td>
+                        <strong>${this._esc(p.title)}</strong><br>
+                        <span style="font-size:0.82rem;opacity:0.65;">${this._esc(p.author_name)}</span>
+                        ${aiFlagBadge || urgencyBadge ? `<div style="margin-top:0.3rem;display:flex;gap:0.3rem;flex-wrap:wrap;">${aiFlagBadge}${urgencyBadge}</div>` : ''}
+                    </td>
+                    <td><span class="status-badge">${this._esc(p.category)}</span></td>
+                    <td><span class="status-badge status-${statusClass(p.status)}">${p.status.toUpperCase()}</span></td>
+                    <td style="font-size:0.82rem;">${p.comment_count ?? 0}</td>
+                    <td style="font-size:0.82rem;">${date}</td>
+                    <td style="white-space:nowrap;">
+                        <select class="forum-status-select" data-post-id="${p.post_id}"
+                                style="padding:0.3rem 0.5rem;border:2px solid var(--border-main);font-weight:700;font-size:0.8rem;margin-right:4px;">
+                            <option value="open"   ${p.status === 'open'   ? 'selected' : ''}>Open</option>
+                            <option value="pinned" ${p.status === 'pinned' ? 'selected' : ''}>Pinned</option>
+                            <option value="closed" ${p.status === 'closed' ? 'selected' : ''}>Closed</option>
+                        </select>
+                        <button class="btn btn-small btn-success" data-action="forum-save-status" data-id="${p.post_id}"
+                                style="margin-right:4px;padding:0.3rem 0.6rem;">✓</button>
+                        <button class="btn btn-small btn-danger" data-action="forum-delete-post" data-id="${p.post_id}">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        // --- Comment Rows (with AI badge) ---
+        const commentRows = (comments || []).map(c => {
+            const date = c.created_at
+                ? new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                : '—';
+            const excerpt = c.content.length > 120 ? c.content.substring(0, 120) + '…' : c.content;
+            const aiFlagBadge = c.ai_flag && c.ai_flag !== 'clean'
+                ? `<span style="display:inline-block;padding:0.15rem 0.4rem;border-radius:20px;font-size:0.6rem;font-weight:800;text-transform:uppercase;margin-left:0.4rem;
+                            background:${c.ai_flag === 'flagged' ? 'rgba(231,76,60,0.12)' : 'rgba(243,156,18,0.12)'};
+                            color:${c.ai_flag === 'flagged' ? '#c0392b' : '#d68910'};"
+                        title="${this._esc(c.ai_reason || '')}">
+                        <i class="bi bi-robot"></i> ${c.ai_flag.toUpperCase()}
+                    </span>`
+                : '';
+            const rowBg = c.ai_flag === 'flagged' ? 'background:rgba(231,76,60,0.04);' : '';
+            return `
+                <tr style="${rowBg}">
+                    <td><strong>#${c.comment_id}</strong></td>
+                    <td style="font-size:0.85rem;">${this._esc(excerpt)}${aiFlagBadge}</td>
+                    <td style="font-size:0.82rem;">${this._esc(c.author_name)}</td>
+                    <td style="font-size:0.82rem;">${this._esc(c.post_title || '—')}</td>
+                    <td style="font-size:0.82rem;">${date}</td>
+                    <td>
+                        <button class="btn btn-small btn-danger" data-action="forum-delete-comment" data-id="${c.comment_id}">
+                            <i class="bi bi-trash3"></i> REMOVE
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        this.app.innerHTML = `
+            <section class="page-container">
+                <h2 class="reveal">Forum Moderation</h2>
+                <p class="reveal" style="margin-bottom:2rem;opacity:0.7;">Manage citizen forum posts and comments. Pin important discussions, close resolved threads, and remove inappropriate content.</p>
+
+                ${alertBanner}
+                ${statsHtml}
+
+                <h3 class="reveal" style="text-transform:uppercase;letter-spacing:1px;font-size:1rem;margin-bottom:1rem;">
+                    <i class="bi bi-megaphone"></i> Posts (${(posts || []).length})
+                </h3>
+                <div class="reveal" style="margin-bottom:3rem;">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th><th>Title / Author</th><th>Category</th><th>Status</th><th>Comments</th><th>Date</th><th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${postRows.length > 0 ? postRows : '<tr><td colspan="7" style="text-align:center;padding:2rem;">No forum posts yet.</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <h3 class="reveal" style="text-transform:uppercase;letter-spacing:1px;font-size:1rem;margin-bottom:1rem;">
+                    <i class="bi bi-chat-dots"></i> Recent Comments (${(comments || []).length})
+                </h3>
+                <div class="reveal">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th><th>Content</th><th>Author</th><th>Post</th><th>Date</th><th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${commentRows.length > 0 ? commentRows : '<tr><td colspan="6" style="text-align:center;padding:2rem;">No comments yet.</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    },
+
+    /** Minimal HTML escape helper */
+    _esc(str) {
+        if (!str) return '';
+        const el = document.createElement('span');
+        el.textContent = str;
+        return el.innerHTML;
     }
 };
 

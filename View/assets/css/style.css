@@ -263,6 +263,34 @@ nav {
     letter-spacing: 1px;
     border: var(--border-main);
     border-radius: var(--radius-xl);
+    transition: var(--transition-fast);
+    display: inline-block;
+}
+
+a.user-role-badge:hover {
+    background: var(--accent-blue);
+    color: var(--primary-navy);
+}
+
+.bo-frontoffice-btn {
+    background: var(--white);
+    color: var(--primary-navy);
+    padding: 0.4rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    border: 2px solid var(--primary-navy);
+    border-radius: var(--radius-xl);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition-fast);
+}
+
+.bo-frontoffice-btn:hover {
+    background: var(--primary-navy);
+    color: var(--white);
 }
 
 .logout-link {
@@ -270,15 +298,57 @@ nav {
     font-weight: 700;
     font-size: 0.85rem;
     text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-family: var(--font-primary);
-    background: none;
-    border: none;
-    cursor: pointer;
-    transition: var(--transition-fast);
 }
+
+/* Toggle Switch */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+    border: 2px solid var(--primary-navy);
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+    border: 2px solid var(--primary-navy);
+}
+
+input:checked+.slider {
+    background-color: #cfd8dc;
+}
+
+input:checked+.slider:before {
+    transform: translateX(26px);
+}
+
+
 
 .logout-link:hover {
     opacity: 0.75;
@@ -630,10 +700,7 @@ nav {
     display: inline-block;
 }
 
-.btn:hover {
-    background-color: var(--primary-navy);
-    color: var(--bg-neutral);
-}
+
 
 .btn-primary {
     background-color: var(--primary-navy);
@@ -646,8 +713,8 @@ nav {
 }
 
 .btn-success {
-    background-color: var(--success) !important;
-    color: var(--white) !important;
+    background-color: var(--white) !important;
+    color: var(--success) !important;
     border-color: var(--success) !important;
 }
 
@@ -754,14 +821,14 @@ nav {
 }
 
 .status-validated {
-    background-color: var(--success);
-    color: var(--white);
+    background-color: var(--white);
+    color: var(--success);
     border-color: var(--success);
 }
 
 .status-rejected {
-    background-color: var(--danger);
-    color: var(--white);
+    background-color: var(--white);
+    color: var(--danger);
     border-color: var(--danger);
 }
 
@@ -1152,20 +1219,20 @@ nav {
 
 /* Extra status badge states */
 .status-active {
-    background-color: var(--success);
-    color: var(--white);
+    background-color: var(--white);
+    color: var(--success);
     border-color: var(--success);
 }
 
 .status-confirmed {
-    background-color: var(--success);
-    color: var(--white);
+    background-color: var(--white);
+    color: var(--success);
     border-color: var(--success);
 }
 
 .status-cancelled {
-    background-color: var(--danger);
-    color: var(--white);
+    background-color: var(--white);
+    color: var(--danger);
     border-color: var(--danger);
 }
 
@@ -1194,8 +1261,8 @@ nav {
 }
 
 .status-approved {
-    background-color: var(--success);
-    color: var(--white);
+    background-color: var(--white);
+    color: var(--success);
     border-color: var(--success);
 }
 
@@ -1319,72 +1386,72 @@ nav {
 }
 
 .ticket-detail-item {
-        background: rgba(29, 42, 68, 0.04);
-        padding: 12px;
-        border-radius: 8px;
-    }
+    background: rgba(29, 42, 68, 0.04);
+    padding: 12px;
+    border-radius: 8px;
+}
 
-    .ticket-detail-label {
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: rgba(26, 26, 26, 0.65);
-        margin-bottom: 4px;
-    }
+.ticket-detail-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(26, 26, 26, 0.65);
+    margin-bottom: 4px;
+}
 
-    .ticket-detail-value {
-        font-weight: 700;
-        color: var(--text-dark);
-    }
+.ticket-detail-value {
+    font-weight: 700;
+    color: var(--text-dark);
+}
 
-    .ticket-detail-value.price {
-        color: var(--primary-navy);
-    }
+.ticket-detail-value.price {
+    color: var(--primary-navy);
+}
 
-    .ticket-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 24px;
-        padding-top: 16px;
-        border-top: 1px solid rgba(26, 26, 26, 0.08);
-    }
+.ticket-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(26, 26, 26, 0.08);
+}
 
-    .ticket-status-badge {
-        padding: 6px 16px;
-        border-radius: 999px;
-        font-size: 0.8rem;
-        font-weight: 800;
-        text-transform: uppercase;
-    }
+.ticket-status-badge {
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
 
-    .ticket-status-badge.valid {
-        background: rgba(34, 197, 94, 0.2);
-        color: #166534;
-        border: 1px solid rgba(34, 197, 94, 0.3);
-    }
+.ticket-status-badge.valid {
+    background: rgba(34, 197, 94, 0.2);
+    color: #166534;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
 
-    .ticket-status-badge.cancelled {
-        background: rgba(239, 68, 68, 0.12);
-        color: #b91c1c;
-        border: 1px solid rgba(239, 68, 68, 0.2);
-    }
+.ticket-status-badge.cancelled {
+    background: rgba(239, 68, 68, 0.12);
+    color: #b91c1c;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
 
-    .ticket-type-label {
-        font-size: 0.8rem;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        opacity: 0.9;
-        color: var(--primary-navy);
-        font-weight: 600;
-    }
+.ticket-type-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    opacity: 0.9;
+    color: var(--primary-navy);
+    font-weight: 600;
+}
 
-    .ticket-ref {
-        font-weight: 800;
-        font-size: 1.4rem;
-        color: var(--primary-navy);
-        letter-spacing: 1px;
-    }
+.ticket-ref {
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: var(--primary-navy);
+    letter-spacing: 1px;
+}
 
 .appt-detail-value {
     font-weight: 700;
@@ -1758,12 +1825,7 @@ nav {
     color: var(--primary-navy) !important;
 }
 
-.btn:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 8px 24px var(--glow-primary) !important;
-    background: var(--white) !important;
-    color: var(--primary-navy) !important;
-}
+
 
 .btn-primary {
     background: var(--primary-navy) !important;
@@ -1803,7 +1865,62 @@ nav {
     border-radius: 99px !important;
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
-    background: rgba(255, 255, 255, 0.6);
+    background-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Restore explicit background-color for colored status variants;
+   the generic .status-badge override above would otherwise win on
+   later cascade order with equal specificity. */
+.status-badge.status-validated,
+.status-badge.status-approved {
+    background-color: var(--white) !important;
+    color: var(--success) !important;
+    border-color: var(--success) !important;
+}
+
+.status-badge.status-rejected,
+.status-badge.status-cancelled,
+.status-badge.status-full {
+    background-color: var(--danger) !important;
+    color: var(--white) !important;
+    border-color: var(--danger) !important;
+}
+
+.status-badge.status-in_progress {
+    background-color: #6f42c1 !important;
+    color: var(--white) !important;
+    border-color: #6f42c1 !important;
+}
+
+.status-badge.status-resolved {
+    background-color: #20c997 !important;
+    color: var(--white) !important;
+    border-color: #20c997 !important;
+}
+
+.status-badge.status-completed {
+    background-color: #0d6efd !important;
+    color: var(--white) !important;
+    border-color: #0d6efd !important;
+}
+
+.status-badge.status-rescheduled {
+    background-color: #fd7e14 !important;
+    color: var(--white) !important;
+    border-color: #fd7e14 !important;
+}
+
+.status-badge.status-pending {
+    background-color: rgba(255, 255, 255, 0.6) !important;
+    color: var(--primary-navy) !important;
+    border-color: var(--primary-navy) !important;
+}
+
+.status-badge.status-active,
+.status-badge.status-confirmed {
+    background-color: var(--white) !important;
+    color: var(--success) !important;
+    border-color: var(--success) !important;
 }
 
 .toast {
@@ -2617,20 +2734,34 @@ body {
 .btn::before {
     content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 120%;
-    height: 120%;
-    background: var(--color-accent-blue);
+    top: 0;
+    left: 0;
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border-radius: 50%;
-    transform: translate(-50%, -50%) scale(0);
-    transition: transform 0.4s var(--ease-smooth);
+    transform: translate(calc(var(--x, 0px) - 50%), calc(var(--y, 0px) - 50%)) scale(0);
+    transition: transform 0.1s ease-out, opacity 0.3s ease;
     z-index: 0;
+    pointer-events: none;
+    opacity: 0;
 }
 
 .btn:hover::before {
-    transform: translate(-50%, -50%) scale(1);
+    transform: translate(calc(var(--x, 0px) - 50%), calc(var(--y, 0px) - 50%)) scale(1);
+    opacity: 1;
 }
+
+.btn:hover {
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15) !important;
+}
+
+.btn-primary::before {
+    background: rgba(255, 255, 255, 0.3) !important;
+}
+
 
 .btn:active {
     transform: scale(0.92) !important;
@@ -2780,6 +2911,118 @@ body {
     border-radius: var(--radius-sm);
     margin-top: 0.5rem;
     border-left: 3px solid var(--color-accent-blue);
+}
+
+/* Authentication Shared Layout */
+.auth-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--bg-neutral);
+    margin: 0;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 450px;
+}
+
+.auth-card {
+    background: var(--white);
+    border: var(--border-main);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 3rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.auth-header h1 {
+    font-size: 2.5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    color: var(--primary-navy);
+    margin: 1rem 0 0.5rem;
+    letter-spacing: -2px;
+}
+
+.auth-header p {
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    opacity: 0.6;
+    letter-spacing: 1px;
+}
+
+.auth-form .form-group {
+    margin-bottom: 2rem;
+}
+
+.auth-form label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+    color: var(--primary-navy);
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 1.2rem;
+    border: 2px solid var(--primary-navy);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    font-family: inherit;
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--primary-navy);
+    transition: var(--transition-base);
+    box-sizing: border-box;
+    text-align: center;
+    letter-spacing: 0.5rem;
+}
+
+.auth-form input:focus {
+    outline: none;
+    background: #f8f6f0;
+    box-shadow: 0 0 0 4px rgba(58, 134, 255, 0.15);
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #eee;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.auth-footer a {
+    color: var(--primary-navy);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+}
+
+.auth-errors {
+    background: rgba(231, 76, 60, 0.1);
+    border: 2px solid var(--danger);
+    color: var(--danger);
+    padding: 1rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
 }
 
 /* Smart Q&A Chat Box (Citizen) */

@@ -61,7 +61,7 @@ if (empty($prompt)) {
 
 $url = 'https://api.groq.com/openai/v1/chat/completions';
 $data = [
-    'model'       => 'llama3-70b-8192',
+    'model'       => 'llama-3.1-8b-instant',
     'messages'    => [
         ['role' => 'system', 'content' => $system],
         ['role' => 'user',   'content' => $prompt]
