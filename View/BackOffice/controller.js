@@ -744,13 +744,18 @@ const controller = {
 
         const stages = [
             { pct: 15, label: 'Composing prompt...' },
-            { pct: 40, label: 'Sending to AI...' },
+            { pct: 40, label: 'Contacting AI...' },
             { pct: 65, label: 'Rendering image...' },
             { pct: 85, label: 'Finalizing details...' },
             { pct: 95, label: 'Almost done...' },
         ];
 
-        const providerLabel = provider === 'puter' ? 'Puter.ai' : provider === 'pollinations' ? 'Pollinations.ai' : 'Auto';
+        const providerLabel = {
+            'gemini': 'Gemini (AI Image)',
+            'puter': 'Puter.ai',
+            'pollinations': 'Pollinations.ai',
+            'auto': 'Auto (Smart Select)'
+        }[provider] || 'Auto';
 
         previewEl.innerHTML = `
             <div id="img-gen-progress" style="border:var(--border-main);border-radius:var(--radius-md);padding:1.2rem 1.4rem;background:var(--white);max-width:400px;">
@@ -779,7 +784,7 @@ const controller = {
         };
 
         advanceStage();
-        const stageTimer = setInterval(advanceStage, 3500);
+        const stageTimer = setInterval(advanceStage, 3000);
 
         const cleanup = () => {
             clearInterval(stageTimer);
@@ -793,33 +798,54 @@ const controller = {
             const prompt = `A professional, high-quality photograph for a community program. Theme: ${category}. Title: ${title}. ${desc}. Bright, inviting lighting. No text in the image.`;
             let imgSrc = null;
 
-            if (provider === 'pollinations') {
-                labelEl.textContent = 'Sending to Pollinations.ai...';
-                const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=800&height=400&nologo=true`;
-                await new Promise((resolve, reject) => { const i = new Image(); i.onload = resolve; i.onerror = reject; i.src = url; });
-                imgSrc = url;
-            } else if (provider === 'puter') {
-                const imgElement = await puter.ai.txt2img(prompt);
-                imgSrc = imgElement.src;
-            } else {
+            if (provider === 'gemini' || provider === 'auto') {
+                labelEl.textContent = 'Generating with Gemini...';
+                try {
+                    const resp = await fetch('../../gemini-image-proxy.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ prompt })
+                    });
+                    const data = await resp.json();
+                    if (data.error) throw new Error(data.error);
+                    imgSrc = `data:${data.mimeType};base64,${data.imageData}`;
+                } catch (err) {
+                    if (provider === 'gemini') throw err;
+                    console.warn('Gemini failed, falling back to other providers...', err);
+                }
+            }
+
+            if (!imgSrc && (provider === 'puter' || provider === 'auto')) {
+                labelEl.textContent = 'Trying Puter.ai...';
                 try {
                     const imgElement = await puter.ai.txt2img(prompt);
                     imgSrc = imgElement.src;
-                } catch (puterErr) {
-                    if (this._imgGenCancelled) throw new Error('cancelled');
-                    console.warn('Puter.ai unavailable, switching to Pollinations.ai:', puterErr);
-                    labelEl.textContent = 'Switching to Pollinations.ai...';
-                    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=800&height=400&nologo=true`;
-                    await new Promise((resolve, reject) => { const i = new Image(); i.onload = resolve; i.onerror = reject; i.src = url; });
-                    imgSrc = url;
+                } catch (err) {
+                    if (provider === 'puter') throw err;
+                    console.warn('Puter.ai failed...', err);
                 }
             }
+
+            if (!imgSrc && (provider === 'pollinations' || provider === 'auto')) {
+                labelEl.textContent = 'Trying Pollinations.ai...';
+                const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=768&nologo=true`;
+                // Use the image element approach to "warm up" the cache and check if it exists
+                await new Promise((resolve, reject) => {
+                    const i = new Image();
+                    i.onload = resolve;
+                    i.onerror = () => reject(new Error('Pollinations failed to load image.'));
+                    i.src = url;
+                });
+                imgSrc = url;
+            }
+
+            if (!imgSrc) throw new Error('All image generation providers failed.');
 
             if (this._imgGenCancelled) throw new Error('cancelled');
 
             clearInterval(stageTimer);
             bar.style.width      = '100%';
-            labelEl.textContent  = 'Done!';
+            labelEl.textContent  = 'Image ready!';
             pctEl.textContent    = '100%';
             bar.style.background = 'var(--success)';
 
@@ -846,7 +872,7 @@ const controller = {
                 view.renderToast('Image generation cancelled.', 'error');
             } else {
                 console.error('AI Generation Error:', error);
-                view.renderToast('Failed to generate image. Try again.', 'error');
+                view.renderToast('Failed to generate image: ' + (error.message || 'Unknown error'), 'error');
             }
         } finally {
             cleanup();

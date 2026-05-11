@@ -1113,6 +1113,7 @@ const view = {
                                 <input type="file" id="prog-image" name="image" accept="image/*" style="flex:1;min-width:0;">
                                 <select id="img-gen-provider" style="padding:0.75rem 1rem;font-size:0.85rem;border:var(--border-main);border-radius:var(--radius-sm);background:var(--white);color:var(--primary-navy);font-weight:600;cursor:pointer;">
                                     <option value="auto">Auto</option>
+                                    <option value="gemini">Gemini (AI Image)</option>
                                     <option value="puter">Puter.ai</option>
                                     <option value="pollinations">Pollinations.ai</option>
                                 </select>

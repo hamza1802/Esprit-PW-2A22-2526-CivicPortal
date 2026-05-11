@@ -36,11 +36,13 @@ if (!$prompt) {
     exit;
 }
 
-// --- Try Gemini 2.5 Flash Image first ---
-$geminiUrl  = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=' . $apiKey;
+// --- Try Gemini 2.0 Flash first ---
+$geminiUrl  = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' . $apiKey;
 $geminiBody = json_encode([
     'contents'         => [['parts' => [['text' => $prompt]]]],
-    'generationConfig' => ['responseModalities' => ['IMAGE', 'TEXT']],
+    'generationConfig' => [
+        'responseModalities' => ['IMAGE'],
+    ],
 ]);
 
 $opts = ['http' => ['header' => "Content-Type: application/json\r\n", 'method' => 'POST', 'content' => $geminiBody, 'ignore_errors' => true, 'timeout' => 20]];
