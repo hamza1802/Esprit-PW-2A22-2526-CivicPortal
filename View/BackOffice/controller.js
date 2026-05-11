@@ -657,6 +657,7 @@ const controller = {
         const transportType = transportSelect?.selectedOptions?.[0]?.dataset.transportType?.trim() || '';
         const distanceInput = form.querySelector('#routeDistance');
         const transportTypeInput = form.querySelector('#routeTransportType');
+        const depAddress = form.querySelector('#depAddress')?.value.trim() || '';
         const destAddress = form.querySelector('#destAddress').value.trim();
         const suggestion = document.getElementById('ai-price-suggestion');
         const priceInput = form.querySelector('[name="price"]');
@@ -689,12 +690,14 @@ const controller = {
             transportTypeInput.value = transportType;
         }
 
+        const departureCity = this._extractCityFromAddress(depAddress || departure);
         const destinationCity = this._extractCityFromAddress(destAddress || destination);
         const livePrice = await this._fetchLivePricingSuggestion({
             transportType,
             routeInfo,
             departure,
             destination,
+            departureCity,
             destinationCity
         });
 
@@ -703,6 +706,7 @@ const controller = {
             : this._calculateFallbackPrice({
                 distance: routeInfo.distance,
                 transportType,
+                departureCity,
                 destinationCity,
                 effectiveTransportType: routeInfo.effectiveTransportType
             });
@@ -750,8 +754,20 @@ const controller = {
         return parts.length > 0 ? parts[0] : address;
     },
 
-    _calculateFallbackPrice({ distance, transportType, destinationCity, effectiveTransportType }) {
+    _calculateFallbackPrice({ distance, transportType, departureCity, destinationCity, effectiveTransportType }) {
         const normalizedType = (effectiveTransportType || transportType || '').trim().toLowerCase();
+
+        if (normalizedType.includes('bus') || normalizedType.includes('autocar')) {
+            const localBusCities = ['tunis', 'ariana', 'ben arous', 'manouba', 'la goulette', 'la marsa'];
+            const lowerDeparture = (departureCity || '').toLowerCase();
+            const lowerDestination = (destinationCity || '').toLowerCase();
+            const isLocalMetroRoute = localBusCities.some(city => lowerDeparture.includes(city))
+                && localBusCities.some(city => lowerDestination.includes(city));
+            if (isLocalMetroRoute) {
+                return 1.00;
+            }
+        }
+
         const baseTypeRate = this._getTypeBaseRate(normalizedType);
         const demandFactor = this._cityDemandFactor(destinationCity);
         const typePremium = this._getTypePremium(normalizedType);
@@ -935,6 +951,7 @@ const controller = {
 
     async handleRouteRowAIPrice(dataset) {
         const transportType = (dataset.transportType || '').trim();
+        const departure = dataset.departure || dataset.depAddress || '';
         const destination = dataset.destination || '';
         const depLat = parseFloat(dataset.depLat);
         const depLng = parseFloat(dataset.depLng);
@@ -961,10 +978,12 @@ const controller = {
             return;
         }
 
+        const departureCity = this._extractCityFromAddress(departure);
         const destinationCity = this._extractCityFromAddress(destination);
         const proposed = this._calculateFallbackPrice({
             distance: routeInfo.distance,
             transportType,
+            departureCity,
             destinationCity,
             effectiveTransportType: routeInfo.effectiveTransportType
         });

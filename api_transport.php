@@ -75,12 +75,89 @@ function parseInternetPrices(string $html): array {
     return array_values(array_unique($prices));
 }
 
+function extractRouteCode(string $text): ?string {
+    if (preg_match('/\b(RL\s*-?\s*\d+|ligne\s*\d+|bus\s*\d+)\b/i', $text, $matches)) {
+        return strtoupper(preg_replace('/[\s-]+/', '', $matches[1]));
+    }
+    return null;
+}
+
+function estimateInternetRoutePrice(string $transportType, float $distance): ?float {
+    if ($distance <= 0) {
+        return null;
+    }
+
+    $normalizedType = strtolower($transportType);
+    $baseRate = 0.35;
+    $premium = 1.0;
+    $minimum = 1.0;
+
+    if (strpos($normalizedType, 'flight') !== false || strpos($normalizedType, 'plane') !== false) {
+        if ($distance < 200) {
+            return 50.0;
+        }
+        if ($distance < 2000) {
+            return 100.0;
+        }
+        return 300.0;
+    }
+
+    if (strpos($normalizedType, 'taxi') !== false || strpos($normalizedType, 'car') !== false || strpos($normalizedType, 'van') !== false || strpos($normalizedType, 'shuttle') !== false) {
+        $baseRate = 0.8;
+        $minimum = 2.0;
+    } elseif (strpos($normalizedType, 'bus') !== false || strpos($normalizedType, 'autocar') !== false) {
+        $baseRate = 0.15;
+        $minimum = 0.5;
+    } elseif (strpos($normalizedType, 'train') !== false || strpos($normalizedType, 'tgm') !== false) {
+        $baseRate = 0.12;
+        $minimum = 1.0;
+    } elseif (strpos($normalizedType, 'ferry') !== false) {
+        $baseRate = 0.40;
+    }
+
+    $price = $distance * $baseRate * $premium;
+    return max($minimum, round($price, 2));
+}
+
+function chooseBestInternetPrice(array $prices, ?float $fallbackPrice = null): float {
+    $counts = array_count_values($prices);
+    arsort($counts, SORT_NUMERIC);
+    $highestCount = reset($counts);
+    $modes = array_keys(array_filter($counts, function($count) use ($highestCount) {
+        return $count === $highestCount;
+    }));
+
+    if (count($modes) === 1) {
+        return $modes[0];
+    }
+
+    if ($fallbackPrice !== null) {
+        usort($modes, function($a, $b) use ($fallbackPrice) {
+            return abs($a - $fallbackPrice) <=> abs($b - $fallbackPrice);
+        });
+        return $modes[0];
+    }
+
+    sort($modes, SORT_NUMERIC);
+    return $modes[(int) floor(count($modes) / 2)];
+}
+
 function buildInternetSearchQueries(string $transportType, string $departure, string $destination): array {
     $queries = [];
-    
-    // French-specific queries for Tunisian context
     $transportLabel = strtolower($transportType);
-    
+    $routeCode = extractRouteCode("{$transportType} {$departure} {$destination}");
+
+    if ($routeCode !== null) {
+        $routeNumber = preg_replace('/[^0-9]/', '', $routeCode);
+        if ($routeNumber !== '') {
+            $queries[] = "{$routeCode} {$departure} {$destination} prix";
+            $queries[] = "tarif {$routeCode} {$departure} {$destination}";
+            $queries[] = "ligne {$routeNumber} {$departure} {$destination} prix";
+            $queries[] = "bus {$routeNumber} {$departure} {$destination} tarif";
+            $queries[] = "{$departure} {$destination} {$routeCode} prix Tunisie";
+        }
+    }
+
     if (strpos($transportLabel, 'bus') !== false || strpos($transportLabel, 'autocar') !== false) {
         $queries[] = "{$departure} {$destination} bus prix 2026";
         $queries[] = "tarif bus {$departure} {$destination} Tunisie";
@@ -89,7 +166,6 @@ function buildInternetSearchQueries(string $transportType, string $departure, st
         $queries[] = "{$departure} {$destination} train prix 2026";
         $queries[] = "TGM tarif {$departure} {$destination}";
     } elseif (strpos($transportLabel, 'flight') !== false || strpos($transportLabel, 'plane') !== false) {
-        // International flight queries with better coverage
         $queries[] = "flight price {$departure} {$destination} 2026";
         $queries[] = "airline ticket {$departure} to {$destination} TND";
         $queries[] = "cheapest flight {$departure} {$destination}";
@@ -102,10 +178,10 @@ function buildInternetSearchQueries(string $transportType, string $departure, st
         $queries[] = "{$transportType} {$departure} {$destination} tarif 2026";
     }
     
-    return $queries;
+    return array_values(array_unique($queries));
 }
 
-function searchInternetRoutePrice(string $transportType, string $departure, string $destination): array {
+function searchInternetRoutePrice(string $transportType, string $departure, string $destination, float $routeDistance = 0): array {
     $queries = buildInternetSearchQueries($transportType, $departure, $destination);
     $allPrices = [];
     $searchSources = [];
@@ -175,12 +251,14 @@ function searchInternetRoutePrice(string $transportType, string $departure, stri
     if (!empty($allPrices)) {
         $minPrice = min($allPrices);
         $maxPrice = max($allPrices);
+        $fallbackEstimate = estimateInternetRoutePrice($transportType, $routeDistance);
+        $chosenPrice = chooseBestInternetPrice($allPrices, $fallbackEstimate);
         $note = count($allPrices) === 1 
-            ? "Internet price: {$minPrice} TND"
-            : "Internet prices found: {$minPrice} - {$maxPrice} TND (using minimum)";
+            ? "Internet price: {$chosenPrice} TND"
+            : "Internet prices found: {$minPrice} - {$maxPrice} TND (using {$chosenPrice})";
         
         return [
-            'price' => $minPrice,
+            'price' => max($chosenPrice, $minimumPrice),
             'prices' => $allPrices,
             'minPrice' => $minPrice,
             'maxPrice' => $maxPrice,
@@ -235,12 +313,13 @@ try { switch ($action) {
             $transportType = trim((string)($input['transportType'] ?? ''));
             $departure = trim((string)($input['departure'] ?? ''));
             $destination = trim((string)($input['destination'] ?? ''));
+            $routeDistance = isset($input['routeDistance']) ? floatval($input['routeDistance']) : 0.0;
             if ($departure === '' || $destination === '') {
                 echo json_encode(['success' => false, 'error' => 'Departure and destination are required for internet price search.']);
                 break;
             }
 
-            $searchResult = searchInternetRoutePrice($transportType, $departure, $destination);
+            $searchResult = searchInternetRoutePrice($transportType, $departure, $destination, $routeDistance);
             echo json_encode(['success' => true, 'data' => $searchResult]);
             break;
 

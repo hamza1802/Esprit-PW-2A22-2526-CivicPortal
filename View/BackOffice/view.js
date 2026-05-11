@@ -665,19 +665,20 @@ const view = {
     renderTransportManagement({ types, vehicles, trajets }) {
         // ── Transport Type cards ──────────────────────────────────────────────
         const typeCards = types.map(t => `
-            <div style="display:flex;align-items:center;gap:1rem;padding:1rem;border:var(--border-main);background:var(--white);">
+            <div class="transport-type-card">
                 <img src="../../get_image.php?type=transport_type&id=${t.idTransportType}"
-                     style="width:64px;height:48px;object-fit:cover;border:var(--border-main);flex-shrink:0;"
+                     class="transport-type-image"
+                     alt="${t.name}"
                      onerror="this.style.display='none'">
-                <div style="flex:1;min-width:0;">
-                    <strong style="display:block;font-size:0.95rem;">${t.name}</strong>
-                    ${t.description ? `<span style="font-size:0.82rem;opacity:0.65;">${t.description}</span>` : ''}
+                <div class="transport-type-info">
+                    <strong>${t.name}</strong>
+                    ${t.description ? `<span>${t.description}</span>` : ''}
                 </div>
-                <div style="display:flex;gap:8px;">
-                    <button class="btn btn-small" data-action="edit-transport-type" data-id="${t.idTransportType}">
+                <div class="transport-type-actions">
+                    <button class="btn btn-small" data-action="edit-transport-type" data-id="${t.idTransportType}" title="Edit transport type">
                         <i class="bi bi-pencil-square"></i> EDIT
                     </button>
-                    <button class="btn btn-small btn-danger" data-action="delete-transport-type" data-id="${t.idTransportType}">
+                    <button class="btn btn-small btn-danger" data-action="delete-transport-type" data-id="${t.idTransportType}" title="Delete transport type">
                         <i class="bi bi-trash3"></i>
                     </button>
                 </div>
@@ -729,33 +730,36 @@ const view = {
                     <td>${t.departureTime ? t.departureTime.substring(0,5) : '—'}</td>
                     <td>
                         <div>${Number(t.price).toFixed(2)} TND</div>
-                        <button type="button" class="btn btn-small" data-action="ai-price-row" data-id="${t.idTrajet}"
+                        <button type="button" class="btn btn-small btn-ai-action" data-action="ai-price-row" data-id="${t.idTrajet}"
                             data-transport-type="${(t.transportType || t.type || '').toLowerCase()}"
                             data-dep-lat="${t.depLat || ''}"
                             data-dep-lng="${t.depLng || ''}"
                             data-dest-lat="${t.destLat || ''}"
                             data-dest-lng="${t.destLng || ''}"
-                            data-destination="${(t.destAddress || t.destination || '').replace(/"/g, '&quot;')}">
-                            AI
+                            data-destination="${(t.destAddress || t.destination || '').replace(/"/g, '&quot;')}"
+                            title="Get AI-suggested price">
+                            <i class="bi bi-sparkles"></i> AI
                         </button>
-                        <div id="ai-suggestion-${t.idTrajet}" style="font-size:0.75rem;opacity:0.75;margin-top:0.25rem;"></div>
+                        <div id="ai-suggestion-${t.idTrajet}" class="ai-suggestion-text" style="display:none;"></div>
                     </td>
                     <td>${t.transportName || '—'}</td>
                     <td>
-                        <div style="display:flex;align-items:center;gap:0.5rem;">
-                            <div style="flex:1;height:6px;background:var(--border-main);border-radius:3px;min-width:60px;">
-                                <div style="width:${pct}%;height:100%;background:${full ? 'var(--danger)' : 'var(--success)'};border-radius:3px;"></div>
+                        <div class="occupancy-container">
+                            <div class="occupancy-bar">
+                                <div class="occupancy-fill ${full ? 'full' : 'available'}" style="width:${pct}%;"></div>
                             </div>
-                            <span style="font-size:0.8rem;font-weight:700;">${t.sold}/${t.capacity}</span>
+                            <span class="occupancy-text">${t.sold}/${t.capacity}</span>
                         </div>
                     </td>
                     <td>
-                        <button class="btn btn-small" data-action="edit-trajet" data-id="${t.idTrajet}" style="margin-right:4px;">
-                            <i class="bi bi-pencil-square"></i> EDIT
-                        </button>
-                        <button class="btn btn-small btn-danger" data-action="delete-trajet" data-id="${t.idTrajet}">
-                            <i class="bi bi-trash3"></i>
-                        </button>
+                        <div class="action-buttons">
+                            <button class="btn btn-small" data-action="edit-trajet" data-id="${t.idTrajet}" title="Edit route">
+                                <i class="bi bi-pencil-square"></i> EDIT
+                            </button>
+                            <button class="btn btn-small btn-danger" data-action="delete-trajet" data-id="${t.idTrajet}" title="Delete route">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `;
@@ -766,20 +770,20 @@ const view = {
                 <h2 class="reveal">Transport Management</h2>
 
                 <!-- TRANSPORT TYPES -->
-                <div style="display:flex;justify-content:space-between;align-items:center;margin:0 0 1rem;flex-wrap:wrap;gap:0.5rem;">
-                    <h3 class="reveal" style="margin:0;font-size:1.2rem;text-transform:uppercase;letter-spacing:1px;">
+                <div class="management-header reveal">
+                    <h3>
                         <i class="bi bi-tag"></i> Transport Types — ${types.length}
                     </h3>
-                    <button class="btn reveal" data-action="toggle-add-type" style="border:2px solid var(--primary-navy);">+ ADD TYPE</button>
+                    <button class="btn" data-action="toggle-add-type" style="border:2px solid var(--primary-navy);">+ ADD TYPE</button>
                 </div>
 
-                <div id="add-type-panel" style="display:none;margin-bottom:1.5rem;">
+                <div id="add-type-panel" style="display:none;" class="add-panel">
                     <div class="form-card">
                         <form id="add-type-form" enctype="multipart/form-data">
-                            <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                            <div class="form-grid">
                                 <div class="form-group">
                                     <label>Type Name</label>
-                                    <input type="text" name="name" placeholder="e.g. Bus, Train, Metro">
+                                    <input type="text" name="name" placeholder="e.g. Bus, Train, Metro" required>
                                 </div>
                                 <div class="form-group">
                                     <label>Description</label>
@@ -800,32 +804,32 @@ const view = {
                 </div>
 
                 <!-- VEHICLES -->
-                <div style="display:flex;justify-content:space-between;align-items:center;margin:2rem 0 1rem;flex-wrap:wrap;gap:0.5rem;">
-                    <h3 class="reveal" style="margin:0;font-size:1.2rem;text-transform:uppercase;letter-spacing:1px;">
+                <div class="management-header reveal">
+                    <h3>
                         <i class="bi bi-truck"></i> Fleet — ${vehicles.length} vehicle${vehicles.length !== 1 ? 's' : ''}
                     </h3>
-                    <button class="btn reveal" data-action="toggle-add-vehicle" style="border:2px solid var(--primary-navy);">+ ADD VEHICLE</button>
+                    <button class="btn" data-action="toggle-add-vehicle" style="border:2px solid var(--primary-navy);">+ ADD VEHICLE</button>
                 </div>
 
-                <div id="add-vehicle-panel" style="display:none;margin-bottom:1.5rem;">
+                <div id="add-vehicle-panel" style="display:none;" class="add-panel">
                     <div class="form-card">
                         <form id="add-vehicle-form">
-                            <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                            <div class="form-grid">
                                 <div class="form-group">
                                     <label>Vehicle Name</label>
-                                    <input type="text" name="name" placeholder="e.g. City Express 01">
+                                    <input type="text" name="name" placeholder="e.g. City Express 01" required>
                                 </div>
                                 <div class="form-group">
                                     <label>Type Label</label>
-                                    <input type="text" name="type" placeholder="Bus / Train / Metro">
+                                    <input type="text" name="type" placeholder="Bus / Train / Metro" required>
                                 </div>
                                 <div class="form-group">
                                     <label>Capacity</label>
-                                    <input type="number" name="capacity" min="1" placeholder="50">
+                                    <input type="number" name="capacity" min="1" placeholder="50" required>
                                 </div>
                                 <div class="form-group">
                                     <label>Status</label>
-                                    <select name="status">
+                                    <select name="status" required>
                                         <option value="Active">Active</option>
                                         <option value="Maintenance">Maintenance</option>
                                         <option value="Inactive">Inactive</option>
@@ -854,53 +858,53 @@ const view = {
                 </div>
 
                 <!-- ROUTES -->
-                <div style="display:flex;justify-content:space-between;align-items:center;margin:0 0 1rem;flex-wrap:wrap;gap:0.5rem;">
-                    <h3 class="reveal" style="margin:0;font-size:1.2rem;text-transform:uppercase;letter-spacing:1px;">
+                <div class="management-header reveal">
+                    <h3>
                         <i class="bi bi-signpost-split"></i> Routes — ${trajets.length} route${trajets.length !== 1 ? 's' : ''}
                     </h3>
-                    <button class="btn reveal" data-action="toggle-add-trajet" style="border:2px solid var(--primary-navy);">+ ADD ROUTE</button>
+                    <button class="btn" data-action="toggle-add-trajet" style="border:2px solid var(--primary-navy);">+ ADD ROUTE</button>
                 </div>
 
-                <div id="add-trajet-panel" style="display:none;margin-bottom:1.5rem;">
+                <div id="add-trajet-panel" style="display:none;" class="add-panel">
                     <div class="form-card">
                         <form id="add-trajet-form">
-                            <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                            <div class="form-grid">
                                 <div class="form-group">
                                     <label>Departure</label>
-                                    <input type="text" name="departure" placeholder="Search a location..." autocomplete="off">
+                                    <input type="text" name="departure" placeholder="Search a location..." autocomplete="off" required>
                                 </div>
                                 <div class="form-group">
                                     <label>Destination</label>
-                                    <input type="text" name="destination" placeholder="Search a location..." autocomplete="off">
+                                    <input type="text" name="destination" placeholder="Search a location..." autocomplete="off" required>
                                 </div>
                                 <div class="form-group">
                                     <label>Departure Date</label>
-                                    <input type="date" name="departureDate" value="${new Date().toISOString().split('T')[0]}">
+                                    <input type="date" name="departureDate" value="${new Date().toISOString().split('T')[0]}" required>
                                 </div>
                                 <div class="form-group">
                                     <label>Departure Time</label>
-                                    <input type="time" name="departureTime">
+                                    <input type="time" name="departureTime" required>
                                 </div>
-                                <div class="form-group" style="display:flex;flex-direction:column;gap:0.5rem;">
-                                    <label>Price</label>
-                                    <div style="display:flex;gap:0.5rem;align-items:flex-start;">
-                                        <input type="number" name="price" id="route-price" min="0" step="0.01" placeholder="9.99" style="flex:1;">
-                                        <button type="button" class="btn btn-primary" id="btn-ai-price" style="white-space:nowrap;">GET BEST PRICE</button>
+                                <div class="form-group price-section">
+                                    <label>Price (TND)</label>
+                                    <div class="price-input-group">
+                                        <input type="number" name="price" id="route-price" min="0" step="0.01" placeholder="9.99" required>
+                                        <button type="button" class="btn btn-ai-action" id="btn-ai-price" style="white-space:nowrap;"><i class="bi bi-sparkles"></i> GET BEST PRICE</button>
                                     </div>
-                                    <div id="ai-price-suggestion" style="font-size:0.85rem;opacity:0.75;line-height:1.3;">Click the button to compute the best route price in Tunisian Dinar.</div>
+                                    <div id="ai-price-suggestion" class="price-suggestion">Click the button to compute the best route price in Tunisian Dinar.</div>
                                 </div>
                                 <input type="hidden" name="distance" id="routeDistance">
                                 <input type="hidden" name="transportType" id="routeTransportType">
                                 <div class="form-group" style="grid-column:1/-1;">
                                     <label>Vehicle</label>
-                                    <select name="idTransport">
+                                    <select name="idTransport" required>
                                         <option value="" disabled selected>Select vehicle</option>
                                         ${vehicleOptions}
                                     </select>
                                 </div>
                                 <div class="form-group" style="grid-column:1/-1;">
                                     <label>Route Map (Click or drag markers)</label>
-                                    <div id="route-map" style="height:300px; border:2px solid var(--border-main); border-radius:8px; z-index: 1;"></div>
+                                    <div id="route-map" style="height:300px; border-radius:8px; z-index: 1;"></div>
                                     <input type="hidden" name="depLat" id="depLat">
                                     <input type="hidden" name="depLng" id="depLng">
                                     <input type="hidden" name="destLat" id="destLat">

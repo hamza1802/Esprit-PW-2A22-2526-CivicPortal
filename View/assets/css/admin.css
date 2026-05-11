@@ -434,6 +434,258 @@ h2.reveal {
     pointer-events: auto;
 }
 
+/* ==========================================================================
+   TRANSPORT MANAGEMENT STYLES
+   ========================================================================== */
+
+/* Transport Type Cards */
+.transport-type-card {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.25rem;
+    border: 1px solid var(--secondary-grey);
+    background: var(--white);
+    border-radius: var(--radius-md);
+    transition: all 200ms ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.transport-type-card:hover {
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    border-color: var(--accent-blue);
+    transform: translateY(-2px);
+}
+
+.transport-type-image {
+    width: 72px;
+    height: 54px;
+    object-fit: cover;
+    border: 1px solid var(--secondary-grey);
+    border-radius: var(--radius-sm);
+    flex-shrink: 0;
+}
+
+.transport-type-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.transport-type-info strong {
+    display: block;
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    margin-bottom: 0.25rem;
+}
+
+.transport-type-info span {
+    font-size: 0.82rem;
+    color: var(--text-dark);
+    opacity: 0.65;
+}
+
+.transport-type-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+/* Section Headers */
+.management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 2.5rem 0 1.5rem 0;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.management-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--primary-navy);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Add Toggle Panels */
+.add-panel {
+    margin-bottom: 2rem;
+    animation: slideDown 200ms ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Table Improvements */
+.table-responsive table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table tbody tr {
+    transition: background-color 150ms ease;
+}
+
+.data-table tbody tr:hover {
+    background-color: rgba(58, 134, 255, 0.04);
+}
+
+.data-table img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--radius-md);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 200ms ease;
+}
+
+.status-validated {
+    background: rgba(39, 174, 96, 0.1);
+    color: var(--success);
+    border: 1px solid var(--success);
+}
+
+.status-rejected {
+    background: rgba(231, 76, 60, 0.1);
+    color: var(--danger);
+    border: 1px solid var(--danger);
+}
+
+/* Occupancy Progress */
+.occupancy-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.occupancy-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--secondary-grey);
+    border-radius: 3px;
+    overflow: hidden;
+    min-width: 60px;
+}
+
+.occupancy-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 300ms ease, background-color 200ms ease;
+}
+
+.occupancy-fill.available {
+    background: var(--success);
+}
+
+.occupancy-fill.full {
+    background: var(--danger);
+}
+
+.occupancy-text {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    white-space: nowrap;
+}
+
+/* Price Suggestion */
+.price-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.price-input-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.price-input-group input {
+    flex: 1;
+}
+
+.price-suggestion {
+    font-size: 0.75rem;
+    color: var(--text-dark);
+    opacity: 0.75;
+    line-height: 1.4;
+}
+
+/* AI Button Styling */
+.btn-ai-action {
+    background: linear-gradient(135deg, var(--accent-blue), #2563eb) !important;
+    color: var(--white) !important;
+    border: none !important;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: all 200ms ease;
+}
+
+.btn-ai-action:hover {
+    box-shadow: 0 6px 16px rgba(58, 134, 255, 0.3) !important;
+}
+
+/* Container for AI suggestion text */
+.ai-suggestion-text {
+    font-size: 0.75rem;
+    opacity: 0.75;
+    margin-top: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    background: rgba(58, 134, 255, 0.05);
+    border-left: 2px solid var(--accent-blue);
+    border-radius: 2px;
+}
+
+/* Form Grid Improvements */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-grid > div[style*="grid-column: 1 / -1"],
+.form-grid > .form-group:nth-child(n+5):not([style*="grid-column"]) {
+    grid-column: 1 / -1;
+}
+
+/* Route Map */
+#route-map, [id*="-map"] {
+    border-radius: var(--radius-sm);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Action Buttons Container */
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
 /* ── Mobile: <768px ──────────────────────────────────────────── */
 @media (max-width: 767px) {
 
