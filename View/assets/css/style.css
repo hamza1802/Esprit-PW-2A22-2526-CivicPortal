@@ -348,15 +348,7 @@ input:checked+.slider:before {
     transform: translateX(26px);
 }
 
-display: flex;
-align-items: center;
-gap: 4px;
-font-family: var(--font-primary);
-background: none;
-border: none;
-cursor: pointer;
-transition: var(--transition-fast);
-}
+
 
 .logout-link:hover {
     opacity: 0.75;
