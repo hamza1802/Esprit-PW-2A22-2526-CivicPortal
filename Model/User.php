@@ -68,6 +68,7 @@ class User implements JsonSerializable {
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'username' => $this->name,
             'email' => $this->email,
             'role' => $this->role,
             'created_at' => $this->createdAt,

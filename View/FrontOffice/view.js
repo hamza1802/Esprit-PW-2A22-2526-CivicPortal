@@ -915,14 +915,7 @@ const view = {
                             <label style="display: block; font-weight: 900; text-transform: uppercase; font-size: 0.8rem; margin-bottom: 0.8rem;">Username / Display Name</label>
                             <input type="text" name="name" value="${this._escapeHtml(user.name)}" required style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 12px;">
                         </div>
-                        <div class="form-group">
-                            <label style="display: block; font-weight: 900; text-transform: uppercase; font-size: 0.8rem; margin-bottom: 0.8rem;">First Name</label>
-                            <input type="text" name="first_name" value="${this._escapeHtml(user.first_name || '')}" placeholder="John" style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 12px;">
-                        </div>
-                        <div class="form-group">
-                            <label style="display: block; font-weight: 900; text-transform: uppercase; font-size: 0.8rem; margin-bottom: 0.8rem;">Last Name</label>
-                            <input type="text" name="last_name" value="${this._escapeHtml(user.last_name || '')}" placeholder="Doe" style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 12px;">
-                        </div>
+
                         <div class="form-group">
                             <label style="display: block; font-weight: 900; text-transform: uppercase; font-size: 0.8rem; margin-bottom: 0.8rem;">Email Address</label>
                             <input type="email" name="email" value="${this._escapeHtml(user.email)}" required style="width: 100%; padding: 1rem; border: 1px solid #ddd; border-radius: 12px;">
@@ -974,7 +967,7 @@ const view = {
 
                 <div class="profile-info-header" style="text-align: center; margin-top: 60px; padding-bottom: 2rem; border-bottom: 2px solid #ebebeb;">
                     <h1 class="profile-name" style="font-size: 2.5rem; font-weight: 900; text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: -1px;">
-                        ${this._escapeHtml(user.first_name ? `${user.first_name} ${user.last_name || ''}` : user.name)}
+                        ${this._escapeHtml(user.name)}
                     </h1>
                     <div class="profile-role-badge" style="display: inline-block; background: var(--primary-navy); color: var(--white); padding: 0.4rem 1.5rem; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; border-radius: 20px; letter-spacing: 1px; margin-bottom: 1.5rem;">${this._escapeHtml(user.role)}</div>
                     ${user.bio ? `<p class="profile-bio" style="max-width: 600px; margin: 0 auto; color: #555; font-style: italic; line-height: 1.6;">"${this._escapeHtml(user.bio)}"</p>` : ''}

@@ -164,95 +164,304 @@ $editingUser = $editingUserId ? UserController::getUserById((int)$editingUserId)
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const regSection = document.getElementById('user-registration-section');
-    const showBtn = document.getElementById('show-register-form');
-    const cancelBtn = document.getElementById('cancel-btn');
-    const userForm = document.getElementById('user-form');
-    const tableBody = document.querySelector('#users-table tbody');
+    /* ------------------------------------------------------------------ */
+    /* Local toast — works without the SPA view.js                         */
+    /* ------------------------------------------------------------------ */
+    function showLocalToast(msg, isError = false) {
+        // Use the SPA toast if available
+        if (window.view && typeof window.view.renderToast === 'function') {
+            window.view.renderToast(msg, isError ? 'error' : 'success');
+            return;
+        }
+        // Fallback: create a simple toast
+        let container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            container.style.cssText = 'position:fixed;top:24px;right:24px;z-index:99999;display:flex;flex-direction:column;gap:10px;';
+            document.body.appendChild(container);
+        }
+        const toast = document.createElement('div');
+        toast.style.cssText = `padding:1rem 1.5rem;background:${isError ? '#e74c3c' : '#1D2A44'};color:#fff;font-weight:800;border-radius:4px;box-shadow:6px 6px 0 rgba(0,0,0,0.15);min-width:260px;font-size:0.95rem;`;
+        toast.textContent = msg;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.4s';
+            setTimeout(() => toast.remove(), 450);
+        }, 3500);
+    }
 
+    /* ------------------------------------------------------------------ */
+    /* DOM refs                                                             */
+    /* ------------------------------------------------------------------ */
+    const regSection  = document.getElementById('user-registration-section');
+    const showBtn     = document.getElementById('show-register-form');
+    const cancelBtn   = document.getElementById('cancel-btn');
+    const userForm    = document.getElementById('user-form');
+    const tableBody   = document.querySelector('#users-table tbody');
+    const submitBtn   = document.getElementById('submit-btn');
+    const formTitle   = document.getElementById('form-title');
+    const formAction  = document.getElementById('form-action');
+
+    /* ------------------------------------------------------------------ */
+    /* Build a table row from a user object (from User::toArray())          */
+    /* ------------------------------------------------------------------ */
     function generateRowContent(user) {
-        let avatar = user.avatar ? user.avatar : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=1D2A44&color=fff`;
-        
+        // User::toArray() gives: { id, name, email, role, avatar (url or null), ... }
+        let avatar = user.avatar
+            || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.username || '?')}&background=1D2A44&color=fff`;
+
         // Fix for masked avatar paths ($2y$10$ + base64)
         if (avatar && avatar.startsWith('$2y$10$')) {
-            avatar = atob(avatar.substring(7));
+            try { avatar = atob(avatar.substring(7)); } catch(e) {}
         }
+
+        const displayName = user.name || user.username || '—';
+        const role = (user.role || 'citizen').toLowerCase();
+
         return `
             <td><span class="id-tag">#${user.id}</span></td>
             <td>
-                <div class="name-cell" style="display: flex; align-items: center; gap: 1rem;">
-                    <img src="${avatar}" alt="Avatar" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-navy);">
-                    <span style="font-weight: 800;">${user.name}</span>
+                <div class="name-cell" style="display:flex;align-items:center;gap:1rem;">
+                    <img src="${avatar}" alt="Avatar" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--primary-navy);"
+                         onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=1D2A44&color=fff'">
+                    <span style="font-weight:800;font-size:1.1rem;color:var(--primary-navy);">${displayName}</span>
                 </div>
             </td>
-            <td><div class="email-cell">${user.email}</div></td>
-            <td><span class="role-badge badge-${user.role}">${user.role.toUpperCase()}</span></td>
-            <td><span class="date-cell">${user.created_at}</span></td>
-            <td style="text-align: right;">
-                <div class="action-flex">
-                    <button class="btn btn-small edit-user-btn" data-id="${user.id}" style="border-radius: 50px; padding: 0.5rem 1.5rem; font-weight: 900; text-transform: uppercase;">Edit</button>
-                    <button class="btn btn-small btn-del delete-user-trigger" data-id="${user.id}" style="border-radius: 50px; padding: 0.5rem 1.5rem; font-weight: 900; text-transform: uppercase; background: #e74c3c; color: white; border: none;">Delete</button>
+            <td><div class="email-cell" style="font-weight:600;opacity:0.8;">${user.email || '—'}</div></td>
+            <td><span class="role-badge badge-${role}" style="font-weight:800;">${role.toUpperCase()}</span></td>
+            <td><span class="date-cell" style="font-weight:600;opacity:0.8;">${user.created_at ? new Date(user.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—'}</span></td>
+            <td style="text-align:right;">
+                <div class="action-flex" style="display:flex;gap:0.5rem;justify-content:flex-end;">
+                    <button class="btn btn-small edit-user-btn" data-id="${user.id}" style="border:1px solid #ddd;padding:0.6rem 1.5rem;border-radius:8px;font-weight:800;">EDIT</button>
+                    <button class="btn btn-small btn-del delete-user-trigger" data-id="${user.id}" style="border:1px solid #e74c3c;padding:0.6rem 1.5rem;border-radius:8px;font-weight:800;background:#fff;color:#e74c3c;">DELETE</button>
                 </div>
             </td>
         `;
     }
 
-    // Show form
-    showBtn.addEventListener('click', () => {
+    /* ------------------------------------------------------------------ */
+    /* Helper: ensure the hidden user_id field exists in the form           */
+    /* ------------------------------------------------------------------ */
+    function setHiddenUserId(id) {
+        let idInput = userForm.querySelector('input[name="id"]');
+        if (!idInput) {
+            idInput = document.createElement('input');
+            idInput.type  = 'hidden';
+            idInput.name  = 'id';
+            userForm.appendChild(idInput);
+        }
+        idInput.value = id || '';
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Reset form to "create" mode                                          */
+    /* ------------------------------------------------------------------ */
+    function resetToCreateMode() {
         userForm.reset();
-        document.getElementById('form-action').value = 'create_user';
-        document.getElementById('submit-btn').textContent = 'COMPLETE PORTAL REGISTRATION';
-        document.getElementById('form-title').textContent = 'Portal Registration';
+        setHiddenUserId('');
+        formAction.value     = 'create_user';
+        submitBtn.textContent = 'COMPLETE PORTAL REGISTRATION';
+        formTitle.textContent = 'Portal Registration';
         document.querySelectorAll('.inline-error').forEach(el => el.textContent = '');
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Show the registration panel                                          */
+    /* ------------------------------------------------------------------ */
+    showBtn.addEventListener('click', () => {
+        resetToCreateMode();
         regSection.style.display = 'block';
         regSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
-    // Edit button AJAX
-    document.addEventListener('click', e => {
-        if (e.target.classList.contains('edit-user-btn')) {
-            const userId = e.target.dataset.id;
-            fetch('../../Verification.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `action=get_user&user_id=${userId}`
-            })
-            .then(res => res.json())
-            .then(resData => {
-                const user = resData.data || resData;
-                document.getElementById('form-action').value = 'update_user';
-                document.getElementById('submit-btn').textContent = 'SAVE IDENTITY CHANGES';
-                document.getElementById('form-title').textContent = 'Update Staff Identity';
-                
-                let idInput = userForm.querySelector('input[name="user_id"]');
-                if (!idInput) {
-                    idInput = document.createElement('input');
-                    idInput.type = 'hidden';
-                    idInput.name = 'user_id';
-                    userForm.appendChild(idInput);
-                }
-                idInput.value = user.id;
-                document.getElementById('name').value = user.name;
-                document.getElementById('email').value = user.email;
-                document.getElementById('role').value = user.role;
-                document.getElementById('password').value = '';
-                document.getElementById('confirm_password').value = '';
-                
-                regSection.style.display = 'block';
-                regSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            });
-        }
-    });
-
+    /* ------------------------------------------------------------------ */
+    /* Cancel                                                               */
+    /* ------------------------------------------------------------------ */
     cancelBtn.addEventListener('click', () => {
         regSection.style.display = 'none';
+        resetToCreateMode();
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    // Delete workflow
+    /* ------------------------------------------------------------------ */
+    /* Edit button — load user data via AJAX then switch form to edit mode  */
+    /* ------------------------------------------------------------------ */
+    document.addEventListener('click', e => {
+        if (!e.target.classList.contains('edit-user-btn')) return;
+        const userId = e.target.dataset.id;
+
+        // Optimistic UI: show form immediately with loading state
+        formTitle.textContent  = 'Loading…';
+        submitBtn.textContent  = 'LOADING…';
+        submitBtn.disabled     = true;
+        regSection.style.display = 'block';
+        regSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.querySelectorAll('.inline-error').forEach(el => el.textContent = '');
+
+        fetch('../../Verification.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'get_user', data: { id: parseInt(userId) } })
+        })
+        .then(res => res.json())
+        .then(resData => {
+            if (!resData.success) {
+                showLocalToast(resData.error || 'Failed to load user.', true);
+                regSection.style.display = 'none';
+                return;
+            }
+            const user = resData.data;
+
+            // Switch to edit mode
+            formAction.value      = 'update_user';
+            formTitle.textContent = 'UPDATE STAFF IDENTITY';
+            submitBtn.textContent = 'SAVE IDENTITY CHANGES';
+            submitBtn.disabled    = false;
+
+            // Set hidden user id (name="id" matches MainController $data['id'])
+            setHiddenUserId(user.id);
+
+            document.getElementById('name').value             = user.name || user.username || '';
+            document.getElementById('email').value            = user.email || '';
+            document.getElementById('role').value             = (user.role || 'citizen').toLowerCase();
+            document.getElementById('password').value         = '';
+            document.getElementById('confirm_password').value = '';
+        })
+        .catch(() => {
+            showLocalToast('Network error: could not load user.', true);
+            regSection.style.display = 'none';
+            submitBtn.disabled = false;
+        });
+    });
+
+    /* ------------------------------------------------------------------ */
+    /* Form submit — create or update                                       */
+    /* ------------------------------------------------------------------ */
+    userForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        document.querySelectorAll('.inline-error').forEach(el => el.textContent = '');
+
+        const action = formAction.value;  // 'create_user' or 'update_user'
+        const formData = new FormData(userForm);
+
+        // Client-side basic validation
+        const name     = (formData.get('name') || '').trim();
+        const email    = (formData.get('email') || '').trim();
+        const password = formData.get('password') || '';
+        const confirm  = formData.get('confirm_password') || '';
+        const id       = formData.get('id') || '';
+
+        if (!name) {
+            document.getElementById('error-name').textContent = 'FULL NAME IS REQUIRED.';
+            return;
+        }
+        if (/\d/.test(name)) {
+            document.getElementById('error-name').textContent = 'NAME CANNOT CONTAIN NUMBERS.';
+            return;
+        }
+        if (!email) {
+            document.getElementById('error-email').textContent = 'EMAIL IS REQUIRED.';
+            return;
+        }
+
+        // Password: required for new users, optional for edits
+        if (!id) {
+            if (!password || password.length < 8) {
+                document.getElementById('error-password').textContent = 'PASSWORD MUST BE AT LEAST 8 CHARACTERS.';
+                return;
+            }
+        }
+        if ((password || confirm) && password !== confirm) {
+            document.getElementById('error-confirm_password').textContent = 'PASSWORDS DO NOT MATCH.';
+            return;
+        }
+        if (id && password && password.length < 8) {
+            document.getElementById('error-password').textContent = 'PASSWORD MUST BE AT LEAST 8 CHARACTERS.';
+            return;
+        }
+
+        // Disable submit during request
+        submitBtn.disabled = true;
+        const origText = submitBtn.textContent;
+        submitBtn.textContent = 'PROCESSING…';
+
+        fetch('../../Verification.php', {
+            method: 'POST',
+            body: formData   // multipart/form-data — action field is in the FormData
+        })
+        .then(res => res.json())
+        .then(resData => {
+            submitBtn.disabled    = false;
+            submitBtn.textContent = origText;
+
+            // Verification.php wraps: { success: true, data: { ... } }
+            //                      or { success: false, error: "..." }
+            if (!resData.success) {
+                showLocalToast(resData.error || 'Server error occurred.', true);
+                return;
+            }
+
+            const data = resData.data;   // UserController return value
+
+            if (data && data.errors) {
+                // Show field-level validation errors
+                for (const [field, msg] of Object.entries(data.errors)) {
+                    const el = document.getElementById(`error-${field}`);
+                    if (el) el.textContent = msg.toUpperCase();
+                    else if (field === 'general') showLocalToast(msg, true);
+                }
+                return;
+            }
+
+            if (data && data.success) {
+                showLocalToast(data.success);
+
+                const user = data.user;
+                if (user) {
+                    const existingRow = document.getElementById(`user-row-${user.id}`);
+                    const rowHtml = generateRowContent(user);
+
+                    if (existingRow) {
+                        // Update existing row
+                        existingRow.innerHTML = rowHtml;
+                        existingRow.classList.add('row-updated');
+                        setTimeout(() => existingRow.classList.remove('row-updated'), 2000);
+                    } else {
+                        // Prepend new row
+                        const newRow = document.createElement('tr');
+                        newRow.id        = `user-row-${user.id}`;
+                        newRow.dataset.id = user.id;
+                        newRow.classList.add('admin-row', 'row-new');
+                        newRow.innerHTML  = rowHtml;
+                        tableBody.prepend(newRow);
+                    }
+                }
+
+                // Hide form and reset
+                regSection.style.display = 'none';
+                resetToCreateMode();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+
+            // Unexpected response
+            showLocalToast('Unexpected response from server.', true);
+        })
+        .catch(() => {
+            submitBtn.disabled    = false;
+            submitBtn.textContent = origText;
+            showLocalToast('Network error: could not reach server.', true);
+        });
+    });
+
+    /* ------------------------------------------------------------------ */
+    /* Delete workflow                                                      */
+    /* ------------------------------------------------------------------ */
     let userIdToDelete = null;
     const confirmOverlay = document.getElementById('delete-confirm-overlay');
-    
+
     document.addEventListener('click', e => {
         if (e.target.classList.contains('delete-user-trigger')) {
             userIdToDelete = e.target.dataset.id;
@@ -269,93 +478,49 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!userIdToDelete) return;
         fetch('../../Verification.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
-            body: `action=delete_user&user_id=${userIdToDelete}`
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'delete_user', data: { id: parseInt(userIdToDelete) } })
         })
         .then(res => res.json())
         .then(resData => {
-            const data = resData.data || resData;
             confirmOverlay.style.display = 'none';
-            if (data.success) {
+            if (resData.success) {
                 const row = document.getElementById(`user-row-${userIdToDelete}`);
                 if (row) {
-                    row.style.opacity = '0';
-                    row.style.transform = 'translateX(20px)';
-                    row.style.transition = 'all 0.4s ease';
-                    setTimeout(() => row.remove(), 400);
+                    row.style.transition = 'opacity 0.4s, transform 0.4s';
+                    row.style.opacity    = '0';
+                    row.style.transform  = 'translateX(20px)';
+                    setTimeout(() => row.remove(), 420);
                 }
-                if (window.showToast) showToast(data.success);
+                showLocalToast(resData.data?.success || 'User deleted successfully.');
+            } else {
+                showLocalToast(resData.error || 'Failed to delete user.', true);
             }
-        });
-    });
-
-    // Submit workflow
-    userForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        document.querySelectorAll('.inline-error').forEach(el => el.textContent = '');
-        
-        const formData = new FormData(userForm);
-        const action = document.getElementById('form-action').value;
-
-        fetch('../../Verification.php', {
-            method: 'POST',
-            body: formData,
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            userIdToDelete = null;
         })
-        .then(res => res.json())
-        .then(resData => {
-            const data = resData.data || resData;
-            if (data.errors) {
-                if (data.errors.general && window.showToast) {
-                    showToast(data.errors.general, true);
-                }
-                for (const field in data.errors) {
-                    const el = document.getElementById(`error-${field}`);
-                    if (el) el.textContent = data.errors[field].toUpperCase();
-                }
-            } else if (data.success) {
-                if (window.showToast) showToast(data.success);
-                
-                if (data.user) {
-                    const user = data.user;
-                    let row = document.getElementById(`user-row-${user.id}`);
-                    const rowHtml = generateRowContent(user);
-
-                    if (row) {
-                        row.innerHTML = rowHtml;
-                        row.classList.add('row-updated');
-                        setTimeout(() => row.classList.remove('row-updated'), 2000);
-                    } else {
-                        const newRow = document.createElement('tr');
-                        newRow.id = `user-row-${user.id}`;
-                        newRow.classList.add('admin-row', 'row-new');
-                        newRow.innerHTML = rowHtml;
-                        tableBody.prepend(newRow);
-                    }
-                }
-                
-                regSection.style.display = 'none';
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
+        .catch(() => {
+            confirmOverlay.style.display = 'none';
+            showLocalToast('Network error during deletion.', true);
         });
     });
 
-    // Filter Logic
+    /* ------------------------------------------------------------------ */
+    /* Search / Sort filters                                                */
+    /* ------------------------------------------------------------------ */
     const searchInput = document.getElementById('user-search');
-    const sortSelect = document.getElementById('user-sort');
+    const sortSelect  = document.getElementById('user-sort');
 
     function applyFilters() {
-        const query = searchInput.value.trim();
-        const sort = sortSelect.value;
         const url = new URL(window.location.href);
-        url.searchParams.set('search', query);
-        url.searchParams.set('sort', sort);
+        url.searchParams.set('search', searchInput.value.trim());
+        url.searchParams.set('sort',   sortSelect.value);
         window.location.href = url.toString();
     }
 
     sortSelect.addEventListener('change', applyFilters);
-    searchInput.addEventListener('keypress', (e) => {
+    searchInput.addEventListener('keypress', e => {
         if (e.key === 'Enter') applyFilters();
     });
 });
 </script>
+
