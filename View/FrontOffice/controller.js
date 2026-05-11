@@ -509,8 +509,6 @@ const controller = {
     async handleProfileUpdate(formData) {
         const data = {
             name:           formData.get('name'),
-            first_name:     formData.get('first_name'),
-            last_name:      formData.get('last_name'),
             email:          formData.get('email'),
             bio:            formData.get('bio'),
             phone_number:   formData.get('phone_number') || formData.get('phoneNumber'),
