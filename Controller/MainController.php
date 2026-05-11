@@ -360,6 +360,8 @@ class MainController {
                 return AppModel::getEnrollments($data['userId']);
             case 'get_pending_enrollments':
                 return AppModel::getPendingEnrollments();
+            case 'get_all_enrollments':
+                return AppModel::getAllEnrollments();
             case 'get_enrollments_by_program':
                 return AppModel::getEnrollmentsByProgram($data['programId']);
             case 'get_enrollment_counts':

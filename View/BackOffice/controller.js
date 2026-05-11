@@ -118,6 +118,10 @@ const controller = {
                     window.location.hash = `#program/${id}`;
                     break;
 
+                case 'view-all-enrollments':
+                    window.location.hash = '#all-enrollments';
+                    break;
+
                 case 'save-program': {
                     const form = document.getElementById('program-form');
                     if (form) this.handleProgramSave(new FormData(form));

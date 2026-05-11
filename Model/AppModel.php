@@ -718,6 +718,14 @@ class AppModel {
                             WHERE e.status = 'pending' ORDER BY e.enrolled_at ASC")->fetchAll();
     }
 
+    public static function getAllEnrollments() {
+        $db = self::getDb();
+        return $db->query("SELECT e.*, u.username, p.title as program_title 
+                            FROM enrollment e JOIN users u ON e.user_id = u.id 
+                            JOIN program p ON e.program_id = p.id 
+                            ORDER BY e.enrolled_at DESC")->fetchAll();
+    }
+
     public static function getAllEnrollmentsCounts() {
         $db = self::getDb();
         $total = (int)$db->query("SELECT COUNT(*) FROM enrollment WHERE status != 'cancelled'")->fetchColumn();

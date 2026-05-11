@@ -978,9 +978,9 @@ const view = {
                 <div class="flex-between mb-32 flex-wrap gap-16" style="border-bottom: 2px solid var(--primary-navy); padding-bottom: 1.5rem;">
                     <h2 class="reveal no-border" style="margin:0;padding:0;font-size:2.2rem;font-weight:900;">Parks &amp; Recreation</h2>
                     <div class="flex gap-12" style="align-items:center;">
-                        <div class="reveal text-bold" style="font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;background:var(--primary-navy);color:#fff;padding:0.5rem 1rem;border-radius:4px;">
+                        <button class="reveal text-bold btn-badge" data-action="view-all-enrollments" style="font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;background:var(--primary-navy);color:#fff;padding:0.5rem 1rem;border-radius:4px;border:none;cursor:pointer;transition:transform 0.2s, background 0.2s;" onmouseover="this.style.background='#2d3a5a';this.style.transform='translateY(-2px)'" onmouseout="this.style.background='var(--primary-navy)';this.style.transform='translateY(0)'">
                             ${totalEnrollments} ENROLLMENTS
-                        </div>
+                        </button>
                         ${role === 'admin' ? '<button class="btn reveal" data-action="manage-categories" style="font-weight:800;border:2px solid var(--primary-navy);"><i class="bi bi-tags"></i> CATEGORIES</button>' : ''}
                         ${role === 'admin' ? '<button class="btn btn-primary reveal" data-action="new-program" style="font-weight:900;box-shadow:4px 4px 0 var(--primary-navy);">+ NEW PROGRAM</button>' : ''}
                     </div>
@@ -1089,6 +1089,53 @@ const view = {
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                </div>
+            </section>
+        `;
+        this.triggerObserver();
+    },
+
+    renderAllEnrollments(enrollments) {
+        const enrollmentRows = enrollments.map(e => {
+            const isPending = e.status === 'pending';
+            return `
+                <tr>
+                    <td><strong>#${e.id}</strong></td>
+                    <td>${e.username}</td>
+                    <td>${e.program_title}</td>
+                    <td>${new Date(e.enrolled_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                    <td><span class="status-badge status-${e.status}">${e.status}</span></td>
+                    <td>
+                        ${isPending ? `
+                            <button class="btn btn-small btn-success" data-action="confirm-enroll" data-id="${e.id}" style="margin-right:4px;">CONFIRM</button>
+                            <button class="btn btn-small btn-danger"  data-action="cancel-enroll"  data-id="${e.id}">REJECT</button>
+                        ` : `<span class="opacity-7 text-small" style="font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">—</span>`}
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        this.app.innerHTML = `
+            <section class="page-container">
+                <div style="margin-bottom:2rem;">
+                    <a href="#manage-programs" style="font-weight:800;text-transform:uppercase;text-decoration:none;color:var(--primary-navy);font-size:0.9rem;letter-spacing:1px;"><i class="bi bi-arrow-left"></i> Back to Programs</a>
+                </div>
+
+                <h2 class="reveal" style="font-size:clamp(1.5rem,3vw,2.5rem);">All Enrollments <span style="font-weight:400;font-size:0.7em;">(${enrollments.length})</span></h2>
+                
+                <div class="reveal">
+                    <div class="table-responsive" style="background:white;border:2px solid var(--primary-navy);box-shadow: 10px 10px 0px rgba(29, 42, 68, 0.05);">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th><th>Citizen</th><th>Program</th><th>Enrolled</th><th>Status</th><th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${enrollmentRows.length > 0 ? enrollmentRows : '<tr><td colspan="6" class="text-center" style="padding:4rem;opacity:0.6;">No enrollments found.</td></tr>'}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </section>
