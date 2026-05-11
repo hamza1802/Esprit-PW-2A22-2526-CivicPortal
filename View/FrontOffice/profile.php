@@ -14,9 +14,6 @@ if ($user) {
 $initials = substr($initials, 0, 2);
 ?>
 
-<link rel="stylesheet" href="View/assets/css/face-id.css">
-<script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-<script defer src="View/assets/js/face-enroll.js"></script>
 
 <style>
     /* Profile Premium Styles */

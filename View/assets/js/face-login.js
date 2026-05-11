@@ -2,164 +2,162 @@ const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@mas
 
 class FaceLogin {
     constructor() {
-        this.modal = document.getElementById('face-id-modal');
-        this.video = document.getElementById('login-video');
-        this.canvas = document.getElementById('login-canvas');
+        this.modal    = document.getElementById('face-id-modal');
+        this.video    = document.getElementById('login-video');
+        this.canvas   = document.getElementById('login-canvas');
         this.statusEl = document.getElementById('login-status');
         this.feedbackEl = document.getElementById('login-feedback');
         this.emailInput = document.getElementById('email');
-        
-        this.isModelLoaded = false;
-        this.isVerifying = false;
-        this.stream = null;
-        
-        if (this.modal) {
-            this.init();
-        }
+        this.stream   = null;
+        this.interval = null;
+        this.verifying = false;
+        this.ready     = false;
+
+        if (this.modal) this._loadModels();
     }
 
-    async init() {
-        if (!window.faceapi) {
-            console.error('Face-API script not loaded.');
-            return;
-        }
+    async _loadModels() {
+        if (!window.faceapi) { console.error('face-api not loaded'); return; }
         try {
             await Promise.all([
                 faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
                 faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-                faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+                faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
             ]);
-            this.isModelLoaded = true;
+            this.ready = true;
         } catch (err) {
-            console.error('Error loading models:', err);
+            console.error('face-api model load failed:', err);
         }
     }
 
-    async openModal() {
-        const email = this.emailInput.value.trim();
+    open() {
+        const email = this.emailInput?.value.trim();
         if (!email) {
-            this.showMainError('Please enter your email first.');
+            this._mainError('Please enter your email first.');
             return;
         }
-
         this.modal.classList.add('active');
-        this.updateStatus('Starting camera...', 'scanning');
-        this.startCamera();
+        this._status('Starting camera…', 'scanning');
+        this._feedback('', '');
+        this._startCamera();
     }
 
-    showMainError(msg) {
-        const errorEl = document.getElementById('error-email');
-        if (errorEl) {
-            errorEl.textContent = msg;
-        } else {
-            if (window.renderToast) {
-                window.renderToast(msg, 'error');
-            } else {
-                alert(msg);
-            }
-        }
-    }
-
-    closeModal() {
+    close() {
         this.modal.classList.remove('active');
-        if (this.stream) {
-            this.stream.getTracks().forEach(track => track.stop());
-        }
-        if (this.detectionInterval) {
-            clearInterval(this.detectionInterval);
-        }
+        this._stop();
     }
 
-    async startCamera() {
+    async _startCamera() {
         try {
             this.stream = await navigator.mediaDevices.getUserMedia({ video: {} });
             this.video.srcObject = this.stream;
-            this.video.onplay = () => this.onPlay();
+            this.video.onloadedmetadata = () => {
+                this.video.play();
+                this._status('Scanning for face…', 'scanning');
+                this._startDetection();
+            };
         } catch (err) {
-            this.showFeedback('Camera access denied: ' + err.message, 'error');
+            this._feedback('Camera access denied: ' + err.message, 'error');
         }
     }
 
-    async onPlay() {
-        const displaySize = { width: this.video.offsetWidth, height: this.video.offsetHeight };
-        faceapi.matchDimensions(this.canvas, displaySize);
+    _startDetection() {
+        const size = { width: this.video.offsetWidth, height: this.video.offsetHeight };
+        faceapi.matchDimensions(this.canvas, size);
 
-        this.detectionInterval = setInterval(async () => {
-            if (!this.isModelLoaded || this.isVerifying) return;
+        this.interval = setInterval(async () => {
+            if (!this.ready || this.verifying) return;
 
-            const detections = await faceapi.detectAllFaces(this.video)
+            const detections = await faceapi
+                .detectAllFaces(this.video)
                 .withFaceLandmarks()
                 .withFaceDescriptors();
 
-            const resizedDetections = faceapi.resizeResults(detections, displaySize);
-            this.canvas.getContext('2d').clearRect(0, 0, this.canvas.width, this.canvas.height);
-            faceapi.draw.drawDetections(this.canvas, resizedDetections);
+            const ctx = this.canvas.getContext('2d');
+            ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            faceapi.draw.drawDetections(this.canvas, faceapi.resizeResults(detections, size));
 
             if (detections.length > 0) {
-                this.updateStatus('Face detected. Verifying...', 'detected');
-                this.verifyFace(detections[0].descriptor);
+                this._status('Face detected — verifying…', 'detected');
+                this._verify(detections[0].descriptor);
             } else {
-                this.updateStatus('Scanning for face...', 'scanning');
+                this._status('Scanning for face…', 'scanning');
             }
-        }, 500);
+        }, 600);
     }
 
-    async verifyFace(descriptor) {
-        this.isVerifying = true;
-        
+    async _verify(descriptor) {
+        this.verifying = true;
+        const endpoint = window.FACE_AUTH_URL;
+        if (!endpoint) {
+            this._feedback('Configuration error: face auth URL not set.', 'error');
+            setTimeout(() => { this.verifying = false; }, 2000);
+            return;
+        }
+
         try {
-            const response = await fetch('../../face_auth.php', {
+            const res = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     action: 'verify',
                     email: this.emailInput.value.trim(),
-                    face_descriptor: Array.from(descriptor)
-                })
+                    face_descriptor: Array.from(descriptor),
+                }),
             });
 
-            const result = await response.json();
+            let result;
+            const text = await res.text();
+            try { result = JSON.parse(text); }
+            catch { this._feedback('Server error: invalid response received.', 'error'); setTimeout(() => { this.verifying = false; }, 2000); return; }
+
             if (result.match) {
-                this.updateStatus('Match Found!', 'matched');
-                this.showFeedback('Success! Redirecting...', 'success');
-                setTimeout(() => {
-                    window.location.href = result.redirect;
-                }, 1000);
+                this._status('Match found!', 'matched');
+                this._feedback('Success — redirecting…', 'success');
+                this._stop();
+                setTimeout(() => { window.location.href = result.redirect; }, 800);
             } else {
-                this.updateStatus('Match Failed', 'failed');
-                this.showFeedback(result.message || 'Face not recognized.', 'error');
-                // Wait 2 seconds before allowing next attempt
-                setTimeout(() => {
-                    this.isVerifying = false;
-                }, 2000);
+                this._status('No match', 'failed');
+                this._feedback(result.message || 'Face not recognized — please try again.', 'error');
+                setTimeout(() => { this.verifying = false; }, 2500);
             }
         } catch (err) {
-            this.showFeedback('Server error: ' + err.message, 'error');
-            setTimeout(() => {
-                this.isVerifying = false;
-            }, 2000);
+            this._feedback('Network error: ' + err.message, 'error');
+            setTimeout(() => { this.verifying = false; }, 2000);
         }
     }
 
-    updateStatus(text, className) {
+    _stop() {
+        if (this.interval) { clearInterval(this.interval); this.interval = null; }
+        if (this.stream) { this.stream.getTracks().forEach(t => t.stop()); this.stream = null; }
+        this.verifying = false;
+    }
+
+    _status(text, cls) {
         if (this.statusEl) {
             this.statusEl.textContent = text;
-            this.statusEl.className = 'face-id-status status-' + className;
+            this.statusEl.className   = 'face-id-status status-' + cls;
         }
     }
 
-    showFeedback(text, type) {
+    _feedback(text, cls) {
         if (this.feedbackEl) {
             this.feedbackEl.textContent = text;
-            this.feedbackEl.className = 'face-id-feedback feedback-' + type;
+            this.feedbackEl.className   = cls ? 'face-id-feedback feedback-' + cls : 'face-id-feedback';
         }
+    }
+
+    _mainError(msg) {
+        const el = document.getElementById('error-email');
+        if (el) { el.textContent = msg; return; }
+        if (window.renderToast) { window.renderToast(msg, 'error'); return; }
+        alert(msg);
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('btn-face-id-login')) {
-        const faceLogin = new FaceLogin();
-        document.getElementById('btn-face-id-login').addEventListener('click', () => faceLogin.openModal());
-        document.getElementById('close-face-modal').addEventListener('click', () => faceLogin.closeModal());
-    }
+    if (!document.getElementById('btn-face-id-login')) return;
+    const fl = new FaceLogin();
+    document.getElementById('btn-face-id-login').addEventListener('click', () => fl.open());
+    document.getElementById('close-face-modal').addEventListener('click', () => fl.close());
 });

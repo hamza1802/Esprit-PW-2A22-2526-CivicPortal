@@ -38,7 +38,9 @@ $currentUser = [
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/face-id.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <?php $faceAuthUrl = dirname(dirname(dirname($_SERVER['PHP_SELF']))) . '/face_auth.php'; ?>
+    <script>window.FACE_AUTH_URL = '<?= htmlspecialchars($faceAuthUrl) ?>';</script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
     <script defer src="../assets/js/face-enroll.js"></script>
 </head>
 <body>

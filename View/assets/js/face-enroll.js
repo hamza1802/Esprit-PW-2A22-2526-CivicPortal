@@ -2,153 +2,153 @@ const MODEL_URL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@mas
 
 class FaceEnrollment {
     constructor() {
-        this.video = document.getElementById('enroll-video');
-        this.canvas = document.getElementById('enroll-canvas');
-        this.statusEl = document.getElementById('enroll-status');
+        this.video      = document.getElementById('enroll-video');
+        this.canvas     = document.getElementById('enroll-canvas');
+        this.statusEl   = document.getElementById('enroll-status');
         this.feedbackEl = document.getElementById('enroll-feedback');
-        this.saveBtn = document.getElementById('enroll-save');
+        this.saveBtn    = document.getElementById('enroll-save');
         this.descriptor = null;
-        this.isModelLoaded = false;
-        
-        if (this.video) {
-            this.init();
-        }
+        this.interval   = null;
+        this.ready      = false;
+
+        if (this.video) this._init();
     }
 
-    stop() {
-        if (this.detectionInterval) {
-            clearInterval(this.detectionInterval);
-        }
-        if (this.video && this.video.srcObject) {
-            const tracks = this.video.srcObject.getTracks();
-            tracks.forEach(track => track.stop());
-            this.video.srcObject = null;
-        }
-    }
-
-    async init() {
+    async _init() {
         if (!window.faceapi) {
-            this.showFeedback('Face-API script not loaded. Please check your internet connection.', 'error');
+            this._feedback('Face-API script not loaded — check your internet connection.', 'error');
             return;
         }
-        this.updateStatus('Loading models...', 'scanning');
+        this._status('Loading models…', 'scanning');
         try {
             await Promise.all([
                 faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
                 faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-                faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+                faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
             ]);
-            this.isModelLoaded = true;
-            this.updateStatus('Models loaded. Starting camera...', 'scanning');
-            this.startCamera();
+            this.ready = true;
+            this._status('Camera starting…', 'scanning');
+            this._startCamera();
         } catch (err) {
-            this.showFeedback('Error loading models: ' + err.message, 'error');
+            this._feedback('Model load error: ' + err.message, 'error');
         }
     }
 
-    async startCamera() {
+    async _startCamera() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
             this.video.srcObject = stream;
-            this.video.onplay = () => this.onPlay();
+            this.video.onloadedmetadata = () => {
+                this.video.play();
+                this._startDetection();
+            };
         } catch (err) {
-            this.showFeedback('Camera access denied: ' + err.message, 'error');
+            this._feedback('Camera access denied: ' + err.message, 'error');
         }
     }
 
-    async onPlay() {
-        const displaySize = { width: this.video.offsetWidth, height: this.video.offsetHeight };
-        faceapi.matchDimensions(this.canvas, displaySize);
+    _startDetection() {
+        const size = { width: this.video.offsetWidth, height: this.video.offsetHeight };
+        faceapi.matchDimensions(this.canvas, size);
 
-        this.detectionInterval = setInterval(async () => {
-            if (!this.isModelLoaded) return;
+        this.interval = setInterval(async () => {
+            if (!this.ready) return;
 
-            const detections = await faceapi.detectAllFaces(this.video)
+            const detections = await faceapi
+                .detectAllFaces(this.video)
                 .withFaceLandmarks()
                 .withFaceDescriptors();
 
-            const resizedDetections = faceapi.resizeResults(detections, displaySize);
-            this.canvas.getContext('2d').clearRect(0, 0, this.canvas.width, this.canvas.height);
-            faceapi.draw.drawDetections(this.canvas, resizedDetections);
+            const ctx = this.canvas.getContext('2d');
+            ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            faceapi.draw.drawDetections(this.canvas, faceapi.resizeResults(detections, size));
 
             if (detections.length > 0) {
                 this.descriptor = detections[0].descriptor;
-                this.updateStatus('Face detected. Ready to save.', 'detected');
-                this.saveBtn.disabled = false;
+                this._status('Face detected — ready to save.', 'detected');
+                if (this.saveBtn) this.saveBtn.disabled = false;
             } else {
                 this.descriptor = null;
-                this.updateStatus('Scanning for face...', 'scanning');
-                this.saveBtn.disabled = true;
+                this._status('Scanning for face…', 'scanning');
+                if (this.saveBtn) this.saveBtn.disabled = true;
             }
-        }, 100);
+        }, 150);
     }
 
-    updateStatus(text, className) {
-        if (this.statusEl) {
-            this.statusEl.textContent = text;
-            this.statusEl.className = 'face-id-status status-' + className;
-        }
-    }
-
-    showFeedback(text, type) {
-        if (this.feedbackEl) {
-            this.feedbackEl.textContent = text;
-            this.feedbackEl.className = 'face-id-feedback feedback-' + type;
-        }
-    }
-
-    async saveFace() {
+    async save() {
         if (!this.descriptor) return;
+        const endpoint = window.FACE_AUTH_URL;
+        if (!endpoint) {
+            this._feedback('Configuration error: face auth URL not set.', 'error');
+            return;
+        }
 
-        this.showFeedback('Saving face data...', 'scanning');
-        this.saveBtn.disabled = true;
-        
+        this._feedback('Saving…', 'scanning');
+        if (this.saveBtn) this.saveBtn.disabled = true;
+
         try {
-            const response = await fetch('../../face_auth.php', {
+            const res = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     action: 'enroll',
-                    face_descriptor: Array.from(this.descriptor)
-                })
+                    face_descriptor: Array.from(this.descriptor),
+                }),
             });
 
-            const result = await response.json();
+            let result;
+            const text = await res.text();
+            try { result = JSON.parse(text); }
+            catch { this._feedback('Server error: invalid response received.', 'error'); if (this.saveBtn) this.saveBtn.disabled = false; return; }
+
             if (result.success) {
-                this.showFeedback('Face enrolled successfully!', 'success');
-                this.updateStatus('Enrolled', 'matched');
-                if (window.renderToast) {
-                    window.renderToast('Face ID saved successfully!');
-                } else {
-                    alert('Face ID saved successfully!');
-                }
+                this._status('Enrolled!', 'matched');
+                this._feedback('Face ID saved successfully!', 'success');
+                if (window.renderToast) window.renderToast('Face ID saved!', 'success');
             } else {
-                this.showFeedback(result.message, 'error');
-                this.saveBtn.disabled = false;
+                this._feedback(result.message || 'Enrollment failed — please try again.', 'error');
+                if (this.saveBtn) this.saveBtn.disabled = false;
             }
         } catch (err) {
-            this.showFeedback('Server error: ' + err.message, 'error');
-            this.saveBtn.disabled = false;
+            this._feedback('Network error: ' + err.message, 'error');
+            if (this.saveBtn) this.saveBtn.disabled = false;
+        }
+    }
+
+    stop() {
+        if (this.interval) { clearInterval(this.interval); this.interval = null; }
+        if (this.video?.srcObject) {
+            this.video.srcObject.getTracks().forEach(t => t.stop());
+            this.video.srcObject = null;
+        }
+    }
+
+    _status(text, cls) {
+        if (this.statusEl) {
+            this.statusEl.textContent = text;
+            this.statusEl.className   = 'face-id-status status-' + cls;
+        }
+    }
+
+    _feedback(text, cls) {
+        if (this.feedbackEl) {
+            this.feedbackEl.textContent = text;
+            this.feedbackEl.className   = cls ? 'face-id-feedback feedback-' + cls : 'face-id-feedback';
         }
     }
 }
 
-// Global instance
+// Global instance for SPA lifecycle management
 window.faceEnrollment = null;
 
 function initFaceEnrollment() {
-    if (document.getElementById('enroll-video')) {
-        // Clean up previous instance if exists
-        if (window.faceEnrollment && window.faceEnrollment.detectionInterval) {
-            clearInterval(window.faceEnrollment.detectionInterval);
-        }
-        window.faceEnrollment = new FaceEnrollment();
-        document.getElementById('enroll-save').addEventListener('click', () => window.faceEnrollment.saveFace());
-    }
+    if (!document.getElementById('enroll-video')) return;
+    if (window.faceEnrollment) window.faceEnrollment.stop();
+    window.faceEnrollment = new FaceEnrollment();
+
+    const btn = document.getElementById('enroll-save');
+    if (btn) btn.addEventListener('click', () => window.faceEnrollment.save());
 }
 
-// Still keep DOMContentLoaded for non-SPA pages
-document.addEventListener('DOMContentLoaded', initFaceEnrollment);
-
-// Export to window for SPA use
 window.initFaceEnrollment = initFaceEnrollment;
+document.addEventListener('DOMContentLoaded', initFaceEnrollment);

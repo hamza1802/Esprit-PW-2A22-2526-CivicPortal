@@ -267,8 +267,12 @@ unset($_SESSION['success'], $_SESSION['errors'], $_SESSION['old']);
     </div>
 </div>
 
+<?php
+$faceAuthUrl = dirname(dirname(dirname($_SERVER['PHP_SELF']))) . '/face_auth.php';
+?>
+<script>window.FACE_AUTH_URL = '<?= htmlspecialchars($faceAuthUrl) ?>';</script>
 <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.min.js"></script>
-<script type="module" src="../assets/js/face-login.js"></script>
+<script defer src="../assets/js/face-login.js"></script>
 
 <script>
     // --- Login Form Submission ---
