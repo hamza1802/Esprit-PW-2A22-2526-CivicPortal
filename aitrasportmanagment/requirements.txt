@@ -1,4 +1,0 @@
-ollama
-duckduckgo-search
-fastapi
-uvicorn

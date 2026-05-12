@@ -45,15 +45,14 @@ $successMsg = isset($_GET['success']) ? htmlspecialchars($_GET['success']) : '';
 
     <!-- Navigation — matches main platform nav -->
     <nav>
-        <div class="nav-brand">
-            <i class="bi bi-building"></i> CivicPortal
-        </div>
+        <a href="index.php" class="nav-brand" style="text-decoration:none;">
+            <img src="../assets/images/logo.png" alt="CivicPortal" class="nav-logo">
+        </a>
         <div class="nav-backdrop"></div>
         <button class="nav-hamburger" aria-label="Toggle menu">
             <span></span><span></span><span></span>
         </button>
         <ul class="nav-links">
-            <li><a href="index.php">home</a></li>
             <li><a href="index.php#programs">programs</a></li>
             <li><a href="forum.php" class="active">forum</a></li>
             <?php if ($isLoggedIn): ?>

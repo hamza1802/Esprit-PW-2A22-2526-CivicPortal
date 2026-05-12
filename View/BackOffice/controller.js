@@ -440,6 +440,8 @@ const controller = {
             } else if (e.target.id === 'user-sort') {
                 this.userFilters.sort = e.target.value;
                 this._refreshUsers();
+            } else if (e.target.name === 'idTransportType' && e.target.closest('#add-vehicle-form')) {
+                this._updateVehicleTypePreview(e.target.value);
             }
         });
 
@@ -1132,6 +1134,8 @@ const controller = {
                     submitBtn.textContent = 'UPDATE VEHICLE';
                     submitBtn.dataset.editId = id;
                 }
+                // Update preview
+                this._updateVehicleTypePreview(vehicle.idTransportType);
             }
         }
     },
@@ -1602,6 +1606,25 @@ const controller = {
                 submitBtn.textContent = 'ADD VEHICLE';
                 delete submitBtn.dataset.editId;
             }
+            // Hide preview
+            const preview = document.getElementById('vehicle-type-preview');
+            if (preview) preview.style.display = 'none';
+        }
+    },
+
+    _updateVehicleTypePreview(typeId) {
+        const preview = document.getElementById('vehicle-type-preview');
+        if (!preview) return;
+
+        if (!typeId) {
+            preview.style.display = 'none';
+            return;
+        }
+
+        const img = preview.querySelector('img');
+        if (img) {
+            img.src = `../../get_image.php?type=transport_type&id=${typeId}`;
+            preview.style.display = 'block';
         }
     },
 

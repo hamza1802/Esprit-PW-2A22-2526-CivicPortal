@@ -1300,7 +1300,7 @@ class AppModel {
         $sortBy = in_array($sortBy, $allowedSorts) ? $sortBy : 'departure';
         $order = strtoupper($order) === 'DESC' ? 'DESC' : 'ASC';
 
-        $sql = "SELECT t.*, tr.name as transportName, tr.capacity as transportCapacity
+        $sql = "SELECT t.*, tr.name as transportName, tr.capacity as transportCapacity, tr.idTransportType
                 FROM trajet t
                 JOIN transport tr ON t.idTransport = tr.idTransport
                 JOIN transport_type tt ON tr.idTransportType = tt.idTransportType

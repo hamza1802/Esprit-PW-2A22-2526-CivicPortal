@@ -53,13 +53,14 @@ const view = {
         }
 
         nav.innerHTML = `
-            <div class="nav-brand"><i class="bi bi-building"></i> CivicPortal</div>
+            <a href="#home" class="nav-brand" style="text-decoration:none;">
+                <img src="../assets/images/logo.png" alt="CivicPortal" class="nav-logo">
+            </a>
             <div class="nav-backdrop"></div>
             <button class="nav-hamburger" aria-label="Toggle menu">
                 <span></span><span></span><span></span>
             </button>
             <ul class="nav-links">
-                <li><a href="#home">home</a></li>
                 <li><a href="#programs">programs</a></li>
                 <li><a href="forum.php">forum</a></li>
                 ${user.isGuest ? '' : `
@@ -1160,8 +1161,12 @@ const view = {
                 const pct       = trajet.capacity > 0 ? Math.round((trajet.sold / trajet.capacity) * 100) : 0;
                 return `
                 <div class="editorial-card reveal flex-between">
-                    <div>
-                        <span class="category-badge">${trajet.transportName || type}</span>
+                    <div style="display:flex;gap:1.5rem;">
+                        <img src="../../get_image.php?type=transport_type&id=${trajet.idTransportType}" 
+                             style="width:100px;height:100px;object-fit:cover;border-radius:12px;border:var(--border-main);"
+                             onerror="this.style.display='none'">
+                        <div>
+                            <span class="category-badge">${trajet.transportName || type}</span>
                         <h3 class="mb-8" style="font-size:1.5rem;">${trajet.departure} → ${trajet.destination}</h3>
                         <p class="mb-8 text-bold" style="color:var(--accent-blue);">
                             ${parseFloat(trajet.price).toFixed(3)} TND
@@ -1173,6 +1178,7 @@ const view = {
                                 : `${remaining} seat${remaining !== 1 ? 's' : ''} left`}
                             <div style="margin-top:8px;height:6px;background:rgba(29,42,68,0.1);border-radius:3px;">
                                 <div style="height:100%;width:${pct}%;background:${pct > 80 ? 'var(--danger)' : 'var(--accent-blue)'};border-radius:3px;transition:width 0.4s;"></div>
+                            </div>
                             </div>
                         </div>
                     </div>

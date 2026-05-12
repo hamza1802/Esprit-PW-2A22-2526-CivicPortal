@@ -47,15 +47,11 @@ const view = {
         `;
 
         nav.innerHTML = `
-            <div class="nav-brand">
-                <i class="bi bi-building"></i>
-                <div>
-                    CivicPortal
-                    <span class="nav-brand-sub">STAFF PORTAL</span>
-                </div>
-            </div>
+            <a href="#home" class="nav-brand" style="text-decoration:none;">
+                <img src="../assets/images/logo.png" alt="CivicPortal" class="nav-logo">
+                <span class="nav-brand-sub" style="margin-left: 10px; border-left: 2px solid var(--primary-navy); padding-left: 10px;">STAFF PORTAL</span>
+            </a>
             <ul class="nav-links">
-                <li><a href="#home"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
                 ${role === 'agent' ? agentLinks : ''}
                 ${role === 'admin' ? adminLinks : ''}
 
@@ -1279,7 +1275,7 @@ const view = {
         const vehicleRows = vehicles.map(v => `
             <tr>
                 <td>
-                    <img src="../../get_image.php?type=transport&id=${v.idTransportType || 0}"
+                    <img src="../../get_image.php?type=transport_type&id=${v.idTransportType || 0}"
                          style="width:48px;height:32px;object-fit:cover;border:var(--border-main);"
                          onerror="this.style.display='none'">
                 </td>
@@ -1420,6 +1416,10 @@ const view = {
                                         <option value="">— None —</option>
                                         ${typeOptions}
                                     </select>
+                                    <div id="vehicle-type-preview" style="margin-top:1rem;display:none;">
+                                        <img src="" style="width:120px;height:80px;object-fit:cover;border-radius:8px;border:var(--border-main);">
+                                        <p class="text-small opacity-7" style="margin-top:0.25rem;">Type Preview</p>
+                                    </div>
                                 </div>
                             </div>
                             <button type="submit" class="btn btn-primary" style="margin-top:0.5rem;">ADD VEHICLE</button>

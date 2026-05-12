@@ -383,6 +383,7 @@ try { switch ($action) {
                     'transportName' => $t['transportName'],
                     'capacity'      => $occ['capacity'],
                     'sold'          => $occ['sold'],
+                    'idTransportType' => $t['idTransportType'],
                     'depLat'        => $t['depLat']     ?? null,
                     'depLng'        => $t['depLng']     ?? null,
                     'depAddress'    => $t['depAddress'] ?? null,
