@@ -8,13 +8,18 @@ class Database {
     private static $instance = null;
     private $conn;
 
-    private $host = 'localhost';
-    private $port = '3306';
-    private $db   = 'civicportal';
-    private $user = 'root';
-    private $pass = '';
+    private $host;
+    private $port;
+    private $db;
+    private $user;
+    private $pass;
 
     private function __construct() {
+        $this->host = getenv('DB_HOST')     ?: 'localhost';
+        $this->port = getenv('DB_PORT')     ?: '3306';
+        $this->db   = getenv('DB_NAME')     ?: 'civicportal';
+        $this->user = getenv('DB_USER')     ?: 'root';
+        $this->pass = getenv('DB_PASSWORD') ?: '';
         try {
             // Connect directly to the database with improved settings
             $dsn = "mysql:host={$this->host};port={$this->port};dbname={$this->db};charset=utf8mb4";

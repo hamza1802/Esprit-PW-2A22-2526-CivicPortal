@@ -1,0 +1,12 @@
+.git
+.env
+__pycache__
+*.pyc
+*.pyo
+node_modules
+uploads/*.pdf
+uploads/*.docx
+graphify-out
+*.skill
+*.md
+ARCHITECTURE.md

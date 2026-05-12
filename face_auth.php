@@ -6,7 +6,7 @@ require_once __DIR__ . '/Controller/UserController.php';
 ob_clean();
 header('Content-Type: application/json');
 
-$PY = 'http://localhost:5001';
+$PY = getenv('FACE_SERVICE_URL') ?: 'http://localhost:5001';
 
 /**
  * Ensures the Python Face ID service is running.

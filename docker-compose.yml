@@ -1,0 +1,58 @@
+services:
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./Model/civicportal.sql:/docker-entrypoint-initdb.d/civicportal.sql:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  face-service:
+    build: ./face_service
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: ${DB_ROOT_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      FACE_SERVICE_PORT: ${FACE_SERVICE_PORT:-5001}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    # Not exposed externally — only reachable by the web service on the internal network
+
+  web:
+    build: .
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    environment:
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: ${DB_NAME}
+      DB_USER: root
+      DB_PASSWORD: ${DB_ROOT_PASSWORD}
+      FACE_SERVICE_URL: http://face-service:${FACE_SERVICE_PORT:-5001}
+      APP_ENV: ${APP_ENV:-development}
+      GROQ_API_KEY_1: ${GROQ_API_KEY_1}
+      GROQ_API_KEY_2: ${GROQ_API_KEY_2}
+      GROQ_API_KEY_3: ${GROQ_API_KEY_3}
+      GROQ_API_KEY_4: ${GROQ_API_KEY_4}
+      GROQ_API_KEY_5: ${GROQ_API_KEY_5}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+      face-service:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  db_data:

@@ -1,5 +1,6 @@
 import json
 import math
+import os
 import datetime
 import mysql.connector
 from flask import Flask, request, jsonify
@@ -7,10 +8,10 @@ from flask import Flask, request, jsonify
 app = Flask(__name__)
 
 DB = {
-    'host': '127.0.0.1',
-    'user': 'root',
-    'password': '',
-    'database': 'civicportal'
+    'host':     os.getenv('DB_HOST',     '127.0.0.1'),
+    'user':     os.getenv('DB_USER',     'root'),
+    'password': os.getenv('DB_PASSWORD', ''),
+    'database': os.getenv('DB_NAME',     'civicportal'),
 }
 
 # ── always return JSON, never Flask's default HTML error pages ──────────────
@@ -143,4 +144,4 @@ def disable():
 
 
 if __name__ == '__main__':
-    app.run(port=5001, debug=False)
+    app.run(host='0.0.0.0', port=int(os.getenv('FACE_SERVICE_PORT', 5001)), debug=False)
