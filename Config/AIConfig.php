@@ -50,9 +50,9 @@ class AIConfig
     {
         return [
             'frontoffice' => getenv('GEMINI_API_KEY_FRONT')
-                ?: 'api_key_front',
+                ?: 'AIzaSyD4QM-Z8eUA1DUTvYG-DgP8yZVvABOP0jI',
             'backoffice'  => getenv('GEMINI_API_KEY_BACK')
-                ?: 'api_key_back',
+                ?: 'AIzaSyClsTgf9cuHjARWrY9FwUyKkpRTGei440I',
         ];
     }
 
