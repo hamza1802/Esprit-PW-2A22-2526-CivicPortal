@@ -109,6 +109,7 @@ class MainController {
             'add_transport_type'   => 'admin',
             'update_transport_type'=> 'admin',
             'delete_transport_type'=> 'admin',
+            'get_transport_type'   => 'admin',
             'add_transport'        => 'admin',
             'update_transport'     => 'admin',
             'delete_transport'     => 'admin',
@@ -389,6 +390,8 @@ class MainController {
                 return AppModel::updateTransportType($data['idTransportType'], $data, $data['type_image_file'] ?? null);
             case 'delete_transport_type':
                 return AppModel::deleteTransportType($data['idTransportType']);
+            case 'get_transport_type':
+                return AppModel::showTransportType($data['id']);
 
             case 'list_transports':
                 return AppModel::listTransports();

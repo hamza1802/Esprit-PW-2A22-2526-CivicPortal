@@ -287,8 +287,9 @@ const model = {
     async deleteTrajet(id)          { return await this.transportApi('delete_trajet',    { idTrajet: id }); },
     async searchInternetRoutePrice(data) { return await this.transportApi('search_route_price', data); },
 
-    async addTransportType(formData) { return await this.apiCall('add_transport_type',    formData); },
-    async deleteTransportType(id)    { return await this.apiCall('delete_transport_type', { id }); },
+    async getTransportType(id)       { return await this.apiCall('get_transport_type',    { id }); },
+    async addTransportType(formData) { return await this.saveTransportType(formData); },
+    async deleteTransportType(id)    { return await this.apiCall('delete_transport_type', { idTransportType: id }); },
 
     // -------------------------------------------------------------------------
     // Profile / auth helpers
@@ -340,7 +341,6 @@ const model = {
             return null;
         }
     },
-    async deleteTransportType(idTransportType) { return await this.apiCall('delete_transport_type', { idTransportType }); },
 
     async getTransports() { return await this.apiCall('list_transports'); },
     async saveTransport(formData) {

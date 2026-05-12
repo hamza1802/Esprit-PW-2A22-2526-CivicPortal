@@ -156,10 +156,15 @@ const controller = {
                     break;
 
                 // Transport actions (admin)
-                case 'toggle-add-type':
-                    document.getElementById('add-type-panel')?.style.setProperty('display',
-                        document.getElementById('add-type-panel').style.display === 'none' ? 'block' : 'none');
+                case 'toggle-add-type': {
+                    const panel = document.getElementById('add-type-panel');
+                    if (panel) {
+                        const isHidden = panel.style.display === 'none';
+                        panel.style.display = isHidden ? 'block' : 'none';
+                        if (isHidden) this._resetTransportTypeForm();
+                    }
                     break;
+                }
                 case 'edit-transport-type':
                     this.handleTransportTypeEdit(parseInt(id));
                     break;
@@ -994,12 +999,16 @@ const controller = {
             view.renderToast('Type name is required.', 'error');
             return;
         }
+        const isEdit = !!formData.get('idTransportType');
         const result = await model.addTransportType(formData);
         if (result) {
-            view.renderToast(`Transport type "${name}" added.`);
+            view.renderToast(isEdit ? `Transport type "${name}" updated.` : `Transport type "${name}" added.`);
             await this._refreshTransport();
+            this._resetTransportTypeForm();
+            const panel = document.getElementById('add-type-panel');
+            if (panel) panel.style.display = 'none';
         } else {
-            view.renderToast('Failed to add transport type.', 'error');
+            view.renderToast(isEdit ? 'Failed to update transport type.' : 'Failed to add transport type.', 'error');
         }
     },
 
@@ -1014,9 +1023,40 @@ const controller = {
     },
 
     async handleTransportTypeEdit(id) {
-        // For now, just show a message that editing transport types is not implemented
-        // In a full implementation, this would fetch the type data and populate the form
-        view.renderToast('Transport type editing not yet implemented.', 'error');
+        const type = await model.getTransportType(id);
+        if (!type) {
+            view.renderToast('Transport type not found.', 'error');
+            return;
+        }
+
+        // Show the add-type panel
+        const panel = document.getElementById('add-type-panel');
+        if (panel) {
+            panel.style.display = 'block';
+
+            // Pre-populate the form
+            const form = document.getElementById('add-type-form');
+            if (form) {
+                form.querySelector('[name="name"]').value = type.name || '';
+                form.querySelector('[name="description"]').value = type.description || '';
+                
+                // Add hidden ID if not present
+                let idInput = form.querySelector('[name="idTransportType"]');
+                if (!idInput) {
+                    idInput = document.createElement('input');
+                    idInput.type = 'hidden';
+                    idInput.name = 'idTransportType';
+                    form.appendChild(idInput);
+                }
+                idInput.value = id;
+
+                // Change button text
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.textContent = 'UPDATE TYPE';
+                }
+            }
+        }
     },
 
     async handleVehicleAdd(formData) {
@@ -1588,6 +1628,22 @@ const controller = {
             if (submitBtn) {
                 submitBtn.textContent = 'ADD ROUTE';
                 delete submitBtn.dataset.editId;
+            }
+        }
+    },
+
+    _resetTransportTypeForm() {
+        const form = document.getElementById('add-type-form');
+        if (form) {
+            form.reset();
+            // Remove hidden ID if present
+            const idInput = form.querySelector('[name="idTransportType"]');
+            if (idInput) idInput.remove();
+
+            // Reset button text
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.textContent = 'ADD TYPE';
             }
         }
     },
